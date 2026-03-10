@@ -376,32 +376,17 @@ async function generateProgram() {
 
   const systemPrompt = `Sei un esperto coach di fitness. Genera un programma di allenamento come array JSON puro. Rispondi SOLO con l'array JSON, nessun testo, nessun markdown, nessun backtick.
 
-Struttura ogni oggetto cosi:
-{
-  "Settimana": numero,
-  "Giorno": numero,
-  "Esercizio": "nome",
-  "Blocco": "A" o "B" o "C",
-  "Note": "note tecniche",
-  "Metodologia": "metodologia",
-  "Carico": "",
-  "Struttura": "es 5x5 scritto come 5·5",
-  "Ripetizioni": "numero o stringa",
-  "Serie": "numero",
-  "Percentuale": "",
-  "Recupero": "minuti es 1.30 o 2",
-  "Consiglio": "RPE o buffer",
-  "Posizione": numero progressivo per settimana
-}
+Struttura ogni oggetto (campi brevi, niente spazi extra):
+{"Settimana":n,"Giorno":n,"Esercizio":"nome","Blocco":"A/B/C","Note":"","Metodologia":"","Carico":"","Struttura":"5·5","Ripetizioni":"5","Serie":"5","Percentuale":"","Recupero":"2","Consiglio":"RPE8","Posizione":n}
 
 Regole:
-- Blocco A: esercizio principale (1 per giorno)
-- Blocco B: accessori (4-6 per giorno)
-- Blocco C: cardio o finisher (opzionale)
-- Struttura: usa notazione 5·5 (reps·serie), 8-7-6-6, 5+5+4·4 (cluster), MAX·3, ecc.
+- Blocco A: 1 esercizio principale per giorno
+- Blocco B: massimo 4 accessori per giorno
+- Blocco C: solo se cardio richiesto
+- Struttura: 5·5, 8-7-6-6, 5+5+4·4, MAX·3
 - Posizione riparte da 1 ogni settimana
-- Progressione logica tra le settimane
-- Metodologie preferite: ${metodologie.join(', ')}`;
+- Progressione logica tra settimane
+- Metodologie: ${metodologie.join(', ')}`;
 
   const userPrompt = `Genera programma:
 - Atleta: ${nome}
@@ -415,7 +400,7 @@ Regole:
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
+        max_tokens: 4000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
       })
