@@ -394,6 +394,14 @@ Regole:
 - Giorni/settimana: ${giorni}
 - Obiettivo: ${obiettivo}${noteExtra ? '\n- Note: ' + noteExtra : ''}`;
 
+  // Generate week by week to avoid token limits
+  let allExercises = [];
+  for (let w = 1; w <= settimane; w++) {
+    document.getElementById('loading-text').textContent = 'Generando settimana ' + w + ' di ' + settimane + '...';
+    document.getElementById('loading-text').classList.add('active');
+
+    const weekPrompt = userPrompt + '\n- Genera SOLO la settimana ' + w + ' di ' + settimane + '. Array JSON puro, niente testo.';
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -402,15 +410,25 @@ Regole:
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
+        messages: [{ role: 'user', content: weekPrompt }]
       })
     });
 
     const data = await response.json();
     const raw = data.content.map(b => b.text || '').join('');
     const clean = raw.replace(/```json|```/g, '').trim();
-    const exercises = JSON.parse(clean);
+    const weekExercises = JSON.parse(clean);
+    allExercises = allExercises.concat(weekExercises);
 
+  } catch(e) {
+    showError('Errore nella settimana ' + w + '. Riprova. (' + e.message + ')');
+    setLoading(false);
+    return;
+  }
+  } // end week loop
+
+  try {
+    const exercises = allExercises;
     csvData = exercises.map(ex => ({
       email,
       'Nome': nome,
