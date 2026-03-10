@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Program Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent2: #ff4d4d;
+    --text: #e8e8e8;
+    --muted: #666;
+    --radius: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    margin-bottom: 56px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 80px);
+    letter-spacing: 0.04em;
+    line-height: 0.9;
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(200,241,53,0.15);
+  }
+
+  .logo span { color: var(--text); opacity: 0.3; }
+
+  .subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+  .full { grid-column: 1 / -1; }
+
+  .field { display: flex; flex-direction: column; gap: 8px; }
+
+  label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  input, select, textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(200,241,53,0.08);
+  }
+
+  select option { background: #1c1c1c; }
+
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+  .tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    transition: all 0.15s;
+    user-select: none;
+    background: var(--surface);
+  }
+
+  .tag:hover { border-color: var(--accent); color: var(--accent); }
+  .tag input { display: none; }
+  .tag.active { background: var(--accent); color: #0d0d0d; border-color: var(--accent); font-weight: 500; }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    margin: 40px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .btn-generate {
+    width: 100%;
+    padding: 18px;
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+
+  .btn-generate:hover { background: #d4ff3d; box-shadow: 0 0 30px rgba(200,241,53,0.25); transform: translateY(-1px); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .loading-bar { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; display: none; margin-top: 16px; }
+  .loading-bar.active { display: block; }
+  .loading-bar::after { content: ''; display: block; height: 100%; width: 40%; background: var(--accent); animation: slide 1.2s ease-in-out infinite; }
+  @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
+
+  .loading-text { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-align: center; margin-top: 12px; letter-spacing: 0.1em; display: none; }
+  .loading-text.active { display: block; }
+
+  #result-section { display: none; margin-top: 48px; animation: fadeUp 0.4s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+
+  .result-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.06em; color: var(--accent); }
+
+  .btn-download {
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: var(--radius);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-download:hover { background: var(--accent); color: #0d0d0d; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'DM Mono', monospace; }
+  thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+  th { padding: 10px 12px; text-align: left; color: var(--muted); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); white-space: nowrap; color: var(--text); font-size: 11px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .day-badge { display: inline-block; padding: 2px 8px; background: rgba(200,241,53,0.1); color: var(--accent); border-radius: 2px; font-size: 10px; }
+  .week-badge { display: inline-block; padding: 2px 8px; background: rgba(255,77,77,0.1); color: var(--accent2); border-radius: 2px; font-size: 10px; }
+
+  .stats-row { display: flex; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); line-height: 1; }
+  .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .error-msg { background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3); color: var(--accent2); padding: 14px 16px; border-radius: var(--radius); font-family: 'DM Mono', monospace; font-size: 12px; margin-top: 16px; display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">Program<span>/</span>Builder</div>
+    <div class="subtitle">AI-powered · Glide CSV Export · v1.0</div>
+  </header>
+
+  <div class="section-title">Cliente</div>
+  <div class="grid">
+    <div class="field">
+      <label>Nome completo</label>
+      <input type="text" id="nome" placeholder="es. Mario Rossi">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="es. mario@email.com">
+    </div>
+    <div class="field">
+      <label>Nome programma</label>
+      <input type="text" id="nome_programma" placeholder="es. Base forza 2 + focus ipertrofia">
+    </div>
+    <div class="field">
+      <label>Data programma</label>
+      <input type="date" id="data_programma">
+    </div>
+  </div>
+
+  <div class="section-title">Struttura</div>
+  <div class="grid">
+    <div class="field">
+      <label>Settimane</label>
+      <select id="settimane">
+        <option value="2">2 settimane</option>
+        <option value="3">3 settimane</option>
+        <option value="4" selected>4 settimane</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Giorni di allenamento per settimana</label>
+      <select id="giorni">
+        <option value="3">3 giorni</option>
+        <option value="4" selected>4 giorni</option>
+        <option value="5">5 giorni</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-title">Descrizione programma</div>
+  <div class="grid">
+    <div class="field full">
+      <label>Obiettivo e contesto</label>
+      <textarea id="obiettivo" placeholder="es. Atleta intermedio, obiettivo ipertrofia con mantenimento della forza. Priorità: petto e schiena. Accesso a sala attrezzi completa. Sessioni da 60-75 min."></textarea>
+    </div>
+  </div>
+
+  <div class="section-title">Metodologie preferite</div>
+  <div class="tag-group" id="metodologie-tags">
+    <label class="tag active" onclick="toggleTag(this)"><input type="checkbox" value="Trova carico" checked> Trova carico</label>
+    <label class="tag active" onclick="toggleTag(this)"><input type="checkbox" value="Cluster set" checked> Cluster set</label>
+    <label class="tag active" onclick="toggleTag(this)"><input type="checkbox" value="Rest pause" checked> Rest pause</label>
+    <label class="tag" onclick="toggleTag(this)"><input type="checkbox" value="Stripping"> Stripping</label>
+    <label class="tag active" onclick="toggleTag(this)"><input type="checkbox" value="BW" checked> BW</label>
+    <label class="tag" onclick="toggleTag(this)"><input type="checkbox" value="For time"> For time</label>
+    <label class="tag" onclick="toggleTag(this)"><input type="checkbox" value="Lavoro a tempo"> Lavoro a tempo</label>
+    <label class="tag" onclick="toggleTag(this)"><input type="checkbox" value="AMRAP"> AMRAP</label>
+    <label class="tag" onclick="toggleTag(this)"><input type="checkbox" value="Drop set"> Drop set</label>
+    <label class="tag" onclick="toggleTag(this)"><input type="checkbox" value="Superset"> Superset</label>
+  </div>
+
+  <div class="section-title">Note extra per l'AI</div>
+  <div class="grid">
+    <div class="field full">
+      <label>Esercizi da evitare, attrezzatura, indicazioni specifiche</label>
+      <textarea id="note_extra" placeholder="es. Evitare squat con bilanciere per problemi al ginocchio. Inserire cardio leggero nel giorno 4."></textarea>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="btn-gen" onclick="generateProgram()">
+    ⚡ GENERA PROGRAMMA
+  </button>
+  <div class="loading-bar" id="loading-bar"></div>
+  <div class="loading-text" id="loading-text">L'AI sta costruendo il programma...</div>
+  <div class="error-msg" id="error-msg"></div>
+
+  <div id="result-section">
+    <div class="section-title">Programma generato</div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val" id="stat-esercizi">—</div><div class="stat-label">Esercizi totali</div></div>
+      <div class="stat"><div class="stat-val" id="stat-settimane">—</div><div class="stat-label">Settimane</div></div>
+      <div class="stat"><div class="stat-val" id="stat-giorni">—</div><div class="stat-label">Giorni/settimana</div></div>
+    </div>
+    <div class="result-header">
+      <div class="result-title">Anteprima CSV</div>
+      <button class="btn-download" onclick="downloadCSV()">↓ Scarica CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table id="preview-table"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let csvData = [];
+
+function toggleTag(el) { el.classList.toggle('active'); }
+
+function getMetodologie() {
+  return Array.from(document.querySelectorAll('.tag.active input')).map(i => i.value);
+}
+
+function today() {
+  const d = new Date();
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+}
+
+async function generateProgram() {
+  const nome = document.getElementById('nome').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const nomeProg = document.getElementById('nome_programma').value.trim();
+  const dataProg = document.getElementById('data_programma').value;
+  const settimane = parseInt(document.getElementById('settimane').value);
+  const giorni = parseInt(document.getElementById('giorni').value);
+  const obiettivo = document.getElementById('obiettivo').value.trim();
+  const noteExtra = document.getElementById('note_extra').value.trim();
+  const metodologie = getMetodologie();
+
+  if (!nome || !email || !nomeProg || !obiettivo) {
+    showError('Compila almeno: Nome, Email, Nome programma e Obiettivo.');
+    return;
+  }
+
+  const dataFormatted = dataProg ? dataProg.split('-').reverse().join('/') : today();
+
+  setLoading(true);
+  hideError();
+
+  const systemPrompt = `Sei un esperto coach di fitness. Genera un programma di allenamento come array JSON puro. Rispondi SOLO con l'array JSON, nessun testo, nessun markdown, nessun backtick.
+
+Struttura ogni oggetto cosi:
+{
+  "Settimana": numero,
+  "Giorno": numero,
+  "Esercizio": "nome",
+  "Blocco": "A" o "B" o "C",
+  "Note": "note tecniche",
+  "Metodologia": "metodologia",
+  "Carico": "",
+  "Struttura": "es 5x5 scritto come 5·5",
+  "Ripetizioni": "numero o stringa",
+  "Serie": "numero",
+  "Percentuale": "",
+  "Recupero": "minuti es 1.30 o 2",
+  "Consiglio": "RPE o buffer",
+  "Posizione": numero progressivo per settimana
+}
+
+Regole:
+- Blocco A: esercizio principale (1 per giorno)
+- Blocco B: accessori (4-6 per giorno)
+- Blocco C: cardio o finisher (opzionale)
+- Struttura: usa notazione 5·5 (reps·serie), 8-7-6-6, 5+5+4·4 (cluster), MAX·3, ecc.
+- Posizione riparte da 1 ogni settimana
+- Progressione logica tra le settimane
+- Metodologie preferite: ${metodologie.join(', ')}`;
+
+  const userPrompt = `Genera programma:
+- Atleta: ${nome}
+- Settimane: ${settimane}
+- Giorni/settimana: ${giorni}
+- Obiettivo: ${obiettivo}${noteExtra ? '\n- Note: ' + noteExtra : ''}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const exercises = JSON.parse(clean);
+
+    csvData = exercises.map(ex => ({
+      email,
+      'Nome': nome,
+      'Nome programma': nomeProg,
+      'Data programma': dataFormatted,
+      'Settimana': ex.Settimana,
+      'Giorno': ex.Giorno,
+      'Esercizio': ex.Esercizio,
+      'Blocco': ex.Blocco,
+      'Note': ex.Note || '',
+      'Metodologia': ex.Metodologia || '',
+      'Carico': ex.Carico || '',
+      'Struttura': ex.Struttura || '',
+      'Ripetizioni': ex.Ripetizioni || '',
+      'Serie': ex.Serie || '',
+      'Percentuale %': ex.Percentuale || '',
+      'Recupero': ex.Recupero || '',
+      'Consiglio': ex.Consiglio || '',
+      'Posizione': ex.Posizione,
+      'Attivo': 'TRUE'
+    }));
+
+    renderTable(csvData);
+    document.getElementById('stat-esercizi').textContent = csvData.length;
+    document.getElementById('stat-settimane').textContent = settimane;
+    document.getElementById('stat-giorni').textContent = giorni;
+    document.getElementById('result-section').style.display = 'block';
+    document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch(e) {
+    showError('Errore nella generazione. Riprova. (' + e.message + ')');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderTable(rows) {
+  if (!rows.length) return;
+  const cols = Object.keys(rows[0]);
+  const thead = document.querySelector('#preview-table thead');
+  const tbody = document.querySelector('#preview-table tbody');
+  thead.innerHTML = '<tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr>';
+  tbody.innerHTML = rows.map(row =>
+    '<tr>' + cols.map(c => {
+      const v = row[c];
+      if (c === 'Giorno') return '<td><span class="day-badge">G' + v + '</span></td>';
+      if (c === 'Settimana') return '<td><span class="week-badge">W' + v + '</span></td>';
+      return '<td>' + (v ?? '') + '</td>';
+    }).join('') + '</tr>'
+  ).join('');
+}
+
+function downloadCSV() {
+  if (!csvData.length) return;
+  const cols = Object.keys(csvData[0]);
+  const lines = [
+    cols.join(','),
+    ...csvData.map(row => cols.map(c => {
+      const v = String(row[c] ?? '').replace(/"/g, '""');
+      return (v.includes(',') || v.includes('"') || v.includes('\n')) ? '"' + v + '"' : v;
+    }).join(','))
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (document.getElementById('nome_programma').value.trim().replace(/\s+/g,'_') || 'programma') + '_glide.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function setLoading(on) {
+  document.getElementById('btn-gen').disabled = on;
+  document.getElementById('loading-bar').classList.toggle('active', on);
+  document.getElementById('loading-text').classList.toggle('active', on);
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() { document.getElementById('error-msg').style.display = 'none'; }
+
+document.getElementById('data_programma').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
