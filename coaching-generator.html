@@ -15,868 +15,893 @@
     --accent: #c8f135;
     --accent2: #ff4d4d;
     --text: #e8e8e8;
-    --muted: #666;
+    --muted: #555;
     --radius: 4px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
-    min-height: 100vh;
-  }
-
-  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
-
-  header {
-    margin-bottom: 48px;
+  /* ── HEADER ── */
+  .topbar {
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding-bottom: 28px;
+    padding: 0 32px;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
   }
 
   .logo {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(36px, 6vw, 64px);
-    letter-spacing: 0.04em;
-    line-height: 0.9;
+    font-size: 28px;
+    letter-spacing: 0.06em;
     color: var(--accent);
   }
+  .logo span { color: var(--text); opacity: 0.25; }
 
-  .logo span { color: var(--text); opacity: 0.3; }
-
-  .subtitle {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 6px;
+  .sync-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--muted); letter-spacing: 0.08em;
   }
-
-  .sync-status {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .sync-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-  }
-
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
   .sync-dot.ok { background: var(--accent); }
   .sync-dot.err { background: var(--accent2); }
 
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 0.06em;
-    color: var(--text);
-    margin: 36px 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
 
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  /* ── MAIN LAYOUT ── */
+  .main { display: flex; height: calc(100vh - 56px); }
 
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-  @media (max-width: 700px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
-  .full { grid-column: 1 / -1; }
-
-  .field { display: flex; flex-direction: column; gap: 6px; position: relative; }
-
-  label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  input, select, textarea {
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+    border-right: 1px solid var(--border);
     background: var(--surface);
+    padding: 24px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .sidebar-section { display: flex; flex-direction: column; gap: 8px; }
+
+  .sidebar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .sidebar input, .sidebar select {
+    background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    padding: 10px 12px;
+    font-size: 13px; font-weight: 300;
+    padding: 9px 11px;
     border-radius: var(--radius);
     outline: none;
-    transition: border-color 0.15s;
     width: 100%;
+    transition: border-color 0.15s;
   }
-
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--accent);
-  }
-
+  .sidebar input:focus, .sidebar select:focus { border-color: var(--accent); }
   select option { background: #1c1c1c; }
 
-  /* AUTOCOMPLETE */
-  .autocomplete-list {
-    position: absolute;
-    top: 100%;
-    left: 0; right: 0;
-    background: #1e1e1e;
-    border: 1px solid var(--accent);
-    border-top: none;
-    border-radius: 0 0 var(--radius) var(--radius);
-    z-index: 100;
-    max-height: 200px;
+  .sidebar-divider { height: 1px; background: var(--border); }
+
+  /* ── CONTENT ── */
+  .content {
+    flex: 1;
     overflow-y: auto;
-    display: none;
+    overflow-x: auto;
+    padding: 28px 32px;
   }
 
-  .autocomplete-list.open { display: block; }
+  /* ── GIORNI ── */
+  .giorno-block {
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: visible;
+  }
 
-  .autocomplete-item {
-    padding: 8px 12px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    cursor: pointer;
+  .giorno-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .giorno-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing: 0.08em;
+    color: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .giorno-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    font-style: normal;
+  }
+
+  .giorno-actions { display: flex; gap: 6px; }
+
+  .giorno-body { padding: 12px 16px; }
+
+  /* ── COLUMN HEADERS ── */
+  .ex-col-headers {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
     border-bottom: 1px solid var(--border);
   }
 
-  .autocomplete-item:last-child { border-bottom: none; }
-  .autocomplete-item:hover, .autocomplete-item.selected { background: rgba(200,241,53,0.1); color: var(--accent); }
+  .col-header {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+    padding: 0 4px;
+  }
+
+  /* ── EXERCISE ROW ── */
+  .ex-row {
+    display: grid;
+    gap: 6px;
+    align-items: start;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .ex-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  /* Grid: [del] [esercizio] [metod] [note] [W1-struttura] [W1-rec] [W1-cons] [W2...] [W3...] [W4...] */
+
+  .ex-field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ex-field input {
+    background: var(--surface2);
+    border: 1px solid transparent;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 300;
+    padding: 7px 9px;
+    border-radius: var(--radius);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .ex-field input:focus {
+    border-color: var(--accent);
+    background: #1a1f0a;
+  }
+
+  .ex-field input::placeholder { color: var(--muted); font-size: 11px; }
+
+  /* week separator */
+  .week-sep {
+    width: 1px;
+    background: var(--border);
+    margin: 0 2px;
+    align-self: stretch;
+    min-height: 30px;
+  }
+
+  .week-label-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.1em;
+    display: flex; align-items: center;
+    padding: 0 2px;
+  }
+
+  /* ── AUTOCOMPLETE ── */
+  .ac-list {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    min-width: 200px;
+    background: #1e1e1e;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    z-index: 300;
+    max-height: 180px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+
+  .ac-list.open { display: block; }
+
+  .ac-item {
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item.hi { background: rgba(200,241,53,0.1); color: var(--accent); }
 
   .ac-badge {
-    font-size: 10px;
-    padding: 1px 6px;
+    font-size: 9px; padding: 1px 5px;
     background: rgba(255,255,255,0.06);
-    border-radius: 2px;
-    color: var(--muted);
-    flex-shrink: 0;
+    border-radius: 2px; color: var(--muted); flex-shrink: 0;
   }
 
-  /* EXERCISE TABLE */
-  .ex-table-wrap {
-    border: 1px solid var(--border);
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 7px 14px;
     border-radius: var(--radius);
-    overflow-x: auto;
-    margin-bottom: 24px;
-  }
-
-  .ex-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 900px;
-  }
-
-  .ex-table th {
-    background: var(--surface2);
-    padding: 9px 10px;
-    text-align: left;
     font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.1em;
+    font-size: 10px; letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
+    cursor: pointer; transition: all 0.15s;
+    border: none;
   }
 
-  .ex-table td {
-    padding: 4px 6px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    vertical-align: middle;
-  }
+  .btn-accent { background: var(--accent); color: #0d0d0d; }
+  .btn-accent:hover { background: #d4ff3d; }
 
-  .ex-table tr:last-child td { border-bottom: none; }
-  .ex-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-  .ex-table input, .ex-table select {
-    padding: 7px 8px;
-    font-size: 12px;
-    border-color: transparent;
+  .btn-outline {
     background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
   }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
-  .ex-table input:focus, .ex-table select:focus {
-    background: var(--surface);
-    border-color: var(--accent);
+  .btn-ghost {
+    background: transparent; border: none;
+    color: var(--muted); padding: 4px 8px;
   }
+  .btn-ghost:hover { color: var(--accent2); }
 
-  .ex-table .field { margin: 0; }
-  .ex-table .autocomplete-list { min-width: 220px; }
-
-  .btn-add-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+  .btn-add-ex {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px;
     background: transparent;
     border: 1px dashed var(--border);
     color: var(--muted);
     border-radius: var(--radius);
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.15s;
-    margin-bottom: 32px;
-    width: 100%;
-    justify-content: center;
+    font-size: 10px; letter-spacing: 0.08em;
+    cursor: pointer; transition: all 0.15s;
+    margin-top: 10px;
   }
+  .btn-add-ex:hover { border-color: var(--accent); color: var(--accent); }
 
-  .btn-add-row:hover { border-color: var(--accent); color: var(--accent); }
-
-  .btn-del {
+  .btn-add-day {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 20px;
     background: transparent;
-    border: none;
+    border: 1px dashed var(--border);
     color: var(--muted);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 4px 6px;
-    border-radius: 2px;
-    transition: all 0.15s;
-  }
-
-  .btn-del:hover { color: var(--accent2); background: rgba(255,77,77,0.1); }
-
-  /* PROGRESSIONI */
-  .prog-section { margin-bottom: 32px; }
-
-  .prog-ex-title {
+    border-radius: 6px;
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 11px; letter-spacing: 0.08em;
+    cursor: pointer; transition: all 0.15s;
+    width: 100%; justify-content: center;
+    margin-bottom: 24px;
   }
+  .btn-add-day:hover { border-color: var(--accent); color: var(--accent); }
 
-  .prog-badge {
-    font-size: 9px;
-    padding: 2px 7px;
-    background: rgba(200,241,53,0.1);
-    border-radius: 2px;
-    color: var(--accent);
-  }
-
-  .prog-weeks {
-    display: grid;
-    gap: 8px;
-  }
-
-  .prog-week {
-    display: grid;
-    grid-template-columns: 60px 1fr 1fr 1fr 1fr 1fr;
-    gap: 6px;
-    align-items: center;
-  }
-
-  .prog-week-label {
+  /* ── WEEK BADGE ── */
+  .w-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+    background: rgba(200,241,53,0.08);
+    border-radius: 3px;
     font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.08em;
+    font-size: 9px; color: var(--accent);
+    flex-shrink: 0;
   }
 
-  .prog-week input {
-    padding: 7px 8px;
-    font-size: 12px;
+  /* ── EXPORT PANEL ── */
+  .export-panel {
+    position: fixed;
+    right: 0; top: 56px; bottom: 0;
+    width: 420px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    padding: 24px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    z-index: 150;
   }
+  .export-panel.open { transform: translateX(0); }
 
-  /* BUTTONS */
-  .btn-primary {
-    padding: 16px 32px;
-    background: var(--accent);
-    color: #0d0d0d;
-    border: none;
-    border-radius: var(--radius);
+  .export-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.2s;
+    font-size: 22px; letter-spacing: 0.06em;
+    color: var(--accent); margin-bottom: 20px;
   }
 
-  .btn-primary:hover { background: #d4ff3d; box-shadow: 0 0 24px rgba(200,241,53,0.2); }
-  .btn-primary:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+  .preview-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
 
-  .btn-secondary {
-    padding: 10px 20px;
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
+  .preview-table-wrap table {
+    width: 100%; border-collapse: collapse;
+    font-size: 10px; font-family: 'DM Mono', monospace;
+  }
+  .preview-table-wrap th {
+    background: var(--surface2); padding: 7px 8px;
+    text-align: left; color: var(--muted);
+    font-size: 8px; letter-spacing: 0.1em;
+    text-transform: uppercase; white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .preview-table-wrap td {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    white-space: nowrap;
+  }
+
+  .error-bar {
+    background: rgba(255,77,77,0.1);
+    border: 1px solid rgba(255,77,77,0.3);
+    color: var(--accent2);
+    padding: 10px 12px;
     border-radius: var(--radius);
     font-family: 'DM Mono', monospace;
     font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
+    margin-top: 12px;
+    display: none;
   }
 
-  .btn-secondary:hover { background: var(--accent); color: #0d0d0d; }
-
-  .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
-
-  /* RESULT */
-  #result-section { display: none; margin-top: 40px; }
-
-  .result-header {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
-  }
-
-  .result-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px; letter-spacing: 0.06em; color: var(--accent);
-  }
-
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
-
-  table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'DM Mono', monospace; }
-  thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
-  th { padding: 9px 10px; text-align: left; color: var(--muted); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
-  td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); white-space: nowrap; }
-  tr:last-child td { border-bottom: none; }
-
-  .badge-w { display: inline-block; padding: 1px 7px; background: rgba(255,77,77,0.12); color: var(--accent2); border-radius: 2px; font-size: 9px; }
-  .badge-d { display: inline-block; padding: 1px 7px; background: rgba(200,241,53,0.1); color: var(--accent); border-radius: 2px; font-size: 9px; }
-
-  .error-msg {
-    background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3);
-    color: var(--accent2); padding: 12px 14px; border-radius: var(--radius);
-    font-family: 'DM Mono', monospace; font-size: 11px; margin-top: 12px; display: none;
-  }
-
-  .info-msg {
-    background: rgba(200,241,53,0.06); border: 1px solid rgba(200,241,53,0.2);
-    color: var(--accent); padding: 12px 14px; border-radius: var(--radius);
-    font-family: 'DM Mono', monospace; font-size: 11px; margin-bottom: 16px;
-  }
-
-  .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
-
-  .tab {
-    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
-    text-transform: uppercase; padding: 10px 20px; cursor: pointer;
-    color: var(--muted); border-bottom: 2px solid transparent;
-    transition: all 0.15s; margin-bottom: -1px;
-  }
-
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+  /* ── AUTOCOMPLETE for sidebar ── */
+  .sidebar .field { position: relative; }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <header>
-    <div>
-      <div class="logo">Program<span>/</span>Builder</div>
-      <div class="subtitle">Glide CSV Export · v2.0</div>
-    </div>
-    <div class="sync-status">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-label">Caricamento liste...</span>
-    </div>
-  </header>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">Program<span>/</span>Builder <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em">v3.0</span></div>
+  <div class="sync-pill">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Caricamento...</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-outline" onclick="toggleExport()">Export CSV</button>
+    <button class="btn btn-accent" onclick="buildAndExport()">⚡ Genera & Scarica</button>
+  </div>
+</div>
 
-  <!-- TABS -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('programma')">Programma</div>
-    <div class="tab" onclick="switchTab('progressioni')">Progressioni</div>
-    <div class="tab" onclick="switchTab('export')">Export CSV</div>
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Cliente</div>
+      <div class="field" style="position:relative">
+        <input type="text" id="nome_cliente" placeholder="Cerca cliente..." autocomplete="off"
+          oninput="acSidebar(this,'utenti')" onkeydown="acKey(event,this)" onblur="acBlur(this)">
+        <div class="ac-list" id="ac-nome_cliente"></div>
+      </div>
+      <input type="email" id="email_cliente" placeholder="Email (automatica)">
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Programma</div>
+      <input type="text" id="nome_programma" placeholder="Nome programma">
+      <input type="date" id="data_programma">
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Settimane</div>
+      <select id="settimane" onchange="onSettimaneChange()">
+        <option value="2">2 settimane</option>
+        <option value="3">3 settimane</option>
+        <option value="4" selected>4 settimane</option>
+      </select>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label" style="margin-bottom:8px">Giorni</div>
+      <button class="btn btn-outline" style="width:100%;justify-content:center;display:flex;gap:6px" onclick="addDay()">+ Aggiungi giorno</button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Info</div>
+      <div id="sidebar-info" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8"></div>
+    </div>
   </div>
 
-  <!-- TAB 1: PROGRAMMA -->
-  <div class="tab-content active" id="tab-programma">
-
-    <div class="section-title">Cliente</div>
-    <div class="grid2">
-      <div class="field" id="field-utente">
-        <label>Nome cliente</label>
-        <input type="text" id="nome_cliente" placeholder="Inizia a scrivere..." autocomplete="off" oninput="acInput(this,'utenti')" onkeydown="acKey(event,this)" onblur="acBlur(this)">
-        <div class="autocomplete-list" id="ac-nome_cliente"></div>
-      </div>
-      <div class="field">
-        <label>Email (compilata automaticamente)</label>
-        <input type="email" id="email_cliente" placeholder="automatica dal nome...">
-      </div>
-      <div class="field">
-        <label>Nome programma</label>
-        <input type="text" id="nome_programma" placeholder="es. Base forza 4gg">
-      </div>
-      <div class="field">
-        <label>Data programma</label>
-        <input type="date" id="data_programma">
-      </div>
-    </div>
-
-    <div class="section-title">Struttura</div>
-    <div class="grid3">
-      <div class="field">
-        <label>Settimane</label>
-        <select id="settimane">
-          <option value="2">2 settimane</option>
-          <option value="3">3 settimane</option>
-          <option value="4" selected>4 settimane</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Giorni per settimana</label>
-        <select id="giorni_num">
-          <option value="3">3 giorni</option>
-          <option value="4" selected>4 giorni</option>
-          <option value="5">5 giorni</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="section-title">Esercizi</div>
-    <div class="info-msg">Inserisci gli esercizi per ogni giorno. Le progressioni le definisci nel tab successivo.</div>
-
-    <div class="ex-table-wrap">
-      <table class="ex-table">
-        <thead>
-          <tr>
-            <th>Giorno</th>
-            <th>Slot</th>
-            <th>Blocco</th>
-            <th style="min-width:200px">Esercizio</th>
-            <th style="min-width:160px">Metodologia</th>
-            <th style="min-width:160px">Note tecniche</th>
-            <th>Struttura base</th>
-            <th>Serie</th>
-            <th>Recupero</th>
-            <th>Consiglio</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="ex-tbody"></tbody>
-      </table>
-    </div>
-
-    <button class="btn-add-row" onclick="addRow()">+ Aggiungi esercizio</button>
-
-  </div>
-
-  <!-- TAB 2: PROGRESSIONI -->
-  <div class="tab-content" id="tab-progressioni">
-    <div class="info-msg">Per ogni esercizio definisci struttura, serie, recupero e consiglio settimana per settimana. Lascia vuoto per copiare dalla settimana precedente.</div>
-    <div id="prog-container"></div>
-  </div>
-
-  <!-- TAB 3: EXPORT -->
-  <div class="tab-content" id="tab-export">
-    <div class="section-title">Genera CSV</div>
-    <div class="grid2">
-      <div class="field">
-        <label>Attivo (default TRUE)</label>
-        <select id="attivo_default">
-          <option value="TRUE">TRUE</option>
-          <option value="FALSE">FALSE</option>
-        </select>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn-primary" onclick="buildCSV()">⚡ GENERA CSV</button>
-    </div>
-    <div class="error-msg" id="error-msg"></div>
-
-    <div id="result-section">
-      <div class="result-header" style="margin-top:32px">
-        <div class="result-title">Anteprima</div>
-        <button class="btn-secondary" onclick="downloadCSV()">↓ Scarica CSV</button>
-      </div>
-      <div class="table-wrap">
-        <table id="preview-table"><thead></thead><tbody></tbody></table>
-      </div>
-    </div>
+  <!-- CONTENT -->
+  <div class="content" id="content">
+    <div id="giorni-container"></div>
+    <button class="btn-add-day" onclick="addDay()">+ Aggiungi giorno</button>
   </div>
 
 </div>
 
+<!-- EXPORT PANEL -->
+<div class="export-panel" id="export-panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div class="export-title">Export CSV</div>
+    <button class="btn btn-ghost" onclick="toggleExport()" style="font-size:16px">✕</button>
+  </div>
+  <button class="btn btn-accent" style="width:100%;padding:12px;font-size:12px;margin-bottom:12px" onclick="buildAndExport()">⚡ Genera & Scarica CSV</button>
+  <button class="btn btn-outline" style="width:100%;padding:10px;font-size:11px" onclick="buildCSV()">Anteprima</button>
+  <div class="error-bar" id="error-bar"></div>
+  <div class="preview-table-wrap" id="preview-wrap" style="display:none">
+    <table><thead id="prev-head"></thead><tbody id="prev-body"></tbody></table>
+  </div>
+</div>
+
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const SHEET_ID = '1WowoJFXuMa50JErnnUsqeR0eetzZ10pxmjRB4jbpbo0';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Foglio1`;
 
-// ─── STATE ────────────────────────────────────────────────────────────────────
 let lists = { esercizi: [], metodologie: [], utenti: [] };
-let rows = [];
+let giorni = []; // [{id, nome, esercizi:[{id,esercizio,blocco,metodologia,note,settimane:[{struttura,recupero,consiglio}]}]}]
 let csvData = [];
-let acIdx = -1;
 
-// ─── LOAD SHEET DATA ──────────────────────────────────────────────────────────
+// ── LOAD SHEET ────────────────────────────────────────────────────────────────
 async function loadSheet() {
   try {
     const res = await fetch(SHEET_URL);
     const text = await res.text();
-    const lines = text.trim().split('\n').map(l => {
-      // parse CSV line respecting quotes
-      const cols = [];
-      let cur = '', inQ = false;
-      for (let i = 0; i < l.length; i++) {
-        if (l[i] === '"') { inQ = !inQ; continue; }
-        if (l[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
-        cur += l[i];
-      }
-      cols.push(cur.trim());
-      return cols;
-    });
-
+    const lines = text.trim().split('\n').map(parseCSVLine);
     lines.forEach(cols => {
-      if (cols[0]) lists.esercizi.push({ nome: cols[0], blocco: cols[1] || '' });
-      if (cols[2]) lists.metodologie.push(cols[2]);
-      if (cols[3]) lists.utenti.push({ nome: cols[3], email: cols[4] || '' });
+      if (cols[0] && cols[0].trim()) lists.esercizi.push({ nome: cols[0].trim(), blocco: (cols[1]||'').trim() });
+      if (cols[2] && cols[2].trim()) lists.metodologie.push(cols[2].trim());
+      if (cols[3] && cols[3].trim()) lists.utenti.push({ nome: cols[3].trim(), email: (cols[4]||'').trim() });
     });
-
-    // deduplicate
     lists.metodologie = [...new Set(lists.metodologie)];
-
     document.getElementById('sync-dot').className = 'sync-dot ok';
     document.getElementById('sync-label').textContent = lists.esercizi.length + ' esercizi · ' + lists.metodologie.length + ' metodologie · ' + lists.utenti.length + ' utenti';
   } catch(e) {
     document.getElementById('sync-dot').className = 'sync-dot err';
-    document.getElementById('sync-label').textContent = 'Errore caricamento liste';
+    document.getElementById('sync-label').textContent = 'Errore caricamento';
   }
 }
 
-// ─── TABS ─────────────────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['programma','progressioni','export'];
-    t.classList.toggle('active', names[i] === name);
-  });
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'progressioni') renderProgressioni();
+function parseCSVLine(line) {
+  const cols = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQ = !inQ; continue; }
+    if (line[i] === ',' && !inQ) { cols.push(cur); cur = ''; continue; }
+    cur += line[i];
+  }
+  cols.push(cur);
+  return cols;
 }
 
-// ─── ROWS ─────────────────────────────────────────────────────────────────────
-function addRow(data) {
-  const id = Date.now() + Math.random();
-  const giorni = parseInt(document.getElementById('giorni_num').value) || 4;
-  const d = data || { giorno: 1, slot: rows.length + 1, blocco: 'B', esercizio: '', metodologia: '', note: '', struttura: '', serie: '', recupero: '2', consiglio: '' };
-  d.id = id;
-  d.progressioni = d.progressioni || {};
-  rows.push(d);
-  renderRow(d, rows.length - 1);
+// ── GIORNI ────────────────────────────────────────────────────────────────────
+function addDay() {
+  const id = uid();
+  const num = giorni.length + 1;
+  giorni.push({ id, nome: 'Giorno ' + num, esercizi: [] });
+  renderDay(giorni[giorni.length - 1]);
+  updateInfo();
 }
 
-function renderRow(d, idx) {
-  const tbody = document.getElementById('ex-tbody');
-  const giorni = parseInt(document.getElementById('giorni_num').value) || 4;
-  const opts = Array.from({length: giorni}, (_,i) => `<option value="${i+1}" ${d.giorno==i+1?'selected':''}>G${i+1}</option>`).join('');
-  const blocchi = ['A','B','C','D','E'].map(b => `<option value="${b}" ${d.blocco==b?'selected':''}>${b}</option>`).join('');
+function removeDay(dayId) {
+  if (!confirm('Eliminare questo giorno?')) return;
+  giorni = giorni.filter(d => d.id !== dayId);
+  document.getElementById('day-' + dayId).remove();
+  updateInfo();
+}
 
-  const tr = document.createElement('tr');
-  tr.dataset.id = d.id;
-  tr.innerHTML = `
-    <td><div class="field"><select onchange="updateRow('${d.id}','giorno',this.value)">${opts}</select></div></td>
-    <td><div class="field"><input type="number" min="1" max="99" value="${d.slot}" style="width:52px" onchange="updateRow('${d.id}','slot',this.value)"></div></td>
-    <td><div class="field"><select onchange="updateRow('${d.id}','blocco',this.value)">${blocchi}</select></div></td>
-    <td><div class="field" style="position:relative">
-      <input type="text" value="${d.esercizio}" placeholder="Cerca esercizio..." autocomplete="off"
-        oninput="acInput(this,'esercizi','${d.id}')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
-        onchange="updateRow('${d.id}','esercizio',this.value)">
-      <div class="autocomplete-list" id="ac-ex-${d.id}"></div>
-    </div></td>
-    <td><div class="field" style="position:relative">
-      <input type="text" value="${d.metodologia}" placeholder="Metodologia..." autocomplete="off"
-        oninput="acInput(this,'metodologie','${d.id}','met')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
-        onchange="updateRow('${d.id}','metodologia',this.value)">
-      <div class="autocomplete-list" id="ac-met-${d.id}"></div>
-    </div></td>
-    <td><div class="field" style="position:relative">
-      <input type="text" value="${d.note}" placeholder="Note tecniche..." autocomplete="off"
-        oninput="acInput(this,'metodologie','${d.id}','note')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
-        onchange="updateRow('${d.id}','note',this.value)">
-      <div class="autocomplete-list" id="ac-note-${d.id}"></div>
-    </div></td>
-    <td><div class="field"><input type="text" value="${d.struttura}" placeholder="es. 5·5" style="width:90px" onchange="updateRow('${d.id}','struttura',this.value)"></div></td>
-    <td><div class="field"><input type="text" value="${d.serie}" placeholder="5" style="width:52px" onchange="updateRow('${d.id}','serie',this.value)"></div></td>
-    <td><div class="field"><input type="text" value="${d.recupero}" placeholder="2" style="width:60px" onchange="updateRow('${d.id}','recupero',this.value)"></div></td>
-    <td><div class="field"><input type="text" value="${d.consiglio}" placeholder="RPE8" style="width:100px" onchange="updateRow('${d.id}','consiglio',this.value)"></div></td>
-    <td><button class="btn-del" onclick="delRow('${d.id}')">✕</button></td>
+function renderDay(day) {
+  const settimane = parseInt(document.getElementById('settimane').value) || 4;
+  const container = document.getElementById('giorni-container');
+
+  const div = document.createElement('div');
+  div.className = 'giorno-block';
+  div.id = 'day-' + day.id;
+
+  div.innerHTML = `
+    <div class="giorno-header" onclick="toggleDay('${day.id}')">
+      <div class="giorno-title">
+        <input type="text" value="${day.nome}" onclick="event.stopPropagation()"
+          onchange="updateDayName('${day.id}',this.value)"
+          style="background:transparent;border:none;color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.08em;width:120px;outline:none;cursor:text">
+        <span class="giorno-count" id="day-count-${day.id}">0 esercizi</span>
+      </div>
+      <div class="giorno-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost" onclick="removeDay('${day.id}')" style="color:var(--muted);font-size:12px">✕ Elimina</button>
+      </div>
+    </div>
+    <div class="giorno-body" id="day-body-${day.id}">
+      <div id="ex-list-${day.id}"></div>
+      <button class="btn-add-ex" onclick="addExercise('${day.id}')">+ Aggiungi esercizio</button>
+    </div>
   `;
-  tbody.appendChild(tr);
+
+  container.appendChild(div);
+  renderColHeaders(day.id, settimane);
 }
 
-function updateRow(id, field, value) {
-  const r = rows.find(r => r.id == id);
-  if (r) r[field] = value;
+function renderColHeaders(dayId, settimane) {
+  const list = document.getElementById('ex-list-' + dayId);
+  // Build grid template
+  const gt = buildGridTemplate(settimane);
+
+  let html = `<div class="ex-col-headers" style="grid-template-columns:${gt}">`;
+  html += `<div class="col-header"></div>`; // del button
+  html += `<div class="col-header">Esercizio</div>`;
+  html += `<div class="col-header">Metodologia</div>`;
+  html += `<div class="col-header">Note</div>`;
+  for (let w = 1; w <= settimane; w++) {
+    html += `<div class="col-header" style="grid-column:span 3;text-align:center;border-left:1px solid var(--border);padding-left:8px">W${w}</div>`;
+  }
+  // sub-headers row
+  html += `</div>`;
+  html += `<div class="ex-col-headers" style="grid-template-columns:${gt};margin-bottom:8px">`;
+  html += `<div></div><div></div><div></div><div></div>`;
+  for (let w = 1; w <= settimane; w++) {
+    html += `<div class="col-header" style="border-left:1px solid var(--border);padding-left:8px">Struttura</div>`;
+    html += `<div class="col-header">Rec.</div>`;
+    html += `<div class="col-header">Consiglio</div>`;
+  }
+  html += `</div>`;
+
+  const headDiv = document.createElement('div');
+  headDiv.id = 'col-head-' + dayId;
+  headDiv.innerHTML = html;
+  list.parentElement.insertBefore(headDiv, list);
 }
 
-function delRow(id) {
-  rows = rows.filter(r => r.id != id);
-  const tr = document.querySelector(`tr[data-id="${id}"]`);
-  if (tr) tr.remove();
+function buildGridTemplate(settimane) {
+  // del(28px) esercizio(180px) metod(140px) note(130px) then per week: struttura(110px) rec(70px) cons(100px)
+  let t = '28px 180px 140px 130px';
+  for (let w = 0; w < settimane; w++) t += ' 110px 70px 100px';
+  return t;
 }
 
-// ─── AUTOCOMPLETE ─────────────────────────────────────────────────────────────
-function acInput(input, type, rowId, subtype) {
-  const val = input.value.toLowerCase();
-  let listId, items, renderFn;
+function updateDayName(dayId, val) {
+  const d = giorni.find(d => d.id === dayId);
+  if (d) d.nome = val;
+}
 
-  if (type === 'utenti') {
-    listId = 'ac-nome_cliente';
-    items = lists.utenti.filter(u => u.nome.toLowerCase().includes(val));
-    renderFn = (item, list) => {
-      const d = document.createElement('div');
-      d.className = 'autocomplete-item';
-      d.innerHTML = `<span>${item.nome}</span><span class="ac-badge">${item.email}</span>`;
-      d.onmousedown = () => {
-        input.value = item.nome;
-        document.getElementById('email_cliente').value = item.email;
-        list.classList.remove('open');
-      };
-      list.appendChild(d);
-    };
-  } else if (type === 'esercizi') {
-    listId = 'ac-ex-' + rowId;
-    items = lists.esercizi.filter(e => e.nome.toLowerCase().includes(val));
-    renderFn = (item, list) => {
-      const d = document.createElement('div');
-      d.className = 'autocomplete-item';
-      d.innerHTML = `<span>${item.nome}</span><span class="ac-badge">${item.blocco}</span>`;
-      d.onmousedown = () => {
-        input.value = item.nome;
-        updateRow(rowId, 'esercizio', item.nome);
-        // auto-set blocco
-        const tr = document.querySelector(`tr[data-id="${rowId}"]`);
-        if (tr) {
-          const sel = tr.querySelectorAll('select')[1];
-          if (sel && item.blocco) sel.value = item.blocco;
-          updateRow(rowId, 'blocco', item.blocco);
-        }
-        list.classList.remove('open');
-      };
-      list.appendChild(d);
-    };
-  } else if (type === 'metodologie') {
-    listId = subtype === 'note' ? 'ac-note-' + rowId : 'ac-met-' + rowId;
-    const field = subtype === 'note' ? 'note' : 'metodologia';
-    items = lists.metodologie.filter(m => m.toLowerCase().includes(val));
-    renderFn = (item, list) => {
-      const d = document.createElement('div');
-      d.className = 'autocomplete-item';
-      d.textContent = item;
-      d.onmousedown = () => {
-        input.value = item;
-        updateRow(rowId, field, item);
-        list.classList.remove('open');
-      };
-      list.appendChild(d);
-    };
+function toggleDay(dayId) {
+  const body = document.getElementById('day-body-' + dayId);
+  const head = document.getElementById('col-head-' + dayId);
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  if (head) head.style.display = hidden ? '' : 'none';
+}
+
+// ── EXERCISES ─────────────────────────────────────────────────────────────────
+function addExercise(dayId) {
+  const settimane = parseInt(document.getElementById('settimane').value) || 4;
+  const day = giorni.find(d => d.id === dayId);
+  if (!day) return;
+
+  const exId = uid();
+  const ex = {
+    id: exId, esercizio: '', blocco: '',
+    metodologia: '', note: '',
+    settimane: Array.from({length: settimane}, () => ({ struttura: '', recupero: '', consiglio: '' }))
+  };
+  day.esercizi.push(ex);
+  renderExercise(dayId, ex, settimane);
+  updateDayCount(dayId);
+  updateInfo();
+}
+
+function renderExercise(dayId, ex, settimane) {
+  const list = document.getElementById('ex-list-' + dayId);
+  const gt = buildGridTemplate(settimane);
+
+  const row = document.createElement('div');
+  row.className = 'ex-row';
+  row.id = 'ex-' + ex.id;
+  row.style.gridTemplateColumns = gt;
+
+  let weekCols = '';
+  for (let w = 0; w < settimane; w++) {
+    const sw = ex.settimane[w] || { struttura: '', recupero: '', consiglio: '' };
+    const borderStyle = 'border-left:1px solid var(--border);padding-left:6px';
+    weekCols += `
+      <div class="ex-field" style="${borderStyle}">
+        <input type="text" value="${sw.struttura}" placeholder="es. 70% 5·5"
+          onchange="updateWeek('${ex.id}',${w},'struttura',this.value)">
+      </div>
+      <div class="ex-field">
+        <input type="text" value="${sw.recupero}" placeholder="2'"
+          onchange="updateWeek('${ex.id}',${w},'recupero',this.value)">
+      </div>
+      <div class="ex-field">
+        <input type="text" value="${sw.consiglio}" placeholder="RPE8"
+          onchange="updateWeek('${ex.id}',${w},'consiglio',this.value)">
+      </div>`;
   }
 
-  const list = document.getElementById(listId);
-  if (!list) return;
-  list.innerHTML = '';
-  acIdx = -1;
+  row.innerHTML = `
+    <div style="display:flex;align-items:center;padding-top:2px">
+      <button class="btn btn-ghost" onclick="removeExercise('${dayId}','${ex.id}')" style="padding:4px;font-size:11px">✕</button>
+    </div>
+    <div class="ex-field" style="position:relative">
+      <input type="text" id="inp-ex-${ex.id}" value="${ex.esercizio}" placeholder="Esercizio..." autocomplete="off"
+        oninput="acExercise(this,'${ex.id}')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
+        onchange="updateEx('${ex.id}','esercizio',this.value)">
+      <div class="ac-list" id="ac-ex-${ex.id}"></div>
+    </div>
+    <div class="ex-field" style="position:relative">
+      <input type="text" id="inp-met-${ex.id}" value="${ex.metodologia}" placeholder="Metodologia..." autocomplete="off"
+        oninput="acMetNote(this,'${ex.id}','metodologia')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
+        onchange="updateEx('${ex.id}','metodologia',this.value)">
+      <div class="ac-list" id="ac-met-${ex.id}"></div>
+    </div>
+    <div class="ex-field" style="position:relative">
+      <input type="text" id="inp-note-${ex.id}" value="${ex.note}" placeholder="Note..." autocomplete="off"
+        oninput="acMetNote(this,'${ex.id}','note')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
+        onchange="updateEx('${ex.id}','note',this.value)">
+      <div class="ac-list" id="ac-note-${ex.id}"></div>
+    </div>
+    ${weekCols}
+  `;
 
-  if (val.length === 0 || items.length === 0) { list.classList.remove('open'); return; }
-  items.slice(0, 8).forEach(item => renderFn(item, list));
-  list.classList.add('open');
+  list.appendChild(row);
 }
 
+function removeExercise(dayId, exId) {
+  const day = giorni.find(d => d.id === dayId);
+  if (day) day.esercizi = day.esercizi.filter(e => e.id !== exId);
+  const el = document.getElementById('ex-' + exId);
+  if (el) el.remove();
+  updateDayCount(dayId);
+  updateInfo();
+}
+
+function updateEx(exId, field, value) {
+  for (const day of giorni) {
+    const ex = day.esercizi.find(e => e.id === exId);
+    if (ex) { ex[field] = value; return; }
+  }
+}
+
+function updateWeek(exId, weekIdx, field, value) {
+  for (const day of giorni) {
+    const ex = day.esercizi.find(e => e.id === exId);
+    if (ex) { ex.settimane[weekIdx][field] = value; return; }
+  }
+}
+
+function updateDayCount(dayId) {
+  const day = giorni.find(d => d.id === dayId);
+  const el = document.getElementById('day-count-' + dayId);
+  if (el && day) el.textContent = day.esercizi.length + ' esercizi';
+}
+
+// ── SETTIMANE CHANGE ──────────────────────────────────────────────────────────
+function onSettimaneChange() {
+  // Rebuild all days
+  const settimane = parseInt(document.getElementById('settimane').value) || 4;
+  // Update each exercise's settimane array
+  giorni.forEach(day => {
+    day.esercizi.forEach(ex => {
+      while (ex.settimane.length < settimane)
+        ex.settimane.push({ struttura: '', recupero: '', consiglio: '' });
+      ex.settimane = ex.settimane.slice(0, settimane);
+    });
+  });
+  // Re-render all days
+  const savedGiorni = [...giorni];
+  document.getElementById('giorni-container').innerHTML = '';
+  giorni = [];
+  savedGiorni.forEach(day => {
+    giorni.push(day);
+    renderDay(day);
+    day.esercizi.forEach(ex => renderExercise(day.id, ex, settimane));
+    updateDayCount(day.id);
+  });
+  updateInfo();
+}
+
+// ── AUTOCOMPLETE ──────────────────────────────────────────────────────────────
+function acSidebar(input, type) {
+  const val = input.value.toLowerCase();
+  const listEl = document.getElementById('ac-' + input.id);
+  listEl.innerHTML = '';
+  const items = lists.utenti.filter(u => u.nome.toLowerCase().includes(val)).slice(0, 8);
+  if (!val || !items.length) { listEl.classList.remove('open'); return; }
+  items.forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'ac-item';
+    d.innerHTML = `<span>${item.nome}</span><span class="ac-badge">${item.email}</span>`;
+    d.onmousedown = () => {
+      input.value = item.nome;
+      document.getElementById('email_cliente').value = item.email;
+      listEl.classList.remove('open');
+    };
+    listEl.appendChild(d);
+  });
+  listEl.classList.add('open');
+}
+
+function acExercise(input, exId) {
+  const val = input.value.toLowerCase();
+  const listEl = document.getElementById('ac-ex-' + exId);
+  listEl.innerHTML = '';
+  const items = lists.esercizi.filter(e => e.nome.toLowerCase().includes(val)).slice(0, 8);
+  if (!val || !items.length) { listEl.classList.remove('open'); return; }
+  items.forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'ac-item';
+    d.innerHTML = `<span>${item.nome}</span><span class="ac-badge">${item.blocco}</span>`;
+    d.onmousedown = () => {
+      input.value = item.nome;
+      updateEx(exId, 'esercizio', item.nome);
+      updateEx(exId, 'blocco', item.blocco);
+      listEl.classList.remove('open');
+    };
+    listEl.appendChild(d);
+  });
+  listEl.classList.add('open');
+}
+
+function acMetNote(input, exId, field) {
+  const val = input.value.toLowerCase();
+  const listId = field === 'metodologia' ? 'ac-met-' + exId : 'ac-note-' + exId;
+  const listEl = document.getElementById(listId);
+  listEl.innerHTML = '';
+  const items = lists.metodologie.filter(m => m.toLowerCase().includes(val)).slice(0, 8);
+  if (!val || !items.length) { listEl.classList.remove('open'); return; }
+  items.forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'ac-item';
+    d.textContent = item;
+    d.onmousedown = () => {
+      input.value = item;
+      updateEx(exId, field, item);
+      listEl.classList.remove('open');
+    };
+    listEl.appendChild(d);
+  });
+  listEl.classList.add('open');
+}
+
+let acIdx = -1;
 function acKey(e, input) {
-  const list = input.parentElement.querySelector('.autocomplete-list');
+  const list = input.parentElement.querySelector('.ac-list');
   if (!list || !list.classList.contains('open')) return;
-  const items = list.querySelectorAll('.autocomplete-item');
-  if (e.key === 'ArrowDown') { acIdx = Math.min(acIdx+1, items.length-1); acHighlight(items); e.preventDefault(); }
-  else if (e.key === 'ArrowUp') { acIdx = Math.max(acIdx-1, -1); acHighlight(items); e.preventDefault(); }
-  else if (e.key === 'Enter' && acIdx >= 0) { items[acIdx].dispatchEvent(new MouseEvent('mousedown')); e.preventDefault(); }
-  else if (e.key === 'Escape') { list.classList.remove('open'); }
+  const items = list.querySelectorAll('.ac-item');
+  if (e.key === 'ArrowDown') { acIdx = Math.min(acIdx+1, items.length-1); acHi(items); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { acIdx = Math.max(acIdx-1, -1); acHi(items); e.preventDefault(); }
+  else if (e.key === 'Enter' && acIdx >= 0) { items[acIdx].dispatchEvent(new MouseEvent('mousedown')); acIdx=-1; e.preventDefault(); }
+  else if (e.key === 'Escape') { list.classList.remove('open'); acIdx=-1; }
+  else { acIdx = -1; }
 }
-
-function acHighlight(items) {
-  items.forEach((el,i) => el.classList.toggle('selected', i === acIdx));
-}
-
+function acHi(items) { items.forEach((el,i) => el.classList.toggle('hi', i===acIdx)); }
 function acBlur(input) {
   setTimeout(() => {
-    const list = input.parentElement.querySelector('.autocomplete-list');
-    if (list) list.classList.remove('open');
-  }, 150);
+    const list = input.parentElement.querySelector('.ac-list');
+    if (list) { list.classList.remove('open'); acIdx=-1; }
+  }, 160);
 }
 
-// ─── PROGRESSIONI ─────────────────────────────────────────────────────────────
-function renderProgressioni() {
-  const settimane = parseInt(document.getElementById('settimane').value) || 4;
-  const container = document.getElementById('prog-container');
-  container.innerHTML = '';
-
-  if (rows.length === 0) {
-    container.innerHTML = '<div class="info-msg">Aggiungi prima gli esercizi nel tab Programma.</div>';
-    return;
-  }
-
-  // Sort rows by giorno then slot
-  const sorted = [...rows].sort((a,b) => (a.giorno - b.giorno) || (a.slot - b.slot));
-
-  sorted.forEach(row => {
-    if (!row.esercizio) return;
-    const section = document.createElement('div');
-    section.className = 'prog-section';
-
-    const weekFields = Array.from({length: settimane}, (_,w) => {
-      const wk = w + 1;
-      const p = row.progressioni[wk] || {};
-      return `
-        <div class="prog-week">
-          <div class="prog-week-label">W${wk}</div>
-          <div class="field"><input type="text" placeholder="Struttura" value="${p.struttura !== undefined ? p.struttura : (wk===1 ? row.struttura : '')}"
-            onchange="updateProg('${row.id}',${wk},'struttura',this.value)"></div>
-          <div class="field"><input type="text" placeholder="Serie" value="${p.serie !== undefined ? p.serie : (wk===1 ? row.serie : '')}"
-            onchange="updateProg('${row.id}',${wk},'serie',this.value)"></div>
-          <div class="field"><input type="text" placeholder="Recupero" value="${p.recupero !== undefined ? p.recupero : (wk===1 ? row.recupero : '')}"
-            onchange="updateProg('${row.id}',${wk},'recupero',this.value)"></div>
-          <div class="field"><input type="text" placeholder="Consiglio" value="${p.consiglio !== undefined ? p.consiglio : (wk===1 ? row.consiglio : '')}"
-            onchange="updateProg('${row.id}',${wk},'consiglio',this.value)"></div>
-          <div class="field"><input type="text" placeholder="% carico" value="${p.percentuale || ''}"
-            onchange="updateProg('${row.id}',${wk},'percentuale',this.value)"></div>
-        </div>`;
-    }).join('');
-
-    section.innerHTML = `
-      <div class="prog-ex-title">
-        G${row.giorno} · Slot ${row.slot} · ${row.esercizio}
-        <span class="prog-badge">${row.blocco}</span>
-        ${row.metodologia ? '<span class="prog-badge" style="background:rgba(255,255,255,0.05);color:var(--muted)">' + row.metodologia + '</span>' : ''}
-      </div>
-      <div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 1fr 1fr;gap:6px;margin-bottom:6px;padding:0 0 4px 0;border-bottom:1px solid var(--border)">
-        <div></div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Struttura</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Serie</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Recupero</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Consiglio</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">% carico</div>
-      </div>
-      <div class="prog-weeks">${weekFields}</div>
-    `;
-
-    container.appendChild(section);
-    const hr = document.createElement('div');
-    hr.style.cssText = 'height:1px;background:var(--border);margin:24px 0';
-    container.appendChild(hr);
-  });
-}
-
-function updateProg(rowId, week, field, value) {
-  const r = rows.find(r => r.id == rowId);
-  if (!r) return;
-  if (!r.progressioni[week]) r.progressioni[week] = {};
-  r.progressioni[week][field] = value;
-}
-
-// ─── BUILD CSV ────────────────────────────────────────────────────────────────
+// ── BUILD CSV ─────────────────────────────────────────────────────────────────
 function buildCSV() {
   const nome = document.getElementById('nome_cliente').value.trim();
   const email = document.getElementById('email_cliente').value.trim();
   const nomeProg = document.getElementById('nome_programma').value.trim();
   const dataProg = document.getElementById('data_programma').value;
   const settimane = parseInt(document.getElementById('settimane').value);
-  const attivo = document.getElementById('attivo_default').value;
 
-  if (!nome || !nomeProg) { showError('Compila Nome cliente e Nome programma.'); return; }
-  if (rows.length === 0) { showError('Aggiungi almeno un esercizio.'); return; }
+  if (!nome || !nomeProg) { showError('Compila Nome cliente e Nome programma nella sidebar.'); return false; }
 
-  const dataFormatted = dataProg ? dataProg.split('-').reverse().join('/') : today();
+  const dataF = dataProg ? dataProg.split('-').reverse().join('/') : today();
   csvData = [];
 
-  const sorted = [...rows].sort((a,b) => (a.giorno - b.giorno) || (a.slot - b.slot));
-
   for (let w = 1; w <= settimane; w++) {
-    sorted.forEach((row, idx) => {
-      const p = row.progressioni[w] || {};
-      // fallback: use base values for w1, previous week for others
-      const struttura = p.struttura !== undefined ? p.struttura : row.struttura;
-      const serie = p.serie !== undefined ? p.serie : row.serie;
-      const recupero = p.recupero !== undefined ? p.recupero : row.recupero;
-      const consiglio = p.consiglio !== undefined ? p.consiglio : row.consiglio;
-      const percentuale = p.percentuale || '';
-
-      // extract reps from struttura (number before · or -)
-      let reps = '';
-      const m = struttura.match(/^(\d+)/);
-      if (m) reps = m[1];
-
-      csvData.push({
-        'email': email,
-        'Nome': nome,
-        'Nome programma': nomeProg,
-        'Data programma': dataFormatted,
-        'Settimana': w,
-        'Giorno': row.giorno,
-        'Esercizio': row.esercizio,
-        'Blocco': row.blocco,
-        'Note': row.note || '',
-        'Metodologia': row.metodologia || '',
-        'Carico': '',
-        'Struttura': struttura,
-        'Ripetizioni': reps,
-        'Serie': serie,
-        'Percentuale %': percentuale,
-        'Recupero': recupero,
-        'Consiglio': consiglio,
-        'Posizione': row.slot,
-        'Attivo': attivo
+    let slot = 1;
+    giorni.forEach(day => {
+      day.esercizi.forEach(ex => {
+        if (!ex.esercizio) return;
+        const sw = ex.settimane[w-1] || {};
+        csvData.push({
+          'email': email,
+          'Nome': nome,
+          'Nome programma': nomeProg,
+          'Data programma': dataF,
+          'Settimana': w,
+          'Giorno': day.nome,
+          'Esercizio': ex.esercizio,
+          'Blocco': ex.blocco,
+          'Note': ex.note || '',
+          'Metodologia': ex.metodologia || '',
+          'Carico': '',
+          'Struttura': sw.struttura || '',
+          'Ripetizioni': extractReps(sw.struttura || ''),
+          'Serie': extractSerie(sw.struttura || ''),
+          'Percentuale %': extractPerc(sw.struttura || ''),
+          'Recupero': sw.recupero || '',
+          'Consiglio': sw.consiglio || '',
+          'Posizione': slot,
+          'Attivo': 'TRUE'
+        });
+        slot++;
       });
     });
   }
 
+  renderPreview();
+  document.getElementById('preview-wrap').style.display = 'block';
   hideError();
-  renderPreview(csvData);
-  document.getElementById('result-section').style.display = 'block';
+  return true;
 }
 
-function renderPreview(data) {
-  if (!data.length) return;
-  const cols = Object.keys(data[0]);
-  const thead = document.querySelector('#preview-table thead');
-  const tbody = document.querySelector('#preview-table tbody');
-  thead.innerHTML = '<tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr>';
-  tbody.innerHTML = data.map(row =>
-    '<tr>' + cols.map(c => {
-      const v = row[c];
-      if (c === 'Settimana') return '<td><span class="badge-w">W' + v + '</span></td>';
-      if (c === 'Giorno') return '<td><span class="badge-d">G' + v + '</span></td>';
-      return '<td>' + (v ?? '') + '</td>';
-    }).join('') + '</tr>'
-  ).join('');
+function extractReps(struttura) {
+  // e.g. "5·5" → "5", "8-7-6" → "8", "70% 5·5" → "5"
+  const m = struttura.match(/(\d+)[·×x*]/);
+  if (m) return m[1];
+  const m2 = struttura.match(/(\d+)/);
+  return m2 ? m2[1] : '';
+}
+
+function extractSerie(struttura) {
+  const m = struttura.match(/[·×x*](\d+)/);
+  return m ? m[1] : '';
+}
+
+function extractPerc(struttura) {
+  const m = struttura.match(/(\d+)%/);
+  return m ? m[1] + '%' : '';
+}
+
+function renderPreview() {
+  if (!csvData.length) return;
+  const cols = Object.keys(csvData[0]);
+  document.getElementById('prev-head').innerHTML = '<tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr>';
+  document.getElementById('prev-body').innerHTML = csvData.slice(0, 30).map(row =>
+    '<tr>' + cols.map(c => '<td>' + (row[c] ?? '') + '</td>').join('') + '</tr>'
+  ).join('') + (csvData.length > 30 ? '<tr><td colspan="' + cols.length + '" style="color:var(--muted);text-align:center;padding:8px">... e altre ' + (csvData.length-30) + ' righe</td></tr>' : '');
+}
+
+function buildAndExport() {
+  if (buildCSV()) downloadCSV();
 }
 
 function downloadCSV() {
-  if (!csvData.length) return;
+  if (!csvData.length) { buildCSV(); return; }
   const cols = Object.keys(csvData[0]);
-  const lines = [
-    cols.join(','),
-    ...csvData.map(row => cols.map(c => {
+  const lines = [cols.join(','), ...csvData.map(row =>
+    cols.map(c => {
       const v = String(row[c] ?? '').replace(/"/g, '""');
-      return (v.includes(',') || v.includes('"') || v.includes('\n')) ? '"' + v + '"' : v;
-    }).join(','))
-  ];
+      return (v.includes(',') || v.includes('"') || v.includes('\n')) ? '"'+v+'"' : v;
+    }).join(',')
+  )];
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -886,24 +911,35 @@ function downloadCSV() {
   URL.revokeObjectURL(url);
 }
 
-// ─── UTILS ────────────────────────────────────────────────────────────────────
+// ── EXPORT PANEL ──────────────────────────────────────────────────────────────
+function toggleExport() {
+  document.getElementById('export-panel').classList.toggle('open');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function uid() { return Math.random().toString(36).substr(2,9); }
+
 function today() {
   const d = new Date();
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+}
+
+function updateInfo() {
+  const totEx = giorni.reduce((s,d) => s + d.esercizi.length, 0);
+  document.getElementById('sidebar-info').innerHTML =
+    `${giorni.length} giorni<br>${totEx} esercizi totali`;
 }
 
 function showError(msg) {
-  const el = document.getElementById('error-msg');
-  el.textContent = msg;
-  el.style.display = 'block';
+  const el = document.getElementById('error-bar');
+  el.textContent = msg; el.style.display = 'block';
 }
+function hideError() { document.getElementById('error-bar').style.display = 'none'; }
 
-function hideError() { document.getElementById('error-msg').style.display = 'none'; }
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────────────
 document.getElementById('data_programma').value = new Date().toISOString().split('T')[0];
 loadSheet();
-addRow();
+updateInfo();
 </script>
 </body>
 </html>
