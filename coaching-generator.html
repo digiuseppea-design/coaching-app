@@ -6,765 +6,870 @@
 <title>Program Builder</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg: #0d0d0d;
-    --surface: #141414;
-    --surface2: #1c1c1c;
-    --border: #2a2a2a;
-    --accent: #c8f135;
-    --accent2: #ff4d4d;
-    --text: #e8e8e8;
-    --muted: #555;
-    --radius: 4px;
+    --bg:#0d0d0d; --surface:#141414; --surface2:#1c1c1c;
+    --border:#2a2a2a; --accent:#c8f135; --accent2:#ff4d4d;
+    --text:#e8e8e8; --muted:#555; --radius:4px;
   }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+  /* TOPBAR */
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:5px;height:46px;position:sticky;top:0;z-index:200;flex-wrap:nowrap;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:var(--accent);white-space:nowrap;flex-shrink:0;}
+  .logo span{color:var(--text);opacity:0.25;}
+  .tb-div{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px;}
+  .tb-field{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;}
+  .tb-field label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .tb-field input,.tb-field select{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:300;padding:3px 6px;border-radius:var(--radius);outline:none;height:26px;transition:border-color 0.15s;}
+  .tb-field input:focus,.tb-field select:focus{border-color:var(--accent);}
+  select option{background:#1c1c1c;}
+  .sync-pill{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.08em;white-space:nowrap;margin-left:auto;flex-shrink:0;}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);}
+  .sync-dot.ok{background:var(--accent);}
+  .sync-dot.err{background:var(--accent2);}
+  .tb-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
 
-  /* ── HEADER ── */
-  .topbar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 200;
+  /* MAIN */
+  .main{padding:14px 20px;display:flex;gap:20px;align-items:flex-start;}
+  .main-content{flex:0 0 auto;}
+  .side-panel{
+    flex:0 0 280px;position:sticky;top:56px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:6px;padding:14px;max-height:calc(100vh - 70px);
+    overflow-y:auto;
   }
+  .side-section{margin-bottom:18px;}
+  .side-section:last-child{margin-bottom:0;}
+  .side-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:10px;
+    padding-bottom:5px;border-bottom:1px solid var(--border);}
+  /* Muscoli */
+  .muscle-row{display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:5px;gap:8px;}
+  .muscle-label{font-size:11px;color:var(--text);white-space:nowrap;}
+  .muscle-bar-wrap{flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+  .muscle-bar{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;}
+  .muscle-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;}
+  .muscle-zero .muscle-label{color:var(--accent2);}
+  .muscle-zero .muscle-count{color:var(--accent2);}
+  /* Volume */
+  .vol-row{display:flex;align-items:baseline;justify-content:space-between;
+    margin-bottom:6px;gap:6px;}
+  .vol-label{font-size:11px;color:var(--text);}
+  .vol-num{font-family:'DM Mono',monospace;font-size:13px;color:var(--accent);}
+  .vol-mav{font-family:'DM Mono',monospace;font-size:9px;color:#f5a623;margin-left:4px;}
+  .vol-bar-wrap{width:100%;height:3px;background:var(--surface2);border-radius:2px;margin-top:2px;overflow:hidden;}
+  .vol-bar{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;}
 
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 0.06em;
-    color: var(--accent);
+  /* GIORNO */
+  .giorno-block{margin-bottom:10px;border:1px solid var(--border);border-radius:4px;max-width:620px;overflow:visible;}
+  .giorno-header{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;background:var(--surface2);border-bottom:1px solid var(--border);border-radius:4px 4px 0 0;height:32px;}
+  .giorno-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.08em;color:var(--accent);display:flex;align-items:center;gap:8px;}
+  .giorno-count{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+  .giorno-body{padding:6px 10px;overflow:visible;}
+
+  /* COL HEADERS */
+  .col-heads{display:grid;gap:4px;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+  .col-h{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0 3px;}
+  .week-group-h{display:contents;}
+
+  /* EX ROW */
+  .ex-row{display:grid;gap:4px;align-items:center;margin-bottom:3px;padding-bottom:3px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:grab;}
+  .ex-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .ex-row.dragging{opacity:0.4;cursor:grabbing;}
+  .ex-row.drag-over{border-top:2px solid var(--accent);}
+  .ex-row.prog-active{background:rgba(200,241,53,0.04);border-left:2px solid var(--accent);}
+  .del-btn-wrap{display:flex;align-items:center;justify-content:center;}
+  .del-btn{opacity:0;background:transparent;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 3px;border-radius:2px;transition:all 0.12s;line-height:1;}
+  .ex-row:hover .del-btn{opacity:1;}
+  .del-btn:hover{color:var(--accent2)!important;}
+  .ex-field{position:relative;}
+  .ex-field input{background:var(--surface2);border:1px solid transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:300;padding:3px 7px;border-radius:var(--radius);outline:none;width:100%;height:24px;transition:border-color 0.15s,background 0.15s;}
+  .ex-field input:focus{border-color:var(--accent);background:#1a1f0a;}
+  .ex-field input::placeholder{color:var(--muted);font-size:10px;}
+  .drag-handle{color:var(--muted);font-size:12px;cursor:grab;padding:2px 4px;user-select:none;display:flex;align-items:center;}
+  .drag-handle:hover{color:var(--accent);}
+
+  /* WEEK SEP */
+  .week-sep-col{border-left:1px solid var(--border);padding-left:4px !important;}
+
+  /* AUTOCOMPLETE */
+  .ac-list{position:absolute;top:calc(100% + 2px);left:0;min-width:190px;background:#1e1e1e;border:1px solid var(--accent);border-radius:var(--radius);z-index:400;max-height:160px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.6);}
+  .ac-list.open{display:block;}
+  .ac-item{padding:6px 9px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;border-bottom:1px solid var(--border);}
+  .ac-item:last-child{border-bottom:none;}
+  .ac-item:hover,.ac-item.hi{background:rgba(200,241,53,0.1);color:var(--accent);}
+  .ac-badge{font-size:9px;padding:1px 5px;background:rgba(255,255,255,0.06);border-radius:2px;color:var(--muted);flex-shrink:0;}
+
+  /* BUTTONS */
+  .btn{padding:5px 12px;border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;border:none;}
+  .btn-accent{background:var(--accent);color:#0d0d0d;}
+  .btn-accent:hover{background:#d4ff3d;}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-ghost{background:transparent;border:none;color:var(--muted);padding:3px 6px;font-size:11px;cursor:pointer;}
+  .btn-ghost:hover{color:var(--accent2);}
+  .btn-add-ex{display:flex;align-items:center;gap:5px;padding:4px 10px;background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;cursor:pointer;transition:all 0.15s;margin-top:5px;}
+  .btn-add-ex:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-add-day{display:flex;align-items:center;gap:6px;padding:8px 16px;background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;cursor:pointer;transition:all 0.15s;width:100%;justify-content:center;margin-bottom:16px;}
+  .btn-add-day:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* EXPORT PANEL */
+  .export-panel{position:fixed;right:0;top:46px;bottom:0;width:400px;background:var(--surface);border-left:1px solid var(--border);padding:20px;overflow-y:auto;transform:translateX(100%);transition:transform 0.25s ease;z-index:150;}
+  .export-panel.open{transform:translateX(0);}
+  .export-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:var(--accent);margin-bottom:16px;}
+  .prev-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin-top:14px;max-height:400px;overflow-y:auto;}
+  .prev-wrap table{width:100%;border-collapse:collapse;font-size:10px;font-family:'DM Mono',monospace;}
+  .prev-wrap th{background:var(--surface2);padding:6px 7px;text-align:left;color:var(--muted);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--border);}
+  .prev-wrap td{padding:5px 7px;border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap;}
+  .error-bar{background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);color:var(--accent2);padding:10px 12px;border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:11px;margin-top:10px;display:none;}
+
+  /* PROG BUTTON */
+  .prog-btn-wrap{display:flex;align-items:center;justify-content:center;}
+  .prog-btn{
+    opacity:0;background:rgba(200,241,53,0.12);border:1px solid rgba(200,241,53,0.3);
+    color:var(--accent);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;
+    text-transform:uppercase;padding:3px 7px;border-radius:var(--radius);cursor:pointer;
+    transition:all 0.15s;white-space:nowrap;
   }
-  .logo span { color: var(--text); opacity: 0.25; }
+  .ex-row:hover .prog-btn{opacity:1;}
+  .prog-btn:hover{background:rgba(200,241,53,0.25);border-color:var(--accent);}
 
-  .sync-pill {
-    display: flex; align-items: center; gap: 6px;
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    color: var(--muted); letter-spacing: 0.08em;
+  /* POPUP */
+  /* POPUP OVERLAY */
+  .popup-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.65);display:none;}
+  .popup-overlay.open{display:block;}
+
+  /* PROG POPUP — modal centrale */
+  .prog-popup{
+    display:none;position:fixed;z-index:600;
+    top:50%;left:50%;transform:translate(-50%,-50%);
+    width:68vw;max-width:1000px;min-width:560px;
+    background:var(--surface);border:1px solid var(--accent);
+    border-radius:8px;padding:20px 24px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.8);
+    max-height:88vh;overflow-y:auto;
   }
-  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
-  .sync-dot.ok { background: var(--accent); }
-  .sync-dot.err { background: var(--accent2); }
+  .prog-popup.open{display:block;}
+  .popup-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:var(--accent);}
+  .popup-subtitle{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.06em;margin-top:2px;}
 
-  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  /* GRIGLIA RIGHE SETTIMANA: W | esercizio | note | metod | struttura | rec | consiglio */
+  .popup-heads{display:grid;grid-template-columns:36px 1fr 1fr 1fr 1fr 60px 1fr;gap:6px;
+    margin:14px 0 6px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  .popup-col-h{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--muted);}
+  .popup-row{display:grid;grid-template-columns:36px 1fr 1fr 1fr 1fr 60px 1fr;
+    gap:6px;align-items:center;margin-bottom:5px;}
+  .popup-row:last-of-type{margin-bottom:0;}
+  .popup-week-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.08em;}
+  .popup-row input{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+    font-family:'DM Sans',sans-serif;font-size:11px;font-weight:300;padding:4px 7px;
+    border-radius:var(--radius);outline:none;width:100%;height:26px;transition:border-color 0.15s;}
+  .popup-row input:focus{border-color:var(--accent);background:#1a1f0a;}
+  .popup-row input::placeholder{color:var(--muted);font-size:10px;}
+  .popup-footer{margin-top:14px;display:flex;justify-content:flex-end;gap:8px;}
 
-  /* ── MAIN LAYOUT ── */
-  .main { display: flex; height: calc(100vh - 56px); }
+  /* VOL OBJ PILLS */
+  .vol-obj-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+    font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;padding:3px 8px;
+    border-radius:20px;cursor:pointer;transition:all 0.15s;}
+  .vol-obj-btn.active{background:var(--accent);border-color:var(--accent);color:#000;}
+  .vol-obj-btn:hover:not(.active){border-color:var(--accent);color:var(--accent);}
 
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 280px;
-    min-width: 280px;
-    border-right: 1px solid var(--border);
-    background: var(--surface);
-    padding: 24px 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  /* VOLUME TABLE PANEL */
+  .vol-table-wrap{overflow-x:auto;margin-top:8px;}
+  .vol-table{width:100%;border-collapse:collapse;font-size:11px;}
+  .vol-table th{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.08em;
+    text-transform:uppercase;color:var(--muted);padding:4px 6px;text-align:center;
+    border-bottom:1px solid var(--border);}
+  .vol-table th.left{text-align:left;}
+  .vol-table td{padding:4px 6px;text-align:center;border-bottom:1px solid #1a1a1a;
+    font-family:'DM Mono',monospace;font-size:11px;}
+  .vol-table td.group-name{text-align:left;font-family:'DM Sans',sans-serif;
+    font-size:11px;color:var(--text);}
+  .vol-cell-ok{color:var(--accent);font-weight:500;}
+  .vol-cell-low{color:var(--accent2);}
+  .vol-cell-high{color:#f5a623;}
+  .vol-cell-zero{color:var(--muted);}
+  .vol-obj-select{background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);font-family:'DM Mono',monospace;font-size:9px;
+    padding:3px 6px;border-radius:var(--radius);outline:none;width:100%;margin-bottom:10px;}
+  .vol-legend{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .vol-legend-item{display:flex;align-items:center;gap:4px;
+    font-family:'DM Mono',monospace;font-size:8px;}
+  .vol-legend-dot{width:6px;height:6px;border-radius:50%;}
+
+  /* VALIDATION MODAL */
+  .val-overlay{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;}
+  .val-overlay.open{display:flex;}
+  .val-modal{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px 28px;width:420px;max-width:90vw;box-shadow:0 24px 64px rgba(0,0,0,0.8);}
+  .val-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:var(--accent);margin-bottom:16px;}
+  .val-section{margin-bottom:14px;}
+  .val-section-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+  .val-section-label.err{color:var(--accent2);}
+  .val-section-label.warn{color:#f5a623;}
+  .val-item{font-size:12px;color:var(--text);padding:4px 0 4px 12px;border-left:2px solid var(--border);margin-bottom:4px;line-height:1.4;}
+  .val-item.err{border-color:var(--accent2);color:#ff8080;}
+  .val-item.warn{border-color:#f5a623;color:#f5c06a;}
+  .val-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;border-top:1px solid var(--border);padding-top:14px;}
+
+  /* SAVE INDICATOR */
+  .save-indicator{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.06em;transition:opacity 0.4s;opacity:0;white-space:nowrap;}
+  .save-indicator.show{opacity:1;}
+
+  /* MINI PROGRESSION TABLE */
+  .mini-prog{
+    display:flex;gap:3px;align-items:center;flex-wrap:nowrap;
+    margin-left:6px;flex-shrink:0;
   }
-
-  .sidebar-section { display: flex; flex-direction: column; gap: 8px; }
-
-  .sidebar-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--muted);
-    margin-bottom: 2px;
+  .mini-week{
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    min-width:44px;
   }
-
-  .sidebar input, .sidebar select {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 300;
-    padding: 9px 11px;
-    border-radius: var(--radius);
-    outline: none;
-    width: 100%;
-    transition: border-color 0.15s;
+  .mini-w-label{
+    font-family:'DM Mono',monospace;font-size:7px;color:var(--muted);
+    letter-spacing:0.08em;text-transform:uppercase;line-height:1;
   }
-  .sidebar input:focus, .sidebar select:focus { border-color: var(--accent); }
-  select option { background: #1c1c1c; }
-
-  .sidebar-divider { height: 1px; background: var(--border); }
-
-  /* ── CONTENT ── */
-  .content {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: auto;
-    padding: 28px 32px;
+  .mini-w-val{
+    font-family:'DM Mono',monospace;font-size:9px;color:var(--text);
+    background:var(--surface2);border-radius:2px;padding:1px 4px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    max-width:54px;line-height:1.4;border:1px solid var(--border);
   }
+  .mini-w-val.empty{color:var(--muted);border-style:dashed;}
 
-  /* ── GIORNI ── */
-  .giorno-block {
-    margin-bottom: 20px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: visible;
+  /* HOVER TOOLTIP */
+  .prog-tooltip{
+    position:fixed;z-index:700;
+    background:#181818;border:1px solid rgba(200,241,53,0.25);
+    border-radius:6px;padding:14px 16px;min-width:300px;max-width:360px;
+    box-shadow:0 16px 48px rgba(0,0,0,0.85);
+    pointer-events:none;opacity:0;transition:opacity 0.12s;
+    display:block;
   }
+  .prog-tooltip.visible{opacity:1;}
+  .tt-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.06em;color:var(--accent);margin-bottom:2px;}
+  .tt-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:0.05em;}
+  .tt-row{display:grid;grid-template-columns:32px 1fr 50px 90px;gap:6px;align-items:center;margin-bottom:5px;}
+  .tt-row:last-child{margin-bottom:0;}
+  .tt-wlabel{font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:0.08em;}
+  .tt-val{font-family:'DM Mono',monospace;font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tt-val.empty{color:var(--muted);}
+  .tt-heads{display:grid;grid-template-columns:32px 1fr 50px 90px;gap:6px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+  .tt-col-h{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
 
-  .giorno-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    border-radius: 6px 6px 0 0;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .giorno-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px; letter-spacing: 0.08em;
-    color: var(--accent);
-    display: flex; align-items: center; gap: 10px;
-  }
-
-  .giorno-count {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px; color: var(--muted);
-    font-style: normal;
-  }
-
-  .giorno-actions { display: flex; gap: 6px; }
-
-  .giorno-body { padding: 12px 16px; }
-
-  /* ── COLUMN HEADERS ── */
-  .ex-col-headers {
-    display: grid;
-    gap: 6px;
-    margin-bottom: 6px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .col-header {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--muted);
-    padding: 0 4px;
-  }
-
-  /* ── EXERCISE ROW ── */
-  .ex-row {
-    display: grid;
-    gap: 6px;
-    align-items: start;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-
-  .ex-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-
-  /* Grid: [del] [esercizio] [metod] [note] [W1-struttura] [W1-rec] [W1-cons] [W2...] [W3...] [W4...] */
-
-  .ex-field {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .ex-field input {
-    background: var(--surface2);
-    border: 1px solid transparent;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 300;
-    padding: 7px 9px;
-    border-radius: var(--radius);
-    outline: none;
-    width: 100%;
-    transition: border-color 0.15s, background 0.15s;
-  }
-
-  .ex-field input:focus {
-    border-color: var(--accent);
-    background: #1a1f0a;
-  }
-
-  .ex-field input::placeholder { color: var(--muted); font-size: 11px; }
-
-  /* week separator */
-  .week-sep {
-    width: 1px;
-    background: var(--border);
-    margin: 0 2px;
-    align-self: stretch;
-    min-height: 30px;
-  }
-
-  .week-label-cell {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px; color: var(--muted);
-    letter-spacing: 0.1em;
-    display: flex; align-items: center;
-    padding: 0 2px;
-  }
-
-  /* ── AUTOCOMPLETE ── */
-  .ac-list {
-    position: absolute;
-    top: calc(100% + 2px);
-    left: 0;
-    min-width: 200px;
-    background: #1e1e1e;
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    z-index: 300;
-    max-height: 180px;
-    overflow-y: auto;
-    display: none;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  }
-
-  .ac-list.open { display: block; }
-
-  .ac-item {
-    padding: 7px 10px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    cursor: pointer;
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-  .ac-item:last-child { border-bottom: none; }
-  .ac-item:hover, .ac-item.hi { background: rgba(200,241,53,0.1); color: var(--accent); }
-
-  .ac-badge {
-    font-size: 9px; padding: 1px 5px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px; color: var(--muted); flex-shrink: 0;
-  }
-
-  /* ── BUTTONS ── */
-  .btn {
-    padding: 7px 14px;
-    border-radius: var(--radius);
-    font-family: 'DM Mono', monospace;
-    font-size: 10px; letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer; transition: all 0.15s;
-    border: none;
-  }
-
-  .btn-accent { background: var(--accent); color: #0d0d0d; }
-  .btn-accent:hover { background: #d4ff3d; }
-
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-  .btn-ghost {
-    background: transparent; border: none;
-    color: var(--muted); padding: 4px 8px;
-  }
-  .btn-ghost:hover { color: var(--accent2); }
-
-  .btn-add-ex {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 12px;
-    background: transparent;
-    border: 1px dashed var(--border);
-    color: var(--muted);
-    border-radius: var(--radius);
-    font-family: 'DM Mono', monospace;
-    font-size: 10px; letter-spacing: 0.08em;
-    cursor: pointer; transition: all 0.15s;
-    margin-top: 10px;
-  }
-  .btn-add-ex:hover { border-color: var(--accent); color: var(--accent); }
-
-  .btn-add-day {
-    display: flex; align-items: center; gap: 8px;
-    padding: 12px 20px;
-    background: transparent;
-    border: 1px dashed var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px; letter-spacing: 0.08em;
-    cursor: pointer; transition: all 0.15s;
-    width: 100%; justify-content: center;
-    margin-bottom: 24px;
-  }
-  .btn-add-day:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* ── WEEK BADGE ── */
-  .w-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 22px; height: 22px;
-    background: rgba(200,241,53,0.08);
-    border-radius: 3px;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px; color: var(--accent);
-    flex-shrink: 0;
-  }
-
-  /* ── EXPORT PANEL ── */
-  .export-panel {
-    position: fixed;
-    right: 0; top: 56px; bottom: 0;
-    width: 420px;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    padding: 24px;
-    overflow-y: auto;
-    transform: translateX(100%);
-    transition: transform 0.25s ease;
-    z-index: 150;
-  }
-  .export-panel.open { transform: translateX(0); }
-
-  .export-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px; letter-spacing: 0.06em;
-    color: var(--accent); margin-bottom: 20px;
-  }
-
-  .preview-table-wrap {
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-top: 16px;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .preview-table-wrap table {
-    width: 100%; border-collapse: collapse;
-    font-size: 10px; font-family: 'DM Mono', monospace;
-  }
-  .preview-table-wrap th {
-    background: var(--surface2); padding: 7px 8px;
-    text-align: left; color: var(--muted);
-    font-size: 8px; letter-spacing: 0.1em;
-    text-transform: uppercase; white-space: nowrap;
-    border-bottom: 1px solid var(--border);
-  }
-  .preview-table-wrap td {
-    padding: 6px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    white-space: nowrap;
-  }
-
-  .error-bar {
-    background: rgba(255,77,77,0.1);
-    border: 1px solid rgba(255,77,77,0.3);
-    color: var(--accent2);
-    padding: 10px 12px;
-    border-radius: var(--radius);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    margin-top: 12px;
-    display: none;
-  }
-
-  /* ── AUTOCOMPLETE for sidebar ── */
-  .sidebar .field { position: relative; }
+  /* IMPORT MODAL */
+  .import-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;}
+  .import-overlay.open{display:flex;}
+  .import-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;width:500px;max-width:95vw;}
+  .import-box h3{margin:0 0 8px;font-size:13px;color:var(--text);}
+  .import-box p{margin:0 0 12px;font-size:11px;color:var(--muted);line-height:1.5;}
+  .import-box textarea{width:100%;height:160px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;font-family:'DM Mono',monospace;padding:8px;box-sizing:border-box;resize:vertical;}
+  .import-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end;}
+  .import-status{font-size:11px;margin-top:8px;color:var(--accent);}
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
+<div class="import-overlay" id="import-overlay" onclick="if(event.target===this)closeImport()">
+  <div class="import-box">
+    <h3>Importa dati dal foglio</h3>
+    <p>Apri il tuo Google Sheet "Liste programming", seleziona tutto (Ctrl+A), copia (Ctrl+C) e incolla qui sotto.</p>
+    <textarea id="import-textarea" placeholder="Incolla qui i dati del foglio..."></textarea>
+    <div class="import-status" id="import-status"></div>
+    <div class="import-actions">
+      <button class="btn btn-outline" onclick="closeImport()">Annulla</button>
+      <button class="btn btn-accent" onclick="importData()">Carica dati</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="topbar">
-  <div class="logo">Program<span>/</span>Builder <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em">v3.0</span></div>
-  <div class="sync-pill">
+  <div class="logo">Program<span>/</span>Builder</div>
+  <div class="tb-div"></div>
+  <div class="tb-field">
+    <label>Cliente</label>
+    <input type="text" id="nome_cliente" placeholder="Cerca..." autocomplete="off" style="width:100px"
+      oninput="acSidebar(this)" onkeydown="acKey(event,this)" onblur="acBlur(this)">
+    <div class="ac-list" id="ac-nome_cliente"></div>
+  </div>
+  <div class="tb-field">
+    <label>@</label>
+    <input type="email" id="email_cliente" placeholder="auto" readonly style="width:130px;color:var(--muted)">
+  </div>
+  <div class="tb-div"></div>
+  <div class="tb-field">
+    <label>Programma</label>
+    <input type="text" id="nome_programma" placeholder="Nome programma" style="width:130px">
+  </div>
+  <div class="tb-field">
+    <label>Data</label>
+    <input type="date" id="data_programma" style="width:100px">
+  </div>
+  <div class="tb-field">
+    <label>Sett.</label>
+    <select id="settimane" onchange="onSettimaneChange()" style="width:80px">
+      <option value="2">2 sett.</option>
+      <option value="3">3 sett.</option>
+      <option value="4" selected>4 sett.</option>
+    </select>
+  </div>
+  <div class="tb-field">
+    <button class="btn btn-outline" onclick="addDay()" style="height:24px;font-size:9px">+ G</button>
+  </div>
+  <div class="sync-pill" onclick="openImport()" style="cursor:pointer" title="Clicca per aggiornare i dati">
     <div class="sync-dot" id="sync-dot"></div>
     <span id="sync-label">Caricamento...</span>
   </div>
-  <div class="topbar-actions">
-    <button class="btn btn-outline" onclick="toggleExport()">Export CSV</button>
-    <button class="btn btn-accent" onclick="buildAndExport()">⚡ Genera & Scarica</button>
+  <span class="save-indicator" id="save-indicator">salvato</span>
+  <div class="tb-actions">
+    <button class="btn btn-ghost" onclick="nuovoProgramma()" style="height:24px;font-size:9px" title="Nuovo programma">✕ Nuovo</button>
+    <button class="btn btn-outline" onclick="toggleExport()" style="height:24px;font-size:9px">Export</button>
+    <button class="btn btn-accent" onclick="buildAndExport()" style="height:24px;font-size:9px">⚡ CSV</button>
   </div>
 </div>
 
 <div class="main">
-
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Cliente</div>
-      <div class="field" style="position:relative">
-        <input type="text" id="nome_cliente" placeholder="Cerca cliente..." autocomplete="off"
-          oninput="acSidebar(this,'utenti')" onkeydown="acKey(event,this)" onblur="acBlur(this)">
-        <div class="ac-list" id="ac-nome_cliente"></div>
-      </div>
-      <input type="email" id="email_cliente" placeholder="Email (automatica)">
-    </div>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Programma</div>
-      <input type="text" id="nome_programma" placeholder="Nome programma">
-      <input type="date" id="data_programma">
-    </div>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Settimane</div>
-      <select id="settimane" onchange="onSettimaneChange()">
-        <option value="2">2 settimane</option>
-        <option value="3">3 settimane</option>
-        <option value="4" selected>4 settimane</option>
-      </select>
-    </div>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label" style="margin-bottom:8px">Giorni</div>
-      <button class="btn btn-outline" style="width:100%;justify-content:center;display:flex;gap:6px" onclick="addDay()">+ Aggiungi giorno</button>
-    </div>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Info</div>
-      <div id="sidebar-info" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8"></div>
-    </div>
-  </div>
-
-  <!-- CONTENT -->
-  <div class="content" id="content">
+  <div class="main-content">
     <div id="giorni-container"></div>
     <button class="btn-add-day" onclick="addDay()">+ Aggiungi giorno</button>
   </div>
-
+  <div class="side-panel" id="side-panel">
+    <div class="side-section">
+      <div class="side-title">Gruppi muscolari</div>
+      <div id="panel-muscles">—</div>
+    </div>
+    <div class="side-section">
+      <div class="side-title">Volume per giorno</div>
+      <div id="panel-volume">—</div>
+    </div>
+    <div class="side-section">
+      <div class="side-title">Volume settimanale</div>
+      <div id="panel-volume-week">—</div>
+    </div>
+    <div class="side-section">
+      <div class="side-title" style="margin-bottom:8px">Volume per gruppo</div>
+      <div style="display:flex;gap:4px;margin-bottom:10px">
+        <button class="vol-obj-btn active" data-obj="powerbuilding" onclick="setVolObj(this,'powerbuilding')">PB</button>
+        <button class="vol-obj-btn" data-obj="ipertrofia" onclick="setVolObj(this,'ipertrofia')">IPE</button>
+        <button class="vol-obj-btn" data-obj="forza" onclick="setVolObj(this,'forza')">FOR</button>
+      </div>
+      <div class="vol-table-wrap">
+        <table class="vol-table" id="vol-table"></table>
+      </div>
+      <div id="vol-range-note" style="margin-top:8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);line-height:1.6;"></div>
+    </div>
+  </div>
 </div>
 
-<!-- EXPORT PANEL -->
+
 <div class="export-panel" id="export-panel">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
     <div class="export-title">Export CSV</div>
-    <button class="btn btn-ghost" onclick="toggleExport()" style="font-size:16px">✕</button>
+    <button class="btn-ghost" onclick="toggleExport()" style="font-size:16px">✕</button>
   </div>
-  <button class="btn btn-accent" style="width:100%;padding:12px;font-size:12px;margin-bottom:12px" onclick="buildAndExport()">⚡ Genera & Scarica CSV</button>
-  <button class="btn btn-outline" style="width:100%;padding:10px;font-size:11px" onclick="buildCSV()">Anteprima</button>
+  <button class="btn btn-accent" style="width:100%;padding:10px;font-size:12px;margin-bottom:8px" onclick="buildAndExport()">⚡ Genera & Scarica CSV</button>
+  <button class="btn btn-outline" style="width:100%;padding:8px;font-size:11px" onclick="buildCSV()">Anteprima</button>
   <div class="error-bar" id="error-bar"></div>
-  <div class="preview-table-wrap" id="preview-wrap" style="display:none">
+  <div class="prev-wrap" id="preview-wrap" style="display:none">
     <table><thead id="prev-head"></thead><tbody id="prev-body"></tbody></table>
   </div>
 </div>
 
 <script>
 const SHEET_ID = '1WowoJFXuMa50JErnnUsqeR0eetzZ10pxmjRB4jbpbo0';
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSxUmFBnlhbPFNJKskxL93gLd5uOMus6m7cnyWinCVVHeORYsFdhzSvufIm3pElPbUJQMeosCjX1QUW/pub?gid=0&single=true&output=csv`;
+const DEFAULT_RECUPERO = '1.45';
 
-let lists = { esercizi: [], metodologie: [], utenti: [] };
-let giorni = []; // [{id, nome, esercizi:[{id,esercizio,blocco,metodologia,note,settimane:[{struttura,recupero,consiglio}]}]}]
+let lists = { esercizi:[], metodologie:[], utenti:[], consigli:{} };
+let giorni = [];
 let csvData = [];
+let acIdx = -1;
+let dragSrc = null;
 
-// ── LOAD SHEET ────────────────────────────────────────────────────────────────
-async function loadSheet() {
-  try {
-    const res = await fetch(SHEET_URL);
-    const text = await res.text();
-    const lines = text.trim().split('\n').map(parseCSVLine);
-    lines.forEach(cols => {
-      if (cols[0] && cols[0].trim()) lists.esercizi.push({ nome: cols[0].trim(), blocco: (cols[1]||'').trim() });
-      if (cols[2] && cols[2].trim()) lists.metodologie.push(cols[2].trim());
-      if (cols[3] && cols[3].trim()) lists.utenti.push({ nome: cols[3].trim(), email: (cols[4]||'').trim() });
+
+// ── HTML ESCAPE FOR ATTRIBUTES ───────────────────────────────────────────────
+function esc(v){ return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+// ── LOAD SHEET (da localStorage) ─────────────────────────────────────────────
+function parseTSVData(text) {
+  lists.esercizi = [];
+  lists.metodologie = [];
+  lists.utenti = [];
+  const lines = text.trim().split('\n');
+  lines.forEach(line => {
+    const cols = line.split('\t');
+    if (cols[0]&&cols[0].trim()) lists.esercizi.push({
+      nome:cols[0].trim(), blocco:(cols[1]||'').trim(),
+      categoria:(cols[5]||'').trim(), gruppo:(cols[6]||'').trim()
     });
-    lists.metodologie = [...new Set(lists.metodologie)];
-    document.getElementById('sync-dot').className = 'sync-dot ok';
-    document.getElementById('sync-label').textContent = lists.esercizi.length + ' esercizi · ' + lists.metodologie.length + ' metodologie · ' + lists.utenti.length + ' utenti';
-  } catch(e) {
-    document.getElementById('sync-dot').className = 'sync-dot err';
-    document.getElementById('sync-label').textContent = 'Errore caricamento';
+    if (cols[2]&&cols[2].trim()) lists.metodologie.push(cols[2].trim());
+    if (cols[3]&&cols[3].trim()) lists.utenti.push({nome:cols[3].trim(),email:(cols[4]||'').trim()});
+  });
+  lists.metodologie = [...new Set(lists.metodologie)];
+}
+
+function loadSheet() {
+  const saved = localStorage.getItem('coaching_sheet_data');
+  if (saved) {
+    parseTSVData(saved);
+    document.getElementById('sync-dot').className='sync-dot ok';
+    document.getElementById('sync-label').textContent=lists.esercizi.length+' esercizi · '+lists.metodologie.length+' metod.';
+  } else {
+    document.getElementById('sync-dot').className='sync-dot err';
+    document.getElementById('sync-label').textContent='Nessun dato — clicca per importare';
   }
 }
 
+function openImport() {
+  document.getElementById('import-overlay').classList.add('open');
+  document.getElementById('import-status').textContent='';
+}
+
+function closeImport() {
+  document.getElementById('import-overlay').classList.remove('open');
+}
+
+function importData() {
+  const text = document.getElementById('import-textarea').value.trim();
+  if (!text) {
+    document.getElementById('import-status').textContent = 'Incolla i dati prima di procedere.';
+    return;
+  }
+  // Salva in localStorage
+  localStorage.setItem('coaching_sheet_data', text);
+  // Ricarica liste
+  lists.esercizi = [];
+  lists.metodologie = [];
+  lists.utenti = [];
+  parseTSVData(text);
+  document.getElementById('sync-dot').className='sync-dot ok';
+  document.getElementById('sync-label').textContent=lists.esercizi.length+' esercizi · '+lists.metodologie.length+' metod.';
+  document.getElementById('import-status').textContent = '✓ ' + lists.esercizi.length + ' esercizi, ' + lists.utenti.length + ' utenti caricati.';
+  setTimeout(closeImport, 1200);
+}
+
 function parseCSVLine(line) {
-  const cols = []; let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    if (line[i] === '"') { inQ = !inQ; continue; }
-    if (line[i] === ',' && !inQ) { cols.push(cur); cur = ''; continue; }
-    cur += line[i];
+  const cols=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){
+      if(inQ && line[i+1]==='"'){cur+='"';i++;continue;}
+      inQ=!inQ; continue;
+    }
+    if(ch===','&&!inQ){cols.push(cur);cur='';continue;}
+    cur+=ch;
   }
   cols.push(cur);
   return cols;
 }
 
+// ── STRUTTURA PARSING (replica logica App Script) ────────────────────────────
+function parseStruttura(val) {
+  if (!val) return { serie:'', ripetizioni:'', percentuale:'', carico:'', recupero:'', consiglio:'' };
+
+  // Normalizza: · → * (punto medio usato nell'app → asterisco per il parser)
+  const valNorm = val.trim().replace(/·/g, '*');
+  const s  = valNorm.toUpperCase();
+  // Normalizza virgola decimale: 77,5 → 77.5
+  const sn = s.replace(/(\d),(\d)/g, '$1.$2');
+
+  // ── 1) FOR TIME  "30 for time" ───────────────────────────────────────────────
+  const mFT = s.match(/^(\d+)\s*FOR\s*TIME/);
+  if (mFT) {
+    return { serie:'', ripetizioni:mFT[1], percentuale:'', carico:'', recupero:'', consiglio:'' };
+  }
+
+  // ── 2) MAV con @  "MAV3@8, 90% 3*4" → niente ────────────────────────────────
+  if (s.match(/MAV\d+@\d+/)) {
+    return { serie:'', ripetizioni:'', percentuale:'', carico:'', recupero:'', consiglio:'' };
+  }
+
+  // ── 3) REST-PAUSE  "5 + 20" + MAX*4"  o  "5 + 20" + MAX·4" ─────────────────
+  // Contiene + e (virgolette doppie o ") e termina con *N
+  if (s.includes('+') && (s.includes('\"') || s.includes('\u201d') || s.includes('"')) && s.match(/\*\s*\d+\s*$/)) {
+    const m = s.match(/\*\s*(\d+)\s*$/);
+    return { serie: m ? m[1] : '', ripetizioni:'', percentuale:'', carico:'', recupero:'', consiglio:'' };
+  }
+
+  // ── 4) MONOLATERALE / STRIPPING  (+ con * finale) ────────────────────────────
+  // Es: "8+8*4" monolaterale, "5+5+5*4" stripping
+  if (s.includes('+') && s.match(/\*\s*\d+$/)) {
+    const starIdx = s.lastIndexOf('*');
+    const repPart = s.substring(0, starIdx);
+    const serPart = s.substring(starIdx + 1);
+    const parts   = repPart.split('+').map(x => x.trim()).filter(Boolean);
+    const serN    = parseInt(serPart.trim(), 10);
+
+    if (parts.length === 2) {
+      // monolaterale → primo numero = rip per lato
+      const r = parseInt(parts[0], 10);
+      return { serie: isNaN(serN)?'':String(serN), ripetizioni: isNaN(r)?'':String(r), percentuale:'', carico:'', recupero:'', consiglio:'' };
+    }
+    if (parts.length >= 3) {
+      // stripping → somma tutto
+      const tot = parts.reduce((t,v) => t + (parseInt(v,10)||0), 0);
+      return { serie: isNaN(serN)?'':String(serN), ripetizioni: String(tot), percentuale:'', carico:'', recupero:'', consiglio:'' };
+    }
+  }
+
+  // ── 5) EMOM  "20\'5RPM"  o  "80% 9\' 1RPM" ──────────────────────────────────
+  if (s.match(/\d+'\s*\d*RPM/)) {
+    const minM  = s.match(/(\d+)'/);
+    const rpmM  = s.match(/(\d+)RPM/);
+    const percM = sn.match(/(\d+(?:\.\d+)?)\s*%/);
+    const kgM   = sn.match(/(\d+(?:\.\d+)?)\s*KG/);
+    return {
+      serie:       minM  ? minM[1]  : '',
+      ripetizioni: rpmM  ? rpmM[1]  : '',
+      percentuale: percM ? percM[1]+'%' : '',
+      carico:      kgM   ? kgM[1]   : '',
+      recupero: '', consiglio: ''
+    };
+  }
+
+  // ── 6) PROGRESSIONE INTERNA con virgola  "100kg 3*3, 110kg 2*2" ──────────────
+  // Dopo normalizzazione decimale la virgola che rimane è separatore blocchi
+  // Ma attenzione: sn ha già sostituito virgole decimali, quindi virgole rimaste = separatori
+  if (sn.includes(',')) {
+    const blocchi = sn.split(/\s*,\s*/);
+    let tot = 0;
+    blocchi.forEach(b => { const m = b.match(/\*(\d+)/); if (m) tot += parseInt(m[1],10); });
+    return { serie: tot>0?String(tot):'', ripetizioni:'', percentuale:'', carico:'', recupero: DEFAULT_RECUPERO, consiglio:'Segna RPE' };
+  }
+
+  // ── 7) STANDARD: estrai kg, %, serie*rip, piramidale ─────────────────────────
+  let serie='', rip='', perc='', carico='', consiglio='';
+
+  const kgM   = sn.match(/(\d+(?:\.\d+)?)\s*KG/);
+  if (kgM)   carico = kgM[1];
+
+  const percM = sn.match(/(\d+(?:\.\d+)?)\s*%/);
+  if (percM) perc = percM[1] + '%';
+
+  // Rimuovi kg e % dalla stringa per estrarre serie*rip
+  let sp = sn
+    .replace(/\d+(?:\.\d+)?\s*KG/gi, '')
+    .replace(/\d+(?:\.\d+)?\s*%/gi, '');
+
+  // Rimuovi minuti tipo "20'" se non è EMOM
+  if (sp.includes("'") && !sp.includes('RPM')) sp = sp.replace(/\d+'\s*/g, '');
+
+  if (sp.includes('*')) {
+    // es. "5*4" → rip=5, serie=4
+    const parti = sp.split('*');
+    const r  = parti[0].match(/\d+/);
+    const s2 = parti[1] ? parti[1].match(/\d+/) : null;
+    if (r)  rip   = r[0];
+    if (s2) serie = s2[0];
+  } else if (sp.includes('-')) {
+    // piramidale "12-10-8-8" → serie = numero di elementi
+    const nums = sp.split('-').filter(x => x.match(/\d+/));
+    if (nums.length > 1) serie = String(nums.length);
+  }
+
+  return { serie, ripetizioni: rip, percentuale: perc, carico, recupero: DEFAULT_RECUPERO, consiglio };
+}
+
 // ── GIORNI ────────────────────────────────────────────────────────────────────
 function addDay() {
   const id = uid();
-  const num = giorni.length + 1;
-  giorni.push({ id, nome: 'Giorno ' + num, esercizi: [] });
-  renderDay(giorni[giorni.length - 1]);
-  updateInfo();
+  const num = giorni.length+1;
+  giorni.push({id, nome:'Giorno '+num, esercizi:[]});
+  renderDay(giorni[giorni.length-1]);
 }
 
 function removeDay(dayId) {
   if (!confirm('Eliminare questo giorno?')) return;
-  giorni = giorni.filter(d => d.id !== dayId);
-  document.getElementById('day-' + dayId).remove();
-  updateInfo();
+  giorni = giorni.filter(d=>d.id!==dayId);
+  document.getElementById('day-'+dayId).remove();
 }
 
 function renderDay(day) {
-  const settimane = parseInt(document.getElementById('settimane').value) || 4;
+  const sw = parseInt(document.getElementById('settimane').value)||4;
   const container = document.getElementById('giorni-container');
-
   const div = document.createElement('div');
-  div.className = 'giorno-block';
-  div.id = 'day-' + day.id;
-
-  div.innerHTML = `
-    <div class="giorno-header" onclick="toggleDay('${day.id}')">
+  div.className='giorno-block'; div.id='day-'+day.id;
+  div.innerHTML=`
+    <div class="giorno-header">
       <div class="giorno-title">
         <input type="text" value="${day.nome}" onclick="event.stopPropagation()"
           onchange="updateDayName('${day.id}',this.value)"
-          style="background:transparent;border:none;color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.08em;width:120px;outline:none;cursor:text">
+          style="background:transparent;border:none;color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.08em;width:110px;outline:none;">
         <span class="giorno-count" id="day-count-${day.id}">0 esercizi</span>
       </div>
-      <div class="giorno-actions" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost" onclick="removeDay('${day.id}')" style="color:var(--muted);font-size:12px">✕ Elimina</button>
+      <div style="display:flex;gap:4px">
+        <button class="btn-ghost" onclick="removeDay('${day.id}')" style="font-size:11px">✕ Elimina</button>
       </div>
     </div>
     <div class="giorno-body" id="day-body-${day.id}">
+      <div id="col-head-${day.id}"></div>
       <div id="ex-list-${day.id}"></div>
       <button class="btn-add-ex" onclick="addExercise('${day.id}')">+ Aggiungi esercizio</button>
-    </div>
-  `;
-
+    </div>`;
   container.appendChild(div);
-  renderColHeaders(day.id, settimane);
+  renderColHeaders(day.id, sw);
 }
 
-function renderColHeaders(dayId, settimane) {
-  const list = document.getElementById('ex-list-' + dayId);
-  // Build grid template
-  const gt = buildGridTemplate(settimane);
-
-  let html = `<div class="ex-col-headers" style="grid-template-columns:${gt}">`;
-  html += `<div class="col-header"></div>`; // del button
-  html += `<div class="col-header">Esercizio</div>`;
-  html += `<div class="col-header">Metodologia</div>`;
-  html += `<div class="col-header">Note</div>`;
-  for (let w = 1; w <= settimane; w++) {
-    html += `<div class="col-header" style="grid-column:span 3;text-align:center;border-left:1px solid var(--border);padding-left:8px">W${w}</div>`;
-  }
-  // sub-headers row
-  html += `</div>`;
-  html += `<div class="ex-col-headers" style="grid-template-columns:${gt};margin-bottom:8px">`;
-  html += `<div></div><div></div><div></div><div></div>`;
-  for (let w = 1; w <= settimane; w++) {
-    html += `<div class="col-header" style="border-left:1px solid var(--border);padding-left:8px">Struttura</div>`;
-    html += `<div class="col-header">Rec.</div>`;
-    html += `<div class="col-header">Consiglio</div>`;
-  }
-  html += `</div>`;
-
-  const headDiv = document.createElement('div');
-  headDiv.id = 'col-head-' + dayId;
-  headDiv.innerHTML = html;
-  list.parentElement.insertBefore(headDiv, list);
+function gt(sw) {
+  // drag | esercizio+mini | note | metodologia | prog-button
+  return '18px 18px 220px 130px 130px 60px';
 }
 
-function buildGridTemplate(settimane) {
-  // del(28px) esercizio(180px) metod(140px) note(130px) then per week: struttura(110px) rec(70px) cons(100px)
-  let t = '28px 180px 140px 130px';
-  for (let w = 0; w < settimane; w++) t += ' 110px 70px 100px';
-  return t;
+function renderColHeaders(dayId, sw) {
+  const head = document.getElementById('col-head-'+dayId);
+  let h = `<div class="col-heads" style="grid-template-columns:${gt(sw)}">`;
+  h += '<div></div><div></div><div class="col-h">Esercizio</div><div class="col-h">Note</div><div class="col-h">Metodologia</div><div class="col-h">Prog.</div>';
+  h += '</div>';
+  head.innerHTML = h;
 }
 
-function updateDayName(dayId, val) {
-  const d = giorni.find(d => d.id === dayId);
-  if (d) d.nome = val;
-}
-
-function toggleDay(dayId) {
-  const body = document.getElementById('day-body-' + dayId);
-  const head = document.getElementById('col-head-' + dayId);
-  const hidden = body.style.display === 'none';
-  body.style.display = hidden ? '' : 'none';
-  if (head) head.style.display = hidden ? '' : 'none';
+function updateDayName(dayId,val) {
+  const d=giorni.find(d=>d.id===dayId); if(d) d.nome=val;
 }
 
 // ── EXERCISES ─────────────────────────────────────────────────────────────────
 function addExercise(dayId) {
-  const settimane = parseInt(document.getElementById('settimane').value) || 4;
-  const day = giorni.find(d => d.id === dayId);
-  if (!day) return;
-
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  const day = giorni.find(d=>d.id===dayId); if(!day) return;
   const exId = uid();
   const ex = {
-    id: exId, esercizio: '', blocco: '',
-    metodologia: '', note: '',
-    settimane: Array.from({length: settimane}, () => ({ struttura: '', recupero: '', consiglio: '' }))
+    id:exId, esercizio:'', blocco:'', metodologia:'', note:'',
+    settimane: Array.from({length:sw},()=>({struttura:'',recupero:'',consiglio:'',serie:'',ripetizioni:'',percentuale:'',carico:''}))
   };
   day.esercizi.push(ex);
-  renderExercise(dayId, ex, settimane);
+  renderExRow(dayId, ex, sw);
   updateDayCount(dayId);
-  updateInfo();
+  scheduleAutosave();
 }
 
-function renderExercise(dayId, ex, settimane) {
-  const list = document.getElementById('ex-list-' + dayId);
-  const gt = buildGridTemplate(settimane);
-
+function renderExRow(dayId, ex, sw) {
+  const list = document.getElementById('ex-list-'+dayId);
   const row = document.createElement('div');
-  row.className = 'ex-row';
-  row.id = 'ex-' + ex.id;
-  row.style.gridTemplateColumns = gt;
+  row.className='ex-row'; row.id='ex-'+ex.id;
+  row.style.gridTemplateColumns=gt(sw);
+  row.draggable=true;
+  row.addEventListener('dragstart', e=>{ dragSrc={dayId,exId:ex.id}; row.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+  row.addEventListener('dragend', ()=>{ row.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over')); });
+  row.addEventListener('dragover', e=>{ e.preventDefault(); row.classList.add('drag-over'); });
+  row.addEventListener('dragleave', ()=>row.classList.remove('drag-over'));
+  row.addEventListener('drop', e=>{ e.preventDefault(); row.classList.remove('drag-over'); dropExercise(dayId,ex.id); });
 
-  let weekCols = '';
-  for (let w = 0; w < settimane; w++) {
-    const sw = ex.settimane[w] || { struttura: '', recupero: '', consiglio: '' };
-    const borderStyle = 'border-left:1px solid var(--border);padding-left:6px';
-    weekCols += `
-      <div class="ex-field" style="${borderStyle}">
-        <input type="text" value="${sw.struttura}" placeholder="es. 70% 5·5"
-          onchange="updateWeek('${ex.id}',${w},'struttura',this.value)">
+  let weekCols='';
+  for(let w=0;w<sw;w++){
+    const sw_data = ex.settimane[w]||{struttura:'',recupero:'',consiglio:''};
+    const sepClass = w===0?'week-sep-col':'week-sep-col';
+    weekCols+=`
+      <div class="ex-field ${sepClass}">
+        <input type="text" value="${sw_data.struttura}" placeholder="es. 70% 5*4"
+          oninput="onStrutturaInput(this,'${ex.id}',${w})"
+          onchange="onStrutturaChange(this,'${ex.id}',${w})">
       </div>
       <div class="ex-field">
-        <input type="text" value="${sw.recupero}" placeholder="2'"
+        <input type="text" value="${sw_data.recupero}" placeholder="${DEFAULT_RECUPERO}"
           onchange="updateWeek('${ex.id}',${w},'recupero',this.value)">
       </div>
-      <div class="ex-field">
-        <input type="text" value="${sw.consiglio}" placeholder="RPE8"
+      <div class="ex-field" style="position:relative">
+        <input type="text" value="${sw_data.consiglio}" placeholder="RPE8" autocomplete="off"
+          oninput="acConsiglio(this,'${ex.id}',${w})"
+          onkeydown="acKey(event,this)" onblur="acBlur(this)"
           onchange="updateWeek('${ex.id}',${w},'consiglio',this.value)">
+        <div class="ac-list" id="ac-cons-${ex.id}-${w}"></div>
       </div>`;
   }
 
-  row.innerHTML = `
-    <div style="display:flex;align-items:center;padding-top:2px">
-      <button class="btn btn-ghost" onclick="removeExercise('${dayId}','${ex.id}')" style="padding:4px;font-size:11px">✕</button>
+  // add hover tooltip events
+  row.addEventListener('mouseenter', ()=>showTooltip(ex.id, row));
+  row.addEventListener('mouseleave', ()=>hideTooltip());
+
+  row.innerHTML=`
+    <div class="drag-handle" title="Trascina per riordinare">⠿</div>
+    <div class="del-btn-wrap">
+      <button class="del-btn" onclick="removeExercise('${dayId}','${ex.id}')" title="Elimina esercizio">✕</button>
     </div>
     <div class="ex-field" style="position:relative">
-      <input type="text" id="inp-ex-${ex.id}" value="${ex.esercizio}" placeholder="Esercizio..." autocomplete="off"
+      <input type="text" value="${esc(ex.esercizio)}" placeholder="Esercizio..." autocomplete="off"
         oninput="acExercise(this,'${ex.id}')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
         onchange="updateEx('${ex.id}','esercizio',this.value)">
       <div class="ac-list" id="ac-ex-${ex.id}"></div>
     </div>
     <div class="ex-field" style="position:relative">
-      <input type="text" id="inp-met-${ex.id}" value="${ex.metodologia}" placeholder="Metodologia..." autocomplete="off"
-        oninput="acMetNote(this,'${ex.id}','metodologia')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
-        onchange="updateEx('${ex.id}','metodologia',this.value)">
-      <div class="ac-list" id="ac-met-${ex.id}"></div>
-    </div>
-    <div class="ex-field" style="position:relative">
-      <input type="text" id="inp-note-${ex.id}" value="${ex.note}" placeholder="Note..." autocomplete="off"
+      <input type="text" value="${esc(ex.note)}" placeholder="Note..." autocomplete="off"
         oninput="acMetNote(this,'${ex.id}','note')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
         onchange="updateEx('${ex.id}','note',this.value)">
       <div class="ac-list" id="ac-note-${ex.id}"></div>
     </div>
-    ${weekCols}
-  `;
-
+    <div class="ex-field" style="position:relative">
+      <input type="text" value="${esc(ex.metodologia)}" placeholder="Metodologia..." autocomplete="off"
+        oninput="acMetNote(this,'${ex.id}','metodologia')" onkeydown="acKey(event,this)" onblur="acBlur(this)"
+        onchange="onMetodologiaChange(this,'${ex.id}')">
+      <div class="ac-list" id="ac-met-${ex.id}"></div>
+    </div>
+    <div class="prog-btn-wrap">
+      <button class="prog-btn" onclick="openProg('${ex.id}',this)" title="Progressioni">prog</button>
+    </div>`;
   list.appendChild(row);
 }
 
+function dropExercise(dayId, targetExId) {
+  if (!dragSrc || dragSrc.dayId !== dayId || dragSrc.exId === targetExId) return;
+  const day = giorni.find(d=>d.id===dayId); if(!day) return;
+  const srcIdx = day.esercizi.findIndex(e=>e.id===dragSrc.exId);
+  const tgtIdx = day.esercizi.findIndex(e=>e.id===targetExId);
+  if (srcIdx<0||tgtIdx<0) return;
+  const [moved] = day.esercizi.splice(srcIdx,1);
+  day.esercizi.splice(tgtIdx,0,moved);
+  // re-render list
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  const list = document.getElementById('ex-list-'+dayId);
+  list.innerHTML='';
+  day.esercizi.forEach(ex=>renderExRow(dayId,ex,sw));
+  dragSrc=null;
+  scheduleAutosave();
+}
+
 function removeExercise(dayId, exId) {
-  const day = giorni.find(d => d.id === dayId);
-  if (day) day.esercizi = day.esercizi.filter(e => e.id !== exId);
-  const el = document.getElementById('ex-' + exId);
-  if (el) el.remove();
+  const day=giorni.find(d=>d.id===dayId); if(day) day.esercizi=day.esercizi.filter(e=>e.id!==exId);
+  const el=document.getElementById('ex-'+exId); if(el) el.remove();
   updateDayCount(dayId);
-  updateInfo();
+  scheduleAutosave();
 }
 
 function updateEx(exId, field, value) {
-  for (const day of giorni) {
-    const ex = day.esercizi.find(e => e.id === exId);
-    if (ex) { ex[field] = value; return; }
-  }
+  for(const day of giorni){ const ex=day.esercizi.find(e=>e.id===exId); if(ex){ex[field]=value;break;} }
+  scheduleAutosave();
 }
 
-function updateWeek(exId, weekIdx, field, value) {
-  for (const day of giorni) {
-    const ex = day.esercizi.find(e => e.id === exId);
-    if (ex) { ex.settimane[weekIdx][field] = value; return; }
-  }
+function updateWeek(exId, wIdx, field, value) {
+  for(const day of giorni){ const ex=day.esercizi.find(e=>e.id===exId); if(ex){ex.settimane[wIdx][field]=value;break;} }
+  scheduleAutosave();
 }
 
 function updateDayCount(dayId) {
-  const day = giorni.find(d => d.id === dayId);
-  const el = document.getElementById('day-count-' + dayId);
-  if (el && day) el.textContent = day.esercizi.length + ' esercizi';
+  const day=giorni.find(d=>d.id===dayId);
+  const el=document.getElementById('day-count-'+dayId);
+  if(el&&day) el.textContent=day.esercizi.length+' esercizi';
 }
 
-// ── SETTIMANE CHANGE ──────────────────────────────────────────────────────────
-function onSettimaneChange() {
-  // Rebuild all days
-  const settimane = parseInt(document.getElementById('settimane').value) || 4;
-  // Update each exercise's settimane array
-  giorni.forEach(day => {
-    day.esercizi.forEach(ex => {
-      while (ex.settimane.length < settimane)
-        ex.settimane.push({ struttura: '', recupero: '', consiglio: '' });
-      ex.settimane = ex.settimane.slice(0, settimane);
+// ── STRUTTURA HANDLERS ────────────────────────────────────────────────────────
+function onStrutturaInput(input, exId, wIdx) {
+  updateWeek(exId, wIdx, 'struttura', input.value);
+}
+
+function onStrutturaChange(input, exId, wIdx) {
+  const val = input.value;
+  updateWeek(exId, wIdx, 'struttura', val);
+  const parsed = parseStruttura(val);
+
+  // Update parsed fields in state
+  for(const day of giorni){
+    const ex=day.esercizi.find(e=>e.id===exId);
+    if(ex){
+      Object.assign(ex.settimane[wIdx], parsed, {struttura:val});
+      // if W1 changed: propagate recupero and consiglio to other weeks if they are empty
+      if(wIdx===0){
+        const sw = ex.settimane.length;
+        for(let w=1;w<sw;w++){
+          const row = document.getElementById('ex-'+exId);
+          if(!row) continue;
+          const allInputs = row.querySelectorAll('input');
+          // recupero: col index = 4 + w*3 + 1 (0-based: drag,es,note,met then per week: str,rec,cons)
+          // easier: update state and sync inputs
+          if(!ex.settimane[w].recupero) {
+            ex.settimane[w].recupero = parsed.recupero;
+          }
+          if(!ex.settimane[w].consiglio && parsed.consiglio) {
+            ex.settimane[w].consiglio = parsed.consiglio;
+          }
+        }
+        syncRowInputs(exId);
+      }
+      break;
+    }
+  }
+}
+
+function syncRowInputs(exId) {
+  for(const day of giorni){
+    const ex=day.esercizi.find(e=>e.id===exId);
+    if(!ex) continue;
+    ex.settimane.forEach((sw,w)=>{
+      // find inputs by their onchange attributes
+      const recInput = document.querySelector(`input[onchange="updateWeek('${exId}',${w},'recupero',this.value)"]`);
+      const consInput = document.querySelector(`input[onchange="updateWeek('${exId}',${w},'consiglio',this.value)"]`);
+      if(recInput && !recInput.value) recInput.value = sw.recupero||'';
+      if(consInput && !consInput.value) consInput.value = sw.consiglio||'';
     });
-  });
-  // Re-render all days
-  const savedGiorni = [...giorni];
-  document.getElementById('giorni-container').innerHTML = '';
-  giorni = [];
-  savedGiorni.forEach(day => {
-    giorni.push(day);
-    renderDay(day);
-    day.esercizi.forEach(ex => renderExercise(day.id, ex, settimane));
-    updateDayCount(day.id);
-  });
-  updateInfo();
+    break;
+  }
+}
+
+// ── METODOLOGIA → CONSIGLIO DEFAULT ──────────────────────────────────────────
+function onMetodologiaChange(input, exId) {
+  const val = input.value;
+  updateEx(exId,'metodologia',val);
+  // Set consiglio default for W1 if empty
+  const consiglioDefault = getConsiglioDefault(val);
+  if (!consiglioDefault) return;
+  for(const day of giorni){
+    const ex=day.esercizi.find(e=>e.id===exId);
+    if(!ex) continue;
+    ex.settimane.forEach((sw,w)=>{
+      if(!sw.consiglio){
+        sw.consiglio = consiglioDefault;
+        const inp = document.querySelector(`input[onchange="updateWeek('${exId}',${w},'consiglio',this.value)"]`);
+        if(inp) inp.value = consiglioDefault;
+      }
+    });
+    break;
+  }
+}
+
+function getConsiglioDefault(metodologia) {
+  // Basic defaults — can be extended with _Liste_dinamiche data
+  const m = metodologia.toLowerCase();
+  if (m.includes('trova carico')) return 'Segna RPE';
+  if (m.includes('rest pause')) return 'Segna RPE';
+  if (m.includes('cluster')) return 'Intensità crescente';
+  if (m.includes('bw')) return 'Segna RPE';
+  if (m.includes('for time')) return 'Segna tempo';
+  if (m.includes('amrap')) return 'Segna reps';
+  if (m.includes('stripping')) return 'Scala 10%';
+  return 'Segna RPE';
 }
 
 // ── AUTOCOMPLETE ──────────────────────────────────────────────────────────────
-function acSidebar(input, type) {
-  const val = input.value.toLowerCase();
-  const listEl = document.getElementById('ac-' + input.id);
-  listEl.innerHTML = '';
-  const items = lists.utenti.filter(u => u.nome.toLowerCase().includes(val)).slice(0, 8);
-  if (!val || !items.length) { listEl.classList.remove('open'); return; }
-  items.forEach(item => {
-    const d = document.createElement('div');
-    d.className = 'ac-item';
-    d.innerHTML = `<span>${item.nome}</span><span class="ac-badge">${item.email}</span>`;
-    d.onmousedown = () => {
-      input.value = item.nome;
-      document.getElementById('email_cliente').value = item.email;
-      listEl.classList.remove('open');
-    };
+function acSidebar(input) {
+  const val=input.value.toLowerCase();
+  const listEl=document.getElementById('ac-nome_cliente');
+  listEl.innerHTML='';
+  const items=lists.utenti.filter(u=>u.nome.toLowerCase().includes(val)).slice(0,8);
+  if(!val||!items.length){listEl.classList.remove('open');return;}
+  items.forEach(item=>{
+    const d=document.createElement('div'); d.className='ac-item';
+    d.innerHTML=`<span>${item.nome}</span><span class="ac-badge">${item.email}</span>`;
+    d.onmousedown=()=>{ input.value=item.nome; document.getElementById('email_cliente').value=item.email; listEl.classList.remove('open'); };
     listEl.appendChild(d);
   });
   listEl.classList.add('open');
 }
 
 function acExercise(input, exId) {
-  const val = input.value.toLowerCase();
-  const listEl = document.getElementById('ac-ex-' + exId);
-  listEl.innerHTML = '';
-  const items = lists.esercizi.filter(e => e.nome.toLowerCase().includes(val)).slice(0, 8);
-  if (!val || !items.length) { listEl.classList.remove('open'); return; }
-  items.forEach(item => {
-    const d = document.createElement('div');
-    d.className = 'ac-item';
-    d.innerHTML = `<span>${item.nome}</span><span class="ac-badge">${item.blocco}</span>`;
-    d.onmousedown = () => {
-      input.value = item.nome;
-      updateEx(exId, 'esercizio', item.nome);
-      updateEx(exId, 'blocco', item.blocco);
-      listEl.classList.remove('open');
+  const val=input.value.toLowerCase();
+  const listEl=document.getElementById('ac-ex-'+exId);
+  listEl.innerHTML=''; acIdx=-1;
+  const items=lists.esercizi.filter(e=>e.nome.toLowerCase().includes(val)).slice(0,8);
+  if(!val||!items.length){listEl.classList.remove('open');return;}
+  items.forEach(item=>{
+    const d=document.createElement('div'); d.className='ac-item';
+    d.innerHTML=`<span>${item.nome}</span><span class="ac-badge">${item.blocco}</span>`;
+    d.onmousedown=()=>{
+      input.value=item.nome;
+      updateEx(exId,'esercizio',item.nome);
+      updateEx(exId,'blocco',item.blocco);
+      listEl.classList.remove('open'); acIdx=-1;
     };
     listEl.appendChild(d);
   });
@@ -772,174 +877,854 @@ function acExercise(input, exId) {
 }
 
 function acMetNote(input, exId, field) {
-  const val = input.value.toLowerCase();
-  const listId = field === 'metodologia' ? 'ac-met-' + exId : 'ac-note-' + exId;
-  const listEl = document.getElementById(listId);
-  listEl.innerHTML = '';
-  const items = lists.metodologie.filter(m => m.toLowerCase().includes(val)).slice(0, 8);
-  if (!val || !items.length) { listEl.classList.remove('open'); return; }
-  items.forEach(item => {
-    const d = document.createElement('div');
-    d.className = 'ac-item';
-    d.textContent = item;
-    d.onmousedown = () => {
-      input.value = item;
-      updateEx(exId, field, item);
-      listEl.classList.remove('open');
+  const val=input.value.toLowerCase();
+  const listId=field==='metodologia'?'ac-met-'+exId:'ac-note-'+exId;
+  const listEl=document.getElementById(listId);
+  listEl.innerHTML=''; acIdx=-1;
+  const items=lists.metodologie.filter(m=>m.toLowerCase().includes(val)).slice(0,8);
+  if(!val||!items.length){listEl.classList.remove('open');return;}
+  items.forEach(item=>{
+    const d=document.createElement('div'); d.className='ac-item'; d.textContent=item;
+    d.onmousedown=()=>{
+      input.value=item;
+      if(field==='metodologia') onMetodologiaChange(input,exId);
+      else updateEx(exId,field,item);
+      listEl.classList.remove('open'); acIdx=-1;
     };
     listEl.appendChild(d);
   });
   listEl.classList.add('open');
 }
 
-let acIdx = -1;
-function acKey(e, input) {
-  const list = input.parentElement.querySelector('.ac-list');
-  if (!list || !list.classList.contains('open')) return;
-  const items = list.querySelectorAll('.ac-item');
-  if (e.key === 'ArrowDown') { acIdx = Math.min(acIdx+1, items.length-1); acHi(items); e.preventDefault(); }
-  else if (e.key === 'ArrowUp') { acIdx = Math.max(acIdx-1, -1); acHi(items); e.preventDefault(); }
-  else if (e.key === 'Enter' && acIdx >= 0) { items[acIdx].dispatchEvent(new MouseEvent('mousedown')); acIdx=-1; e.preventDefault(); }
-  else if (e.key === 'Escape') { list.classList.remove('open'); acIdx=-1; }
-  else { acIdx = -1; }
+function acConsiglio(input, exId, wIdx) {
+  const val=input.value.toLowerCase();
+  const listEl=document.getElementById(`ac-cons-${exId}-${wIdx}`);
+  if(!listEl){return;}
+  listEl.innerHTML=''; acIdx=-1;
+  const consigli=['Segna RPE','Segna tempo','Segna reps','Buffer 1','Buffer 2','Buffer 3','RPE 7','RPE 8','RPE 8.5','RPE 9','Intensità crescente','Scala 10%','Segna kg'];
+  const items=consigli.filter(c=>c.toLowerCase().includes(val)).slice(0,8);
+  if(!val||!items.length){listEl.classList.remove('open');return;}
+  items.forEach(item=>{
+    const d=document.createElement('div'); d.className='ac-item'; d.textContent=item;
+    d.onmousedown=()=>{ input.value=item; updateWeek(exId,wIdx,'consiglio',item); listEl.classList.remove('open'); acIdx=-1; };
+    listEl.appendChild(d);
+  });
+  listEl.classList.add('open');
 }
-function acHi(items) { items.forEach((el,i) => el.classList.toggle('hi', i===acIdx)); }
-function acBlur(input) {
-  setTimeout(() => {
-    const list = input.parentElement.querySelector('.ac-list');
-    if (list) { list.classList.remove('open'); acIdx=-1; }
-  }, 160);
+
+function acKey(e,input){
+  const list = input.parentElement.querySelector('.ac-list');
+  const listOpen = list && list.classList.contains('open');
+
+  // If autocomplete is open, handle it first
+  if(listOpen){
+    const items = list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){acIdx=Math.min(acIdx+1,items.length-1);acHi(items);e.preventDefault();return;}
+    if(e.key==='ArrowUp'){acIdx=Math.max(acIdx-1,-1);acHi(items);e.preventDefault();return;}
+    if(e.key==='Enter'){
+      if(acIdx>=0) items[acIdx].dispatchEvent(new MouseEvent('mousedown'));
+      else if(items.length>0) items[0].dispatchEvent(new MouseEvent('mousedown'));
+      acIdx=-1; e.preventDefault(); return;
+    }
+    if(e.key==='Escape'){list.classList.remove('open');acIdx=-1;return;}
+    acIdx=-1;
+  }
+
+  // Arrow/Tab navigation between inputs — works in popup AND in ex-rows
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'||e.key==='ArrowRight'||e.key==='ArrowLeft'||e.key==='Tab'){
+    // collect navigable inputs: popup first, then fallback to all row inputs
+    const popup = document.getElementById('prog-popup');
+    let scope = null;
+    if(popup.classList.contains('open')) scope = popup;
+    else {
+      // find parent ex-row
+      let el = input;
+      while(el && !el.classList.contains('ex-row')) el = el.parentElement;
+      if(el) scope = el;
+    }
+    if(scope){
+      const allInputs = Array.from(scope.querySelectorAll('input'));
+      const idx = allInputs.indexOf(input);
+      if(idx>=0){
+        let delta = 0;
+        if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key==='Tab') delta=1;
+        if(e.key==='ArrowUp'||e.key==='ArrowLeft') delta=-1;
+        // ArrowRight/Left: only navigate if at end/start of text
+        if(e.key==='ArrowRight'&&input.selectionStart!==input.value.length) return;
+        if(e.key==='ArrowLeft'&&input.selectionStart!==0) return;
+        let next = idx + delta;
+        if(next<0) next=allInputs.length-1;
+        if(next>=allInputs.length) next=0;
+        allInputs[next].focus();
+        e.preventDefault();
+      }
+    }
+  }
+}
+function acHi(items){items.forEach((el,i)=>el.classList.toggle('hi',i===acIdx));}
+function acBlur(input){setTimeout(()=>{const list=input.parentElement.querySelector('.ac-list');if(list){list.classList.remove('open');acIdx=-1;}},160);}
+
+// ── SETTIMANE CHANGE ──────────────────────────────────────────────────────────
+function onSettimaneChange(){
+  const sw=parseInt(document.getElementById('settimane').value)||4;
+  giorni.forEach(day=>{
+    day.esercizi.forEach(ex=>{
+      while(ex.settimane.length<sw) ex.settimane.push({struttura:'',recupero:'',consiglio:'',serie:'',ripetizioni:'',percentuale:'',carico:''});
+      ex.settimane=ex.settimane.slice(0,sw);
+    });
+  });
+  const saved=[...giorni]; document.getElementById('giorni-container').innerHTML=''; giorni=[];
+  saved.forEach(day=>{
+    giorni.push(day); renderDay(day);
+    day.esercizi.forEach(ex=>renderExRow(day.id,ex,sw));
+    updateDayCount(day.id);
+  });
 }
 
 // ── BUILD CSV ─────────────────────────────────────────────────────────────────
-function buildCSV() {
-  const nome = document.getElementById('nome_cliente').value.trim();
-  const email = document.getElementById('email_cliente').value.trim();
-  const nomeProg = document.getElementById('nome_programma').value.trim();
-  const dataProg = document.getElementById('data_programma').value;
-  const settimane = parseInt(document.getElementById('settimane').value);
-
-  if (!nome || !nomeProg) { showError('Compila Nome cliente e Nome programma nella sidebar.'); return false; }
-
-  const dataF = dataProg ? dataProg.split('-').reverse().join('/') : today();
-  csvData = [];
-
-  for (let w = 1; w <= settimane; w++) {
-    let slot = 1;
-    giorni.forEach(day => {
-      day.esercizi.forEach(ex => {
-        if (!ex.esercizio) return;
-        const sw = ex.settimane[w-1] || {};
+function buildCSV(){
+  const nome=document.getElementById('nome_cliente').value.trim();
+  const email=document.getElementById('email_cliente').value.trim();
+  const nomeProg=document.getElementById('nome_programma').value.trim();
+  const dataProg=document.getElementById('data_programma').value;
+  const sw=parseInt(document.getElementById('settimane').value);
+  if(!nome||!nomeProg){showError('Compila Nome cliente e Nome programma.');return false;}
+  const dataF=dataProg?dataProg.split('-').reverse().join('/'):'';
+  csvData=[];
+  for(let w=1;w<=sw;w++){
+    let slot=1;
+    giorni.forEach(day=>{
+      day.esercizi.forEach(ex=>{
+        if(!ex.esercizio)return;
+        const swData=ex.settimane[w-1]||{};
+        // Parsing on-the-fly se i campi derivati sono vuoti
+        const parsed = parseStruttura(swData.struttura||'');
+        const serie     = swData.serie       || parsed.serie       || '';
+        const rip       = swData.ripetizioni || parsed.ripetizioni || '';
+        const perc      = swData.percentuale || parsed.percentuale || '';
+        const carico    = swData.carico      || parsed.carico      || '';
+        const recupero  = swData.recupero    || parsed.recupero    || '';
+        const consiglio = swData.consiglio   || parsed.consiglio   || '';
+        // struttura: replace * with ·
+        const strutFix=(swData.struttura||'').replace(/\*/g,'·');
+        const esercizio = swData.esercizio !== undefined ? swData.esercizio : ex.esercizio;
+        const nota      = swData.note !== undefined ? swData.note : (ex.note||'');
+        const metod     = swData.metodologia !== undefined ? swData.metodologia : (ex.metodologia||'');
         csvData.push({
-          'email': email,
-          'Nome': nome,
-          'Nome programma': nomeProg,
-          'Data programma': dataF,
-          'Settimana': w,
-          'Giorno': day.nome,
-          'Esercizio': ex.esercizio,
-          'Blocco': ex.blocco,
-          'Note': ex.note || '',
-          'Metodologia': ex.metodologia || '',
-          'Carico': '',
-          'Struttura': sw.struttura || '',
-          'Ripetizioni': extractReps(sw.struttura || ''),
-          'Serie': extractSerie(sw.struttura || ''),
-          'Percentuale %': extractPerc(sw.struttura || ''),
-          'Recupero': sw.recupero || '',
-          'Consiglio': sw.consiglio || '',
-          'Posizione': slot,
-          'Attivo': 'TRUE'
+          'email':email,'Nome':nome,'Nome programma':nomeProg,'Data programma':dataF,
+          'Settimana':w,'Giorno':giorni.indexOf(day)+1,'Esercizio':esercizio,'Blocco':ex.blocco,
+          'Note':nota,'Metodologia':metod,'Carico':carico,
+          'Struttura':strutFix,'Ripetizioni':rip,'Serie':serie,
+          'Percentuale %':perc,'Recupero':recupero,
+          'Consiglio':consiglio,'Posizione':slot,'Attivo':'TRUE'
         });
         slot++;
       });
     });
   }
-
   renderPreview();
-  document.getElementById('preview-wrap').style.display = 'block';
-  hideError();
-  return true;
+  document.getElementById('preview-wrap').style.display='block';
+  hideError(); return true;
 }
 
-function extractReps(struttura) {
-  // e.g. "5·5" → "5", "8-7-6" → "8", "70% 5·5" → "5"
-  const m = struttura.match(/(\d+)[·×x*]/);
-  if (m) return m[1];
-  const m2 = struttura.match(/(\d+)/);
-  return m2 ? m2[1] : '';
+function renderPreview(){
+  if(!csvData.length)return;
+  const cols=Object.keys(csvData[0]);
+  document.getElementById('prev-head').innerHTML='<tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr>';
+  document.getElementById('prev-body').innerHTML=csvData.slice(0,30).map(row=>
+    '<tr>'+cols.map(c=>'<td>'+(row[c]??'')+'</td>').join('')+'</tr>'
+  ).join('')+(csvData.length>30?'<tr><td colspan="'+cols.length+'" style="color:var(--muted);text-align:center;padding:8px">...+'+(csvData.length-30)+' righe</td></tr>':'');
 }
 
-function extractSerie(struttura) {
-  const m = struttura.match(/[·×x*](\d+)/);
-  return m ? m[1] : '';
+// ── AUTOSAVE ─────────────────────────────────────────────────────────────────
+let saveTimer = null;
+function scheduleAutosave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    autosave();
+    updateSidePanel();
+  }, 800);
 }
 
-function extractPerc(struttura) {
-  const m = struttura.match(/(\d+)%/);
-  return m ? m[1] + '%' : '';
+function autosave() {
+  const state = {
+    nome:     document.getElementById('nome_cliente').value,
+    email:    document.getElementById('email_cliente').value,
+    programma:document.getElementById('nome_programma').value,
+    data:     document.getElementById('data_programma').value,
+    settimane:document.getElementById('settimane').value,
+    giorni:   giorni
+  };
+  localStorage.setItem('coaching_program', JSON.stringify(state));
+  const ind = document.getElementById('save-indicator');
+  ind.textContent = 'salvato ' + new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  ind.classList.add('show');
+  clearTimeout(ind._t);
+  ind._t = setTimeout(()=>ind.classList.remove('show'), 2500);
 }
 
-function renderPreview() {
-  if (!csvData.length) return;
-  const cols = Object.keys(csvData[0]);
-  document.getElementById('prev-head').innerHTML = '<tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr>';
-  document.getElementById('prev-body').innerHTML = csvData.slice(0, 30).map(row =>
-    '<tr>' + cols.map(c => '<td>' + (row[c] ?? '') + '</td>').join('') + '</tr>'
-  ).join('') + (csvData.length > 30 ? '<tr><td colspan="' + cols.length + '" style="color:var(--muted);text-align:center;padding:8px">... e altre ' + (csvData.length-30) + ' righe</td></tr>' : '');
+function restoreProgram() {
+  const saved = localStorage.getItem('coaching_program');
+  if (!saved) return;
+  try {
+    const s = JSON.parse(saved);
+    if (s.nome)      document.getElementById('nome_cliente').value  = s.nome;
+    if (s.email)     document.getElementById('email_cliente').value = s.email;
+    if (s.programma) document.getElementById('nome_programma').value= s.programma;
+    if (s.data)      document.getElementById('data_programma').value= s.data;
+    if (s.settimane) document.getElementById('settimane').value     = s.settimane;
+    if (s.giorni && s.giorni.length) {
+      giorni = s.giorni;
+      document.getElementById('giorni-container').innerHTML = '';
+      const sw = parseInt(s.settimane)||4;
+      giorni.forEach(day => {
+        renderDay(day);
+        day.esercizi.forEach(ex => renderExRow(day.id, ex, sw));
+        updateDayCount(day.id);
+      });
+    }
+  } catch(e) { console.warn('Ripristino programma fallito', e); }
+  setTimeout(updateSidePanel, 100);
+}
+
+function nuovoProgramma() {
+  if (!confirm('Sei sicuro? Il programma corrente verrà cancellato.')) return;
+  localStorage.removeItem('coaching_program');
+  document.getElementById('nome_cliente').value  = '';
+  document.getElementById('email_cliente').value = '';
+  document.getElementById('nome_programma').value= '';
+  document.getElementById('data_programma').value= '';
+  document.getElementById('settimane').value     = '4';
+  giorni = [];
+  document.getElementById('giorni-container').innerHTML = '';
+  csvData = [];
+  document.getElementById('preview-wrap').style.display='none';
+  addDay();
+}
+
+// ── VALIDAZIONE ───────────────────────────────────────────────────────────────
+function validateProgram() {
+  const errors = [];
+  const warnings = [];
+  const nome    = document.getElementById('nome_cliente').value.trim();
+  const programma = document.getElementById('nome_programma').value.trim();
+
+  const email = document.getElementById('email_cliente').value.trim();
+  const data  = document.getElementById('data_programma').value.trim();
+
+  if (!nome)      errors.push('Nome cliente mancante');
+  if (!email)     errors.push('Email cliente mancante');
+  if (!programma) errors.push('Nome programma mancante');
+  if (!data)      errors.push('Data programma mancante');
+
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  let totEsercizi = 0;
+  giorni.forEach((day, di) => {
+    const nomeGiorno = 'Giorno ' + (di+1);
+    const esValidi = day.esercizi.filter(e=>e.esercizio);
+    if (!esValidi.length) {
+      warnings.push(nomeGiorno + ': nessun esercizio inserito');
+      return;
+    }
+    totEsercizi += esValidi.length;
+    esValidi.forEach(ex => {
+      if (!ex.metodologia) errors.push(nomeGiorno + ' - ' + ex.esercizio + ': metodologia mancante');
+      if (!ex.blocco) warnings.push(nomeGiorno + ' - ' + ex.esercizio + ': blocco mancante');
+      for (let w=0; w<sw; w++) {
+        const sd = ex.settimane[w]||{};
+        if (!sd.struttura) warnings.push(nomeGiorno + ' - ' + ex.esercizio + ': struttura W'+(w+1)+' vuota');
+      }
+    });
+  });
+  if (totEsercizi === 0) errors.push('Nessun esercizio inserito nel programma');
+
+  return { errors, warnings };
 }
 
 function buildAndExport() {
-  if (buildCSV()) downloadCSV();
+  const { errors, warnings } = validateProgram();
+  if (errors.length || warnings.length) {
+    showValModal(errors, warnings, true);
+  } else {
+    if(buildCSV()) downloadCSV();
+  }
 }
 
-function downloadCSV() {
-  if (!csvData.length) { buildCSV(); return; }
-  const cols = Object.keys(csvData[0]);
-  const lines = [cols.join(','), ...csvData.map(row =>
-    cols.map(c => {
-      const v = String(row[c] ?? '').replace(/"/g, '""');
-      return (v.includes(',') || v.includes('"') || v.includes('\n')) ? '"'+v+'"' : v;
-    }).join(',')
-  )];
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = (document.getElementById('nome_programma').value.trim().replace(/\s+/g,'_') || 'programma') + '_glide.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+function showValModal(errors, warnings, withExport) {
+  const errSec  = document.getElementById('val-errors-section');
+  const warnSec = document.getElementById('val-warnings-section');
+  const errDiv  = document.getElementById('val-errors');
+  const warnDiv = document.getElementById('val-warnings');
+  const expBtn  = document.getElementById('val-export-btn');
+
+  errDiv.innerHTML  = errors.map(e=>'<div class="val-item err">'+e+'</div>').join('');
+  warnDiv.innerHTML = warnings.map(w=>'<div class="val-item warn">'+w+'</div>').join('');
+  errSec.style.display  = errors.length   ? 'block' : 'none';
+  warnSec.style.display = warnings.length ? 'block' : 'none';
+  // Esporta comunque solo se non ci sono errori bloccanti
+  expBtn.style.display  = (withExport && !errors.length) ? 'inline-flex' : 'none';
+  document.getElementById('val-overlay').classList.add('open');
 }
 
-// ── EXPORT PANEL ──────────────────────────────────────────────────────────────
-function toggleExport() {
-  document.getElementById('export-panel').classList.toggle('open');
+function closeValModal() {
+  document.getElementById('val-overlay').classList.remove('open');
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-function uid() { return Math.random().toString(36).substr(2,9); }
-
-function today() {
-  const d = new Date();
-  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+function closeValAndExport() {
+  closeValModal();
+  if(buildCSV()) downloadCSV();
 }
 
-function updateInfo() {
-  const totEx = giorni.reduce((s,d) => s + d.esercizi.length, 0);
-  document.getElementById('sidebar-info').innerHTML =
-    `${giorni.length} giorni<br>${totEx} esercizi totali`;
+function downloadCSV(){
+  if(!csvData.length){buildCSV();return;}
+  const cols=Object.keys(csvData[0]);
+  const sep=',';const lines=[cols.join(sep),...csvData.map(row=>cols.map(c=>{const v=String(row[c]??'').replace(/"/g,'""');return(v.includes(sep)||v.includes('"')||v.includes('\n'))?'"'+v+'"':v;}).join(sep))];
+  const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download=(document.getElementById('nome_programma').value.trim().replace(/\s+/g,'_')||'programma')+'_glide.csv';
+  a.click(); URL.revokeObjectURL(url);
 }
 
-function showError(msg) {
-  const el = document.getElementById('error-bar');
-  el.textContent = msg; el.style.display = 'block';
-}
-function hideError() { document.getElementById('error-bar').style.display = 'none'; }
+function toggleExport(){document.getElementById('export-panel').classList.toggle('open');}
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-document.getElementById('data_programma').value = new Date().toISOString().split('T')[0];
+// ── VOLUME TABLE ─────────────────────────────────────────────────────────────
+const VOL_RANGES = {
+  forza:        { min:6,  opt_lo:10, opt_hi:15, max:18 },
+  ipertrofia:   { min:10, opt_lo:16, opt_hi:22, max:30 },
+  powerbuilding:{ min:8,  opt_lo:12, opt_hi:18, max:22 }
+};
+
+const GRUPPI_WATCH = ['Gambe','Glutei','Catena posteriore','Catena anteriore',
+                      'Petto','Dorso','Spalle','Braccia','Core','Addome'];
+
+function getSeriePerGruppoSettimana() {
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  // result[gruppo][w] = serie totali
+  const result = {};
+  GRUPPI_WATCH.forEach(g=>{ result[g] = Array(sw).fill(0); });
+
+  giorni.forEach(day=>{
+    day.esercizi.forEach(ex=>{
+      if(!ex.esercizio) return;
+      const exData = lists.esercizi.find(e=>e.nome.toLowerCase()===ex.esercizio.toLowerCase());
+      const gruppo = exData ? exData.gruppo : '';
+      if(!gruppo || !result[gruppo]) return;
+      for(let w=0;w<sw;w++){
+        const sd = ex.settimane[w]||{};
+        const {serie} = countSerieFromStruttura(sd.struttura);
+        result[gruppo][w] += serie;
+      }
+    });
+  });
+  return result;
+}
+
+function cellClass(val, range) {
+  if(val === 0) return 'vol-cell-zero';
+  if(val < range.min) return 'vol-cell-low';
+  if(val > range.max) return 'vol-cell-high';
+  return 'vol-cell-ok';
+}
+
+function renderVolTable() {
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  const obj = currentVolObj || 'powerbuilding';
+  const range = VOL_RANGES[obj];
+  const data = getSeriePerGruppoSettimana();
+
+  // Header
+  let html = '<thead><tr><th class="left">Gruppo</th>';
+  for(let w=0;w<sw;w++) html += `<th>W${w+1}</th>`;
+  html += '</tr></thead><tbody>';
+
+  // Righe — mostra solo gruppi con almeno 1 serie o in WATCH primari
+  const PRIMARY = ['Gambe','Petto','Dorso','Spalle','Braccia'];
+  GRUPPI_WATCH.forEach(g=>{
+    const totale = data[g].reduce((a,b)=>a+b,0);
+    if(totale === 0 && !PRIMARY.includes(g)) return;
+    html += `<tr><td class="group-name">${g}</td>`;
+    data[g].forEach(val=>{
+      const cls = cellClass(val, range);
+      html += `<td class="${cls}">${val||'—'}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+
+  document.getElementById('vol-table').innerHTML = html;
+
+  // Note range
+  const objLabel = {forza:'Forza',ipertrofia:'Ipertrofia',powerbuilding:'Powerbuilding'}[obj];
+  document.getElementById('vol-range-note').innerHTML =
+    `Range ${objLabel}: min ${range.min} · ottimale ${range.opt_lo}–${range.opt_hi} · max ${range.max} serie/gruppo/settimana<br>
+    Fonte: Israetel (RP Strength) per ipertrofia · Sheiko/Tuchscherer per forza`;
+}
+
+let currentVolObj = 'powerbuilding';
+
+function setVolObj(btn, obj) {
+  currentVolObj = obj;
+  document.querySelectorAll('.vol-obj-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVolTable();
+}
+
+// ── SIDE PANEL ───────────────────────────────────────────────────────────────
+function getMuscleGroup(nomEx) {
+  const ex = lists.esercizi.find(e=>e.nome.toLowerCase()===nomEx.toLowerCase());
+  return ex ? ex.gruppo : '';
+}
+
+function countSerieFromStruttura(struttura) {
+  if (!struttura) return { serie: 0, mav: false };
+  const s = struttura.toUpperCase();
+  // MAV
+  if (s.includes('MAV')) {
+    const m = s.match(/\*\s*(\d+)/);
+    return { serie: m ? parseInt(m[1]) : 0, mav: true };
+  }
+  // FOR TIME
+  if (s.includes('FOR TIME')) return { serie: 1, mav: false };
+  // piramidale "10-8-6-4"
+  if (s.includes('-') && !s.includes('*') && !s.includes('·')) {
+    const nums = struttura.split('-').filter(x=>/^\d+$/.test(x.trim()));
+    if (nums.length > 1) return { serie: nums.length, mav: false };
+  }
+  // standard: numero dopo * o ·
+  const m = struttura.match(/[*·]\s*(\d+)\s*$/);
+  if (m) return { serie: parseInt(m[1]), mav: false };
+  // progressione interna "8*3, 6*3" → somma serie
+  if (struttura.includes(',')) {
+    let tot = 0;
+    struttura.split(',').forEach(b=>{ const mm=b.match(/[*·]\s*(\d+)/); if(mm) tot+=parseInt(mm[1]); });
+    if (tot > 0) return { serie: tot, mav: false };
+  }
+  return { serie: 0, mav: false };
+}
+
+function updateSidePanel() {
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+
+  // ── MUSCOLI ──
+  const gruppi = {};
+  const ORDINE = ['Gambe','Glutei','Catena posteriore','Catena anteriore','Adduttori',
+                  'Petto','Dorso','Schiena','Spalle','Braccia','Core','Addome','Rehab','Mobilità lombare','Mobilità torace','Mobilità bacino'];
+  giorni.forEach(day=>{
+    day.esercizi.forEach(ex=>{
+      if(!ex.esercizio) return;
+      const g = getMuscleGroup(ex.esercizio);
+      if(!g) return;
+      gruppi[g] = (gruppi[g]||0) + 1;
+    });
+  });
+
+  // Gruppi rilevanti per controllo buchi
+  const WATCH = ['Gambe','Glutei','Petto','Dorso','Spalle','Braccia','Core'];
+  const allGruppi = [...new Set([...WATCH, ...Object.keys(gruppi)])].filter(g=>WATCH.includes(g)||gruppi[g]);
+  const maxCount = Math.max(1, ...Object.values(gruppi));
+
+  const muscHtml = allGruppi.map(g=>{
+    const n = gruppi[g]||0;
+    const zero = n===0;
+    const pct = Math.round((n/maxCount)*100);
+    return `<div class="muscle-row ${zero?'muscle-zero':''}">
+      <span class="muscle-label">${g}</span>
+      <div class="muscle-bar-wrap"><div class="muscle-bar" style="width:${pct}%"></div></div>
+      <span class="muscle-count">${n}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('panel-muscles').innerHTML = muscHtml || '<span style="color:var(--muted);font-size:11px">Nessun esercizio</span>';
+
+  // ── VOLUME ──
+  const volHtml = giorni.map((day, di)=>{
+    let totSerie = 0;
+    const mavList = [];
+    day.esercizi.forEach(ex=>{
+      if(!ex.esercizio) return;
+      // Usa W1 come riferimento, oppure media settimane
+      let maxS = 0, hasMav = false;
+      ex.settimane.slice(0,sw).forEach(sd=>{
+        const {serie, mav} = countSerieFromStruttura(sd.struttura);
+        if(mav) hasMav=true;
+        if(serie>maxS) maxS=serie;
+      });
+      totSerie += maxS;
+      if(hasMav) mavList.push(ex.esercizio);
+    });
+    const mavNote = mavList.length ? `<span class="vol-mav">+MAV</span>` : '';
+    return `<div>
+      <div class="vol-row">
+        <span class="vol-label">G${di+1}</span>
+        <span><span class="vol-num">${totSerie}</span><span style="font-size:10px;color:var(--muted)"> serie</span>${mavNote}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('panel-volume').innerHTML = volHtml || '<span style="color:var(--muted);font-size:11px">Nessun dato</span>';
+
+  // ── VOLUME SETTIMANALE ──
+  const weekVols = [];
+  for(let w=0; w<sw; w++){
+    let tot = 0;
+    const mavNames = [];
+    giorni.forEach(day=>{
+      day.esercizi.forEach(ex=>{
+        if(!ex.esercizio) return;
+        const sd = ex.settimane[w]||{};
+        const {serie, mav} = countSerieFromStruttura(sd.struttura);
+        tot += serie;
+        if(mav) mavNames.push(ex.esercizio);
+      });
+    });
+    weekVols.push({w:w+1, tot, mavNames});
+  }
+  const maxVol = Math.max(1, ...weekVols.map(v=>v.tot));
+  const weekHtml = weekVols.map(v=>{
+    const pct = Math.round((v.tot/maxVol)*100);
+    const mav = v.mavNames.length ? `<span class="vol-mav">+MAV</span>` : '';
+    return `<div style="margin-bottom:8px">
+      <div class="vol-row">
+        <span class="vol-label">W${v.w}</span>
+        <span><span class="vol-num">${v.tot}</span><span style="font-size:10px;color:var(--muted)"> serie</span>${mav}</span>
+      </div>
+      <div class="vol-bar-wrap"><div class="vol-bar" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('panel-volume-week').innerHTML = weekHtml || '<span style="color:var(--muted);font-size:11px">Nessun dato</span>';
+
+  // Aggiorna tabella volume per gruppo
+  renderVolTable();
+}
+
+function uid(){return Math.random().toString(36).substr(2,9);}
+function showError(msg){const el=document.getElementById('error-bar');el.textContent=msg;el.style.display='block';}
+function hideError(){document.getElementById('error-bar').style.display='none';}
+
+// Imposta data solo se non c'è un programma salvato
+if (!localStorage.getItem('coaching_program')) {
+  document.getElementById('data_programma').value=new Date().toISOString().split('T')[0];
+}
 loadSheet();
-updateInfo();
+
+// Ripristina programma salvato, oppure avvia con un giorno vuoto
+if (localStorage.getItem('coaching_program')) {
+  restoreProgram();
+} else {
+  document.getElementById('data_programma').value=new Date().toISOString().split('T')[0];
+  addDay();
+}
+
+// Autosave su modifiche topbar
+['nome_cliente','email_cliente','nome_programma','data_programma','settimane'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', scheduleAutosave);
+  document.getElementById(id).addEventListener('change', scheduleAutosave);
+});
+
+// ── POPUP PROGRESSIONI ────────────────────────────────────────────────────────
+let currentPopupExId = null;
+
+function openProg(exId, btn) {
+  currentPopupExId = exId;
+  let ex = null;
+  for(const day of giorni){ ex=day.esercizi.find(e=>e.id===exId); if(ex) break; }
+  if(!ex) return;
+
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  document.getElementById('popup-title').textContent = ex.esercizio || 'Progressioni';
+  document.getElementById('popup-subtitle').textContent = [ex.metodologia, ex.note].filter(Boolean).join(' · ');
+
+  const container = document.getElementById('popup-rows');
+  container.innerHTML = '';
+
+  for(let w=0;w<sw;w++){
+    // Assicura che la settimana esista
+    while(ex.settimane.length<=w) ex.settimane.push({struttura:'',recupero:'',consiglio:'',serie:'',ripetizioni:'',percentuale:'',carico:''});
+    const sd = ex.settimane[w];
+
+    const row = document.createElement('div');
+    row.className = 'popup-row';
+    row.id = 'popup-row-' + w;
+
+    // Label W
+    const wLabel = document.createElement('div');
+    wLabel.className='popup-week-label'; wLabel.textContent='W'+(w+1);
+
+    // Esercizio (pre-compilato, modificabile, con autocomplete)
+    const inpEs = document.createElement('input');
+    inpEs.type='text';
+    inpEs.value = sd.esercizio !== undefined ? sd.esercizio : (ex.esercizio||'');
+    inpEs.placeholder='Esercizio';
+    inpEs.setAttribute('autocomplete','off');
+    inpEs.oninput = ()=>{
+      popupUpdate(w,'esercizio',inpEs.value);
+      // autocomplete esercizi
+      showPopupAC(inpEs, w, 'esercizio');
+    };
+    inpEs.onkeydown = (e)=>{ if(e.key==='Enter'){inpEs.blur();e.preventDefault();} };
+
+    // Note
+    const inpNote = document.createElement('input');
+    inpNote.type='text';
+    inpNote.value = sd.note !== undefined ? sd.note : (ex.note||'');
+    inpNote.placeholder='Note';
+    inpNote.oninput = ()=>popupUpdate(w,'note',inpNote.value);
+
+    // Metodologia
+    const inpMet = document.createElement('input');
+    inpMet.type='text';
+    inpMet.value = sd.metodologia !== undefined ? sd.metodologia : (ex.metodologia||'');
+    inpMet.placeholder='Metodologia';
+    inpMet.setAttribute('autocomplete','off');
+    inpMet.oninput = ()=>{
+      popupUpdate(w,'metodologia',inpMet.value);
+      showPopupAC(inpMet, w, 'metodologia');
+    };
+
+    // Struttura
+    const inpStr = document.createElement('input');
+    inpStr.type='text'; inpStr.value=sd.struttura||''; inpStr.placeholder='es. 70% 5·4';
+    inpStr.oninput = ()=>popupUpdate(w,'struttura',inpStr.value);
+    inpStr.onkeydown = (e)=>{
+      if(e.key==='Enter'){
+        // propaga alle settimane vuote sotto
+        propagaStruttura(w, inpStr.value);
+        e.preventDefault();
+      }
+    };
+    inpStr.onblur = ()=>propagaStruttura(w, inpStr.value);
+
+    // Recupero
+    const inpRec = document.createElement('input');
+    inpRec.type='text'; inpRec.value=sd.recupero||''; inpRec.placeholder='1.45';
+    inpRec.oninput = ()=>popupUpdate(w,'recupero',inpRec.value);
+
+    // Consiglio
+    const inpCons = document.createElement('input');
+    inpCons.type='text'; inpCons.value=sd.consiglio||''; inpCons.placeholder='RPE8';
+    inpCons.oninput = ()=>popupUpdate(w,'consiglio',inpCons.value);
+
+    row.appendChild(wLabel);
+    row.appendChild(inpEs);
+    row.appendChild(inpNote);
+    row.appendChild(inpMet);
+    row.appendChild(inpStr);
+    row.appendChild(inpRec);
+    row.appendChild(inpCons);
+    container.appendChild(row);
+  }
+
+  document.getElementById('prog-popup').classList.add('open');
+  document.getElementById('popup-overlay').classList.add('open');
+
+  document.querySelectorAll('.ex-row.prog-active').forEach(r=>r.classList.remove('prog-active'));
+  const activeRow = document.getElementById('ex-'+exId);
+  if(activeRow) activeRow.classList.add('prog-active');
+
+  const first = container.querySelector('input');
+  if(first) setTimeout(()=>first.focus(),50);
+}
+
+function propagaStruttura(wIdx, value) {
+  if(!currentPopupExId || !value) return;
+  const parsed = parseStruttura(value);
+  let ex = null;
+  for(const day of giorni){ ex=day.esercizi.find(e=>e.id===currentPopupExId); if(ex) break; }
+  if(!ex) return;
+
+  // Salva la settimana corrente
+  Object.assign(ex.settimane[wIdx], parsed, {struttura: value});
+
+  // Propaga alle settimane sotto se vuote
+  const sw = ex.settimane.length;
+  for(let w=wIdx+1;w<sw;w++){
+    if(!ex.settimane[w].struttura){
+      ex.settimane[w].struttura = value;
+      if(!ex.settimane[w].recupero) ex.settimane[w].recupero = parsed.recupero;
+      if(!ex.settimane[w].consiglio && parsed.consiglio) ex.settimane[w].consiglio = parsed.consiglio;
+    }
+  }
+
+  // Aggiorna tutti gli input nel popup
+  refreshPopupInputs(ex);
+}
+
+function refreshPopupInputs(ex) {
+  const rows = document.querySelectorAll('#popup-rows .popup-row');
+  rows.forEach((row, w)=>{
+    const inputs = row.querySelectorAll('input');
+    if(!inputs.length || !ex.settimane[w]) return;
+    const sd = ex.settimane[w];
+    // inputs: esercizio, note, metod, struttura, recupero, consiglio
+    if(inputs[0]) inputs[0].value = sd.esercizio !== undefined ? sd.esercizio : (ex.esercizio||'');
+    if(inputs[1]) inputs[1].value = sd.note !== undefined ? sd.note : (ex.note||'');
+    if(inputs[2]) inputs[2].value = sd.metodologia !== undefined ? sd.metodologia : (ex.metodologia||'');
+    if(inputs[3]) inputs[3].value = sd.struttura||'';
+    if(inputs[4]) inputs[4].value = sd.recupero||'';
+    if(inputs[5]) inputs[5].value = sd.consiglio||'';
+  });
+}
+
+// Autocomplete semplice negli input del popup
+function showPopupAC(input, wIdx, field) {
+  // rimuovi dropdown esistenti nel popup
+  document.querySelectorAll('.popup-ac-drop').forEach(d=>d.remove());
+  const val = input.value.trim().toLowerCase();
+  if(!val || val.length < 1) return;
+
+  let items = [];
+  if(field==='esercizio') items = lists.esercizi.map(e=>e.nome);
+  if(field==='metodologia') items = lists.metodologie;
+  const filtered = items.filter(i=>i.toLowerCase().includes(val)).slice(0,6);
+  if(!filtered.length) return;
+
+  const drop = document.createElement('div');
+  drop.className='ac-list popup-ac-drop';
+  drop.style.cssText='display:block;position:absolute;z-index:9999;min-width:180px;';
+  filtered.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='ac-item';
+    div.textContent=item;
+    div.onmousedown=(e)=>{
+      e.preventDefault();
+      input.value=item;
+      popupUpdate(wIdx,field,item);
+      drop.remove();
+    };
+    drop.appendChild(div);
+  });
+  input.parentElement.style.position='relative';
+  input.parentElement.appendChild(drop);
+  input.onblur=()=>setTimeout(()=>drop.remove(),200);
+}
+
+function popupUpdate(wIdx, field, value) {
+  if(!currentPopupExId) return;
+  updateWeek(currentPopupExId, wIdx, field, value);
+}
+
+// popupOnStrutturaChange → sostituita da propagaStruttura
+
+function closeProg() {
+  document.getElementById('prog-popup').classList.remove('open');
+  document.getElementById('popup-overlay').classList.remove('open');
+  document.querySelectorAll('.ex-row.prog-active').forEach(r=>r.classList.remove('prog-active'));
+  currentPopupExId = null;
+}
+function closeProgIfOutside(e) {
+  if(e.target === document.getElementById('popup-overlay')) closeProg();
+}
+
+
+// ── MINI TABLE + TOOLTIP ──────────────────────────────────────────────────────
+function getMiniTable(ex, sw) {
+  let html = '<div class="mini-prog">';
+  for(let w=0;w<sw;w++){
+    const sd = ex.settimane[w]||{};
+    const val = sd.struttura ? sd.struttura.replace(/\*/g,'·') : '';
+    html += `<div class="mini-week">
+      <div class="mini-w-label">W${w+1}</div>
+      <div class="mini-w-val${val?'':' empty'}">${val||'—'}</div>
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function updateMiniTable(exId) {
+  const el = document.getElementById('mini-'+exId);
+  if(!el) return;
+  let ex=null;
+  for(const day of giorni){ex=day.esercizi.find(e=>e.id===exId);if(ex)break;}
+  if(!ex) return;
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  el.innerHTML = getMiniTable(ex, sw);
+}
+
+let ttTimeout = null;
+function showTooltip(exId, anchorEl) {
+  let ex=null;
+  for(const day of giorni){ex=day.esercizi.find(e=>e.id===exId);if(ex)break;}
+  if(!ex) return;
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  const tt = document.getElementById('prog-tooltip');
+
+  let html = `<div class="tt-title">${ex.esercizio||'—'}</div>`;
+  html += `<div class="tt-sub">${[ex.metodologia,ex.note].filter(Boolean).join(' · ')||'nessuna nota'}</div>`;
+  html += `<div class="tt-heads"><div class="tt-col-h"></div><div class="tt-col-h">Struttura</div><div class="tt-col-h">Rec.</div><div class="tt-col-h">Consiglio</div></div>`;
+  for(let w=0;w<sw;w++){
+    const sd=ex.settimane[w]||{};
+    const s=sd.struttura?sd.struttura.replace(/\*/g,'·'):'';
+    html += `<div class="tt-row">
+      <div class="tt-wlabel">W${w+1}</div>
+      <div class="tt-val${s?'':' empty'}">${s||'—'}</div>
+      <div class="tt-val${sd.recupero?'':' empty'}">${sd.recupero||'—'}</div>
+      <div class="tt-val${sd.consiglio?'':' empty'}">${sd.consiglio||'—'}</div>
+    </div>`;
+  }
+  tt.innerHTML = html;
+
+  // Position to the right of the row
+  const rect = anchorEl.getBoundingClientRect();
+  const ttW = 320;
+  let left = rect.right + 12;
+  if(left + ttW > window.innerWidth - 10) left = rect.left - ttW - 12;
+  let top = rect.top - 10;
+  if(top + 200 > window.innerHeight - 10) top = window.innerHeight - 220;
+  tt.style.left = left + 'px';
+  tt.style.top = top + 'px';
+  tt.classList.add('visible');
+}
+
+function hideTooltip() {
+  document.getElementById('prog-tooltip').classList.remove('visible');
+}
+
 </script>
+
+
+
+
+<!-- PROG POPUP -->
+<div class="popup-overlay" id="popup-overlay" onclick="closeProgIfOutside(event)"></div>
+<div class="prog-popup" id="prog-popup">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px">
+    <div>
+      <div class="popup-title" id="popup-title">Progressioni</div>
+      <div class="popup-subtitle" id="popup-subtitle"></div>
+    </div>
+    <button class="btn-ghost" onclick="closeProg()" style="font-size:20px;line-height:1">✕</button>
+  </div>
+  <div class="popup-heads">
+    <div class="popup-col-h"></div>
+    <div class="popup-col-h">Esercizio</div>
+    <div class="popup-col-h">Note</div>
+    <div class="popup-col-h">Metodologia</div>
+    <div class="popup-col-h">Struttura</div>
+    <div class="popup-col-h">Rec.</div>
+    <div class="popup-col-h">Consiglio</div>
+  </div>
+  <div id="popup-rows"></div>
+</div>
+<!-- VALIDATION MODAL -->
+<div class="val-overlay" id="val-overlay">
+  <div class="val-modal">
+    <div class="val-title">Controlla prima di esportare</div>
+    <div id="val-errors-section" style="display:none">
+      <div class="val-section-label err">● Errori bloccanti</div>
+      <div id="val-errors"></div>
+    </div>
+    <div id="val-warnings-section" style="display:none">
+      <div class="val-section-label warn" style="margin-top:10px">▲ Avvisi</div>
+      <div id="val-warnings"></div>
+    </div>
+    <div class="val-footer">
+      <button class="btn btn-ghost" onclick="closeValModal()">Chiudi</button>
+      <button class="btn btn-outline" id="val-export-btn" style="display:none" onclick="closeValAndExport()">Esporta comunque</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOVER TOOLTIP -->
+<div class="prog-tooltip" id="prog-tooltip"></div>
 </body>
 </html>
