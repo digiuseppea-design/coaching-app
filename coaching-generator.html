@@ -327,8 +327,6 @@
   <span class="save-indicator" id="save-indicator">salvato</span>
   <div class="tb-actions">
     <button class="btn btn-ghost" onclick="nuovoProgramma()" style="height:24px;font-size:9px" title="Nuovo programma">✕ Nuovo</button>
-    <button class="btn btn-outline" onclick="toggleExport()" style="height:24px;font-size:9px">Export</button>
-    <button class="btn btn-accent" onclick="buildAndExport()" style="height:24px;font-size:9px">⚡ CSV</button>
   </div>
 </div>
 
@@ -1099,7 +1097,26 @@ function nuovoProgramma() {
   document.getElementById('giorni-container').innerHTML = '';
   csvData = [];
   document.getElementById('preview-wrap').style.display='none';
-  addDay();
+  defaultTemplate();
+}
+
+function defaultTemplate() {
+  const sw = parseInt(document.getElementById('settimane').value)||4;
+  for(let d=0; d<3; d++){
+    addDay();
+    const day = giorni[giorni.length-1];
+    for(let e=0; e<5; e++){
+      const exId = uid();
+      const ex = {
+        id:exId, esercizio:'', blocco:'', metodologia:'', note:'',
+        settimane: Array.from({length:sw},()=>({struttura:'',recupero:'',consiglio:'',serie:'',ripetizioni:'',percentuale:'',carico:''}))
+      };
+      day.esercizi.push(ex);
+      renderExRow(day.id, ex, sw);
+      updateDayCount(day.id);
+    }
+  }
+  scheduleAutosave();
 }
 
 // ── VALIDAZIONE ───────────────────────────────────────────────────────────────
@@ -1187,6 +1204,13 @@ function downloadCSV(){
 }
 
 function toggleExport(){document.getElementById('export-panel').classList.toggle('open');}
+function toggleFab(){
+  const menu = document.getElementById('fab-menu');
+  const btn = document.getElementById('fab-btn');
+  const open = menu.style.display === 'none';
+  menu.style.display = open ? 'flex' : 'none';
+  btn.style.transform = open ? 'rotate(45deg)' : '';
+}
 
 // ── VOLUME TABLE ─────────────────────────────────────────────────────────────
 const VOL_RANGES = {
@@ -1411,7 +1435,7 @@ if (localStorage.getItem('coaching_program')) {
   restoreProgram();
 } else {
   document.getElementById('data_programma').value=new Date().toISOString().split('T')[0];
-  addDay();
+  defaultTemplate();
 }
 
 // Autosave su modifiche topbar
@@ -1531,15 +1555,22 @@ function propagaStruttura(wIdx, value) {
   for(const day of giorni){ ex=day.esercizi.find(e=>e.id===currentPopupExId); if(ex) break; }
   if(!ex) return;
 
-  // Salva la settimana corrente
-  Object.assign(ex.settimane[wIdx], parsed, {struttura: value});
+  // Salva la settimana corrente — non sovrascrivere campi già compilati
+  ex.settimane[wIdx].struttura = value;
+  if(!ex.settimane[wIdx].recupero && parsed.recupero) ex.settimane[wIdx].recupero = parsed.recupero;
+  if(!ex.settimane[wIdx].consiglio && parsed.consiglio) ex.settimane[wIdx].consiglio = parsed.consiglio;
+  // campi derivati sempre aggiornati
+  ex.settimane[wIdx].serie = parsed.serie;
+  ex.settimane[wIdx].ripetizioni = parsed.ripetizioni;
+  ex.settimane[wIdx].percentuale = parsed.percentuale;
+  ex.settimane[wIdx].carico = parsed.carico;
 
   // Propaga alle settimane sotto se vuote
   const sw = ex.settimane.length;
   for(let w=wIdx+1;w<sw;w++){
     if(!ex.settimane[w].struttura){
       ex.settimane[w].struttura = value;
-      if(!ex.settimane[w].recupero) ex.settimane[w].recupero = parsed.recupero;
+      if(!ex.settimane[w].recupero) ex.settimane[w].recupero = parsed.recupero || DEFAULT_RECUPERO;
       if(!ex.settimane[w].consiglio && parsed.consiglio) ex.settimane[w].consiglio = parsed.consiglio;
     }
   }
@@ -1705,6 +1736,21 @@ function hideTooltip() {
   </div>
   <div id="popup-rows"></div>
 </div>
+<!-- FAB EXPORT -->
+<div style="position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+  <div id="fab-menu" style="display:none;flex-direction:column;gap:6px;align-items:flex-end;margin-bottom:4px;">
+    <button class="btn btn-outline" onclick="toggleExport()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">Anteprima</button>
+    <button class="btn btn-accent" onclick="buildAndExport()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">⚡ Genera CSV</button>
+  </div>
+  <button id="fab-btn" onclick="toggleFab()" style="
+    width:48px;height:48px;border-radius:50%;
+    background:var(--accent);border:none;cursor:pointer;
+    font-size:20px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 16px rgba(200,241,53,0.3);
+    transition:transform 0.15s;
+  " title="Esporta">⬇</button>
+</div>
+
 <!-- VALIDATION MODAL -->
 <div class="val-overlay" id="val-overlay">
   <div class="val-modal">
