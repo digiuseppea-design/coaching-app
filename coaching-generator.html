@@ -171,6 +171,65 @@
   .popup-row input::placeholder{color:var(--muted);font-size:10px;}
   .popup-footer{margin-top:14px;display:flex;justify-content:flex-end;gap:8px;}
 
+  /* PROGRAMMI SALVATI */
+  .prog-list-item{padding:8px 10px;border:1px solid var(--border);border-radius:4px;
+    margin-bottom:6px;cursor:pointer;transition:border-color 0.15s;}
+  .prog-list-item:hover{border-color:var(--accent);}
+  .prog-list-name{font-size:12px;color:var(--text);margin-bottom:2px;}
+  .prog-list-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+  .prog-list-actions{display:flex;gap:6px;margin-top:6px;}
+
+  /* CARD UTENTI */
+  .utente-card{border:1px solid var(--border);border-radius:4px;margin-bottom:6px;overflow:hidden;transition:border-color 0.15s;}
+  .utente-card:hover{border-color:var(--accent);}
+  .utente-card-header{display:flex;align-items:center;justify-content:space-between;
+    padding:8px 12px;cursor:pointer;background:var(--surface2);}
+  .utente-card-name{font-size:12px;color:var(--text);font-weight:400;}
+  .utente-card-email{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-top:2px;}
+  .utente-card-count{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+  .utente-card-arrow{font-size:10px;color:var(--muted);transition:transform 0.15s;}
+  .utente-card.open .utente-card-arrow{transform:rotate(90deg);}
+  .utente-prog-list{display:none;border-top:1px solid var(--border);}
+  .utente-card.open .utente-prog-list{display:block;}
+  .utente-prog-item{display:flex;align-items:center;justify-content:space-between;
+    padding:6px 12px;border-bottom:1px solid #1a1a1a;}
+  .utente-prog-item:last-child{border-bottom:none;}
+  .utente-prog-name{font-size:11px;color:var(--text);}
+  .utente-prog-date{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+  .prog-search{width:100%;background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;
+    padding:6px 10px;border-radius:var(--radius);outline:none;height:30px;margin-bottom:10px;}
+  .prog-search:focus{border-color:var(--accent);}
+
+  /* PANNELLO CONFRONTO */
+  .confronto-panel{
+    position:fixed;top:46px;right:0;bottom:0;
+    width:380px;max-width:90vw;
+    background:var(--surface);border-left:1px solid var(--accent);
+    z-index:190;transform:translateX(100%);
+    transition:transform 0.25s ease;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
+  .confronto-panel.open{transform:translateX(0);}
+  .confronto-header{padding:12px 14px;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .confronto-title{font-family:'Bebas Neue',sans-serif;font-size:16px;
+    letter-spacing:0.06em;color:var(--accent);}
+  .confronto-body{flex:1;overflow-y:auto;padding:10px 14px;}
+  .confronto-day{margin-bottom:14px;}
+  .confronto-day-title{font-family:'DM Mono',monospace;font-size:9px;
+    letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);
+    margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+  .confronto-table{width:100%;border-collapse:collapse;font-size:10px;}
+  .confronto-table th{font-family:'DM Mono',monospace;font-size:8px;
+    color:var(--muted);padding:3px 5px;text-align:left;
+    border-bottom:1px solid var(--border);}
+  .confronto-table td{padding:3px 5px;border-bottom:1px solid #1a1a1a;
+    vertical-align:top;line-height:1.4;}
+  .confronto-table td.ex-name{color:var(--text);font-size:10px;}
+  .confronto-table td.struttura{font-family:'DM Mono',monospace;color:var(--muted);font-size:9px;}
+
   /* VOL OBJ PILLS */
   .vol-obj-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);
     font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;padding:3px 8px;
@@ -1204,6 +1263,274 @@ function downloadCSV(){
 }
 
 function toggleExport(){document.getElementById('export-panel').classList.toggle('open');}
+
+// ── PROGRAMMI SALVATI ─────────────────────────────────────────────────────────
+function getSavedPrograms() {
+  try { return JSON.parse(localStorage.getItem('coaching_saved_programs')||'[]'); }
+  catch(e) { return []; }
+}
+function setSavedPrograms(list) {
+  localStorage.setItem('coaching_saved_programs', JSON.stringify(list));
+}
+
+function salvaPrograma() {
+  const nome    = document.getElementById('nome_cliente').value.trim();
+  const programma = document.getElementById('nome_programma').value.trim();
+  if(!nome || !programma) { alert('Compila nome cliente e nome programma prima di salvare.'); return; }
+  if(!buildCSV()) return; // genera csvData
+  const list = getSavedPrograms();
+  const id = Date.now().toString();
+  const label = programma + ' — ' + nome;
+  const data  = document.getElementById('data_programma').value;
+  list.unshift({ id, label, nome, programma, data, rows: JSON.parse(JSON.stringify(csvData)) });
+  setSavedPrograms(list);
+  alert('Programma salvato: ' + label);
+  toggleFab();
+}
+
+function openProgList() {
+  renderProgList();
+  document.getElementById('prog-list-overlay').classList.add('open');
+  toggleFab();
+}
+function closeProgList() {
+  document.getElementById('prog-list-overlay').classList.remove('open');
+  document.getElementById('import-csv-status').textContent = '';
+  document.getElementById('import-csv-area').value = '';
+}
+
+function renderProgList() {
+  const list = getSavedPrograms();
+  const body = document.getElementById('prog-list-body');
+  const searchEl = document.getElementById('prog-search');
+  const query = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  body.innerHTML = '';
+
+  if(!list.length) {
+    body.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:8px 0">Nessun programma salvato.</div>';
+    return;
+  }
+
+  // Raggruppa per email
+  const utenti = {};
+  list.forEach(p=>{
+    // Estrai email dal primo row se disponibile
+    const email = (p.rows && p.rows[0] && p.rows[0]['email']) ? p.rows[0]['email'].trim() : (p.email||'');
+    const nome  = p.nome || (p.rows && p.rows[0] ? p.rows[0]['Nome']||'' : '');
+    const key   = email || nome;
+    if(!utenti[key]) utenti[key] = { email, nome, programmi:[] };
+    utenti[key].programmi.push(p);
+  });
+
+  // Filtra per ricerca
+  const keys = Object.keys(utenti).filter(k=>{
+    if(!query) return true;
+    const u = utenti[k];
+    return u.nome.toLowerCase().includes(query) || u.email.toLowerCase().includes(query);
+  }).sort((a,b)=>utenti[a].nome.localeCompare(utenti[b].nome));
+
+  if(!keys.length) {
+    body.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:8px 0">Nessun risultato.</div>';
+    return;
+  }
+
+  keys.forEach(key=>{
+    const u = utenti[key];
+    const card = document.createElement('div');
+    card.className = 'utente-card';
+
+    // Header card
+    const header = document.createElement('div');
+    header.className = 'utente-card-header';
+    header.onclick = ()=>{ card.classList.toggle('open'); };
+
+    const infoDiv = document.createElement('div');
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'utente-card-name';
+    nameDiv.textContent = u.nome || u.email;
+    const emailDiv = document.createElement('div');
+    emailDiv.className = 'utente-card-email';
+    emailDiv.textContent = u.email;
+    infoDiv.appendChild(nameDiv);
+    if(u.email && u.nome) infoDiv.appendChild(emailDiv);
+
+    const rightDiv = document.createElement('div');
+    rightDiv.style.cssText = 'display:flex;align-items:center;gap:8px;';
+    const countDiv = document.createElement('div');
+    countDiv.className = 'utente-card-count';
+    countDiv.textContent = u.programmi.length + ' prog.';
+    const arrow = document.createElement('div');
+    arrow.className = 'utente-card-arrow';
+    arrow.textContent = '▶';
+    rightDiv.appendChild(countDiv);
+    rightDiv.appendChild(arrow);
+
+    header.appendChild(infoDiv);
+    header.appendChild(rightDiv);
+
+    // Lista programmi
+    const progList = document.createElement('div');
+    progList.className = 'utente-prog-list';
+
+    // Ordina per data decrescente
+    u.programmi.sort((a,b)=>{
+      const parseData = d=>{ if(!d) return 0; const p=d.split('/'); return p.length===3?new Date(p[2],p[1]-1,p[0]).getTime():0; };
+      return parseData(b.data)-parseData(a.data);
+    });
+
+    u.programmi.forEach(p=>{
+      const item = document.createElement('div');
+      item.className = 'utente-prog-item';
+
+      const left = document.createElement('div');
+      const pName = document.createElement('div');
+      pName.className = 'utente-prog-name';
+      pName.textContent = p.programma;
+      const pDate = document.createElement('div');
+      pDate.className = 'utente-prog-date';
+      pDate.textContent = p.data||'';
+      left.appendChild(pName);
+      left.appendChild(pDate);
+
+      const actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+
+      const btnC = document.createElement('button');
+      btnC.className = 'btn btn-outline';
+      btnC.style.cssText = 'height:22px;font-size:9px;padding:0 8px;';
+      btnC.textContent = 'Confronta';
+      btnC.onclick = (e)=>{ e.stopPropagation(); apriConfronto(p.id); };
+
+      const btnE = document.createElement('button');
+      btnE.className = 'btn btn-ghost';
+      btnE.style.cssText = 'height:22px;font-size:9px;padding:0 6px;color:var(--accent2);';
+      btnE.textContent = '✕';
+      btnE.onclick = (e)=>{ e.stopPropagation(); eliminaPrograma(p.id); };
+
+      actions.appendChild(btnC);
+      actions.appendChild(btnE);
+      item.appendChild(left);
+      item.appendChild(actions);
+      progList.appendChild(item);
+    });
+
+    card.appendChild(header);
+    card.appendChild(progList);
+    body.appendChild(card);
+  });
+}
+
+function eliminaPrograma(id) {
+  if(!confirm('Eliminare questo programma?')) return;
+  const list = getSavedPrograms().filter(p=>p.id!==id);
+  setSavedPrograms(list);
+  renderProgList();
+}
+
+// ── IMPORT CSV ────────────────────────────────────────────────────────────────
+function importaCSV() {
+  const text = document.getElementById('import-csv-area').value.trim();
+  if(!text) { document.getElementById('import-csv-status').textContent='Incolla prima il CSV.'; return; }
+
+  const lines = text.split('\n').filter(l=>l.trim());
+  if(lines.length < 2) { document.getElementById('import-csv-status').textContent='CSV non valido.'; return; }
+
+  // Rileva separatore automaticamente: tab (da Excel) o virgola (CSV)
+  const sep = lines[0].includes('\t') ? '\t' : ',';
+  const parseLine = sep === '\t'
+    ? (l => l.split('\t').map(v => v.trim()))
+    : parseCSVLine;
+
+  const header = parseLine(lines[0].replace(/^\uFEFF/, ''));
+  const allRows = lines.slice(1).map(l=>{ const cols=parseLine(l); const obj={}; header.forEach((h,i)=>{ obj[h]=(cols[i]||'').trim(); }); return obj; });
+
+  // Raggruppa per email + nome programma + data — importa tutto in un colpo
+  const gruppi = {};
+  allRows.forEach(row=>{
+    const key = (row['email']||'') + '|' + (row['Nome programma']||'') + '|' + (row['Data programma']||'');
+    if(!gruppi[key]) gruppi[key] = [];
+    gruppi[key].push(row);
+  });
+
+  const list = getSavedPrograms();
+  const keys = Object.keys(gruppi);
+  keys.forEach((key, i)=>{
+    const rows = gruppi[key];
+    const nomeP = rows[0]['Nome programma']||'Programma importato';
+    const nomeC = rows[0]['Nome']||'';
+    const dataP = rows[0]['Data programma']||'';
+    const label = nomeP + (nomeC ? ' — '+nomeC : '');
+    // Evita duplicati (stesso label + data)
+    const exists = list.find(p=>p.label===label && p.data===dataP);
+    if(!exists) {
+      list.unshift({ id:(Date.now()+i).toString(), label, nome:nomeC, programma:nomeP, data:dataP, rows });
+    }
+  });
+  setSavedPrograms(list);
+
+  const imported = keys.length;
+  document.getElementById('import-csv-status').textContent = '✓ ' + imported + ' programm' + (imported===1?'a':'i') + ' importat' + (imported===1?'o':'i');
+  document.getElementById('import-csv-area').value='';
+  renderProgList();
+}
+
+// ── PANNELLO CONFRONTO ────────────────────────────────────────────────────────
+function apriConfronto(id) {
+  const prog = getSavedPrograms().find(p=>p.id===id);
+  if(!prog) return;
+  closeProgList();
+
+  document.getElementById('confronto-title').textContent = prog.programma;
+  document.getElementById('confronto-meta').textContent  = prog.nome + (prog.data?' · '+prog.data:'');
+
+  // Raggruppa per giorno → settimana → esercizi
+  const giorni_map = {};
+  prog.rows.forEach(row=>{
+    const g = row['Giorno']||'?';
+    const w = row['Settimana']||'?';
+    const pos = parseInt(row['Posizione'])||0;
+    if(!giorni_map[g]) giorni_map[g] = {};
+    if(!giorni_map[g][pos]) giorni_map[g][pos] = { esercizio:row['Esercizio'], blocco:row['Blocco'], settimane:{} };
+    giorni_map[g][pos].settimane[w] = {
+      struttura: row['Struttura']||'',
+      recupero:  row['Recupero']||'',
+      consiglio: row['Consiglio']||''
+    };
+  });
+
+  const sw_list = [...new Set(prog.rows.map(r=>r['Settimana']))].sort((a,b)=>a-b);
+
+  let html = '';
+  Object.keys(giorni_map).sort((a,b)=>a-b).forEach(g=>{
+    html += `<div class="confronto-day">
+      <div class="confronto-day-title">Giorno ${g}</div>
+      <table class="confronto-table">
+        <thead><tr>
+          <th>Esercizio</th>
+          ${sw_list.map(w=>`<th>W${w}</th>`).join('')}
+        </tr></thead><tbody>`;
+    const posizioni = Object.keys(giorni_map[g]).sort((a,b)=>a-b);
+    posizioni.forEach(pos=>{
+      const ex = giorni_map[g][pos];
+      html += `<tr>
+        <td class="ex-name">${ex.esercizio}<br><span style="color:var(--muted);font-size:8px">${ex.blocco}</span></td>
+        ${sw_list.map(w=>{
+          const sd = ex.settimane[w]||{};
+          return `<td class="struttura">${sd.struttura||'—'}<br><span style="font-size:8px;color:#555">${sd.recupero||''}</span></td>`;
+        }).join('')}
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  });
+
+  document.getElementById('confronto-body').innerHTML = html;
+  document.getElementById('confronto-panel').classList.add('open');
+}
+
+function closeConfronto() {
+  document.getElementById('confronto-panel').classList.remove('open');
+}
+
 function toggleFab(){
   const menu = document.getElementById('fab-menu');
   const btn = document.getElementById('fab-btn');
@@ -1739,6 +2066,8 @@ function hideTooltip() {
 <!-- FAB EXPORT -->
 <div style="position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
   <div id="fab-menu" style="display:none;flex-direction:column;gap:6px;align-items:flex-end;margin-bottom:4px;">
+    <button class="btn btn-outline" onclick="openProgList()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">📂 Programmi</button>
+    <button class="btn btn-outline" onclick="salvaPrograma()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">💾 Salva</button>
     <button class="btn btn-outline" onclick="toggleExport()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">Anteprima</button>
     <button class="btn btn-accent" onclick="buildAndExport()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">⚡ Genera CSV</button>
   </div>
@@ -1749,6 +2078,41 @@ function hideTooltip() {
     box-shadow:0 4px 16px rgba(200,241,53,0.3);
     transition:transform 0.15s;
   " title="Esporta">⬇</button>
+</div>
+
+<!-- MODAL LISTA PROGRAMMI -->
+<div class="val-overlay" id="prog-list-overlay">
+  <div class="val-modal" style="width:480px;max-width:92vw;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="val-title">Programmi salvati</div>
+      <button class="btn-ghost" onclick="closeProgList()" style="font-size:18px">✕</button>
+    </div>
+    <input class="prog-search" id="prog-search" placeholder="Cerca cliente..." oninput="renderProgList()">
+    <div id="prog-list-body" style="max-height:340px;overflow-y:auto;margin-bottom:14px;"></div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;letter-spacing:0.08em;">IMPORTA DA CSV</div>
+      <textarea id="import-csv-area" placeholder="Incolla qui il CSV (con header). Puoi incollare più programmi insieme." style="
+        width:100%;height:70px;background:var(--surface2);border:1px solid var(--border);
+        color:var(--text);font-family:'DM Mono',monospace;font-size:10px;
+        padding:8px;border-radius:4px;outline:none;resize:vertical;"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+        <button class="btn btn-outline" onclick="importaCSV()" style="height:28px;font-size:10px;padding:0 12px;">Importa</button>
+      </div>
+      <div id="import-csv-status" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);margin-top:6px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANNELLO CONFRONTO -->
+<div class="confronto-panel" id="confronto-panel">
+  <div class="confronto-header">
+    <div>
+      <div class="confronto-title" id="confronto-title">Confronto</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;" id="confronto-meta"></div>
+    </div>
+    <button class="btn-ghost" onclick="closeConfronto()" style="font-size:18px">✕</button>
+  </div>
+  <div class="confronto-body" id="confronto-body"></div>
 </div>
 
 <!-- VALIDATION MODAL -->
