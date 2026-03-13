@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Program Builder</title>
+<title>Trainer Tascabile</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
   :root {
@@ -179,6 +179,198 @@
   .prog-list-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
   .prog-list-actions{display:flex;gap:6px;margin-top:6px;}
 
+  /* PAGINE */
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* PAGINA CLIENTI */
+  .clienti-layout{display:flex;gap:0;height:calc(100vh - 46px);}
+  .clienti-sidebar{width:240px;flex-shrink:0;border-right:1px solid var(--border);
+    overflow-y:auto;padding:12px;}
+  .clienti-main{flex:1;overflow-y:auto;padding:20px 24px;}
+  .cliente-list-item{padding:8px 10px;border-radius:4px;cursor:pointer;
+    margin-bottom:4px;transition:background 0.15s;border:1px solid transparent;}
+  .cliente-list-item:hover{background:var(--surface2);}
+  .cliente-list-item.active{background:var(--surface2);border-color:var(--accent);}
+  .cliente-list-nome{font-size:12px;color:var(--text);}
+  .cliente-list-email{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-top:1px;}
+  .cliente-search{width:100%;background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;
+    padding:6px 8px;border-radius:var(--radius);outline:none;height:28px;
+    margin-bottom:10px;}
+  .cliente-search:focus{border-color:var(--accent);}
+  .scheda-title{font-family:'Bebas Neue',sans-serif;font-size:24px;
+    letter-spacing:0.06em;color:var(--accent);margin-bottom:2px;}
+  .scheda-email{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:20px;}
+  .scheda-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .scheda-field{display:flex;flex-direction:column;gap:4px;}
+  .scheda-field.full{grid-column:1/-1;}
+  .scheda-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--muted);}
+  .scheda-input{background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:300;
+    padding:6px 8px;border-radius:var(--radius);outline:none;resize:vertical;
+    transition:border-color 0.15s;width:100%;}
+  .scheda-input:focus{border-color:var(--accent);}
+  .massimali-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+  .max-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+    padding:10px 12px;text-align:center;}
+  .max-card-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);
+    letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+  .max-card-input{background:transparent;border:none;color:var(--accent);
+    font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;
+    outline:none;width:100%;text-align:center;}
+  .max-card-unit{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+  .note-scheda-item{background:var(--surface2);border-left:2px solid #8080ff;
+    padding:8px 12px;border-radius:0 4px 4px 0;margin-bottom:6px;}
+  .note-scheda-date{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:3px;}
+  .note-scheda-text{font-size:11px;line-height:1.5;}
+  .note-scheda-del{float:right;background:none;border:none;color:var(--accent2);
+    cursor:pointer;font-size:11px;padding:0;}
+  .scheda-placeholder{display:flex;align-items:center;justify-content:center;
+    height:100%;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;
+    letter-spacing:0.08em;text-transform:uppercase;}
+
+  /* STATS SIDEBAR */
+  .stats-bar{
+    width:200px;flex-shrink:0;border-left:1px solid var(--border);
+    padding:16px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+  }
+  .stats-bar-title{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .stat-card{background:var(--surface2);border:1px solid var(--border);
+    border-radius:4px;padding:8px 10px;}
+  .stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.04em;line-height:1;}
+  .stat-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);
+    letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;}
+  .stat-card.green .stat-val{color:#6bcf6b;}
+  .stat-card.yellow .stat-val{color:#f0c040;}
+  .stat-card.red .stat-val{color:#ff5555;}
+  .stat-card.accent .stat-val{color:var(--accent);}
+  .stat-divider{border:none;border-top:1px solid var(--border);margin:2px 0;}
+
+  /* PAGINA PAGAMENTI */
+  .pag-layout{display:flex;gap:0;height:calc(100vh - 46px);}
+  .pag-sidebar{width:240px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:12px;}
+  .pag-main{flex:1;overflow-y:auto;padding:20px 24px;}
+  .pag-cliente-item{padding:8px 10px;border-radius:4px;cursor:pointer;margin-bottom:4px;
+    border:1px solid transparent;transition:background 0.15s;position:relative;}
+  .pag-cliente-item:hover{background:var(--surface2);}
+  .pag-cliente-item.active{background:var(--surface2);border-color:var(--accent);}
+  .pag-cliente-nome{font-size:12px;color:var(--text);}
+  .pag-cliente-email{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-top:1px;}
+  .pag-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .pag-status-dot.ok{background:#6bcf6b;}
+  .pag-status-dot.warn{background:#f0a500;}
+  .pag-status-dot.exp{background:#ff5555;}
+  .pag-status-dot.none{background:var(--border);}
+  .pag-status-dot.pend{background:#f0c040;}
+  .pag-row{display:grid;grid-template-columns:100px 70px 50px 90px 70px 28px;
+    gap:6px;align-items:center;padding:7px 10px;border-bottom:1px solid #1a1a1a;font-size:11px;}
+  .pag-row:last-child{border-bottom:none;}
+  .pag-row.header{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);
+    letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;background:var(--surface);}
+  .pag-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:20px;}
+  .pag-badge.ok{background:#1a2a1a;color:#6bcf6b;}
+  .pag-badge.warn{background:#2a1f00;color:#f0a500;}
+  .pag-badge.exp{background:#2a1a1a;color:#ff5555;}
+  .pag-badge.pend{background:#2a2000;color:#f0c040;border:1px solid #3a3000;}
+  .pag-add-form{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+    padding:10px;margin-bottom:12px;}
+  .pag-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;}
+  .pag-input{background:var(--surface);border:1px solid var(--border);color:var(--text);
+    font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 7px;
+    border-radius:var(--radius);outline:none;width:100%;height:26px;}
+  .pag-input:focus{border-color:var(--accent);}
+  .pag-placeholder{display:flex;align-items:center;justify-content:center;height:100%;
+    color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;
+    letter-spacing:0.08em;text-transform:uppercase;}
+  .pag-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+  .pag-summary-card{background:var(--surface2);border:1px solid var(--border);
+    border-radius:6px;padding:12px 14px;}
+  .pag-summary-val{font-family:'Bebas Neue',sans-serif;font-size:20px;
+    letter-spacing:0.04em;color:var(--accent);}
+  .pag-summary-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);
+    letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
+
+  /* MENU LATERALE */
+  .side-menu{
+    position:fixed;top:0;left:0;bottom:0;width:220px;
+    background:var(--surface);border-right:1px solid var(--border);
+    z-index:400;transform:translateX(-100%);
+    transition:transform 0.22s ease;
+    display:flex;flex-direction:column;padding:20px 0;
+  }
+  .side-menu.open{transform:translateX(0);}
+  .side-menu-overlay{position:fixed;inset:0;z-index:399;display:none;}
+  .side-menu-overlay.open{display:block;}
+  .side-menu-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;
+    letter-spacing:0.06em;color:var(--accent);padding:0 20px 20px;
+    border-bottom:1px solid var(--border);}
+  .side-menu-logo span{color:var(--text);opacity:0.25;}
+  .side-menu-items{padding:12px 0;}
+  .side-menu-item{display:flex;align-items:center;gap:10px;padding:10px 20px;
+    font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.15s;
+    border-left:2px solid transparent;}
+  .side-menu-item:hover{color:var(--text);background:var(--surface2);}
+  .side-menu-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--surface2);}
+  .side-menu-icon{font-size:14px;width:18px;text-align:center;}
+
+  /* BARRA CLIENTE */
+  .client-bar{
+    background:var(--surface);border-bottom:1px solid var(--border);
+    padding:0 14px;height:0;overflow:hidden;
+    transition:height 0.2s ease;display:flex;align-items:center;gap:8px;
+    flex-wrap:nowrap;position:sticky;top:46px;z-index:190;
+  }
+  .client-bar.visible{height:32px;}
+  .client-pill{
+    display:inline-flex;align-items:center;gap:4px;
+    font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.04em;
+    padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;
+    cursor:default;
+  }
+  .client-pill.warn{background:#2a1a1a;color:#ff8080;border:1px solid #3a1a1a;}
+  .client-pill.goal{background:#1a2a0a;color:var(--accent);border:1px solid #2a3a0a;}
+  .client-pill.note{background:#1a1a2a;color:#8080ff;border:1px solid #2a2a3a;}
+  .client-pill.freq{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .client-bar-open{margin-left:auto;flex-shrink:0;font-family:'DM Mono',monospace;
+    font-size:9px;color:var(--muted);cursor:pointer;white-space:nowrap;padding:2px 6px;
+    border-radius:3px;border:1px solid var(--border);}
+  .client-bar-open:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* MODAL CLIENTE */
+  .client-modal-overlay{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.65);
+    display:none;align-items:flex-start;justify-content:flex-end;}
+  .client-modal-overlay.open{display:flex;}
+  .client-modal{
+    width:360px;max-width:92vw;height:100vh;
+    background:var(--surface);border-left:1px solid var(--accent);
+    padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;
+  }
+  .client-modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;
+    letter-spacing:0.06em;color:var(--accent);}
+  .client-section-label{font-family:'DM Mono',monospace;font-size:8px;
+    letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:6px;margin-top:4px;}
+  .client-input{width:100%;background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:300;
+    padding:6px 8px;border-radius:var(--radius);outline:none;resize:vertical;
+    transition:border-color 0.15s;}
+  .client-input:focus{border-color:var(--accent);}
+  .client-massimali{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .client-max-item{background:var(--surface2);border:1px solid var(--border);
+    border-radius:4px;padding:6px 8px;}
+  .client-max-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:3px;}
+  .client-max-input{background:transparent;border:none;color:var(--accent);
+    font-family:'DM Mono',monospace;font-size:14px;font-weight:500;
+    outline:none;width:100%;}
+  .client-max-unit{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+  .note-item{background:var(--surface2);border-left:2px solid #8080ff;
+    padding:6px 10px;border-radius:0 4px 4px 0;margin-bottom:5px;font-size:11px;line-height:1.4;}
+  .note-item-date{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:2px;}
+  .note-add-row{display:flex;gap:6px;margin-top:4px;}
+
   /* CARD UTENTI */
   .utente-card{border:1px solid var(--border);border-radius:4px;margin-bottom:6px;overflow:hidden;transition:border-color 0.15s;}
   .utente-card:hover{border-color:var(--accent);}
@@ -347,7 +539,14 @@
 
 
 <div class="topbar">
-  <div class="logo">Program<span>/</span>Builder</div>
+  <button id="hamburger" onclick="toggleMenu()" style="
+    background:none;border:none;cursor:pointer;padding:4px 6px;
+    display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-right:4px;">
+    <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
+    <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
+    <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
+  </button>
+  <div class="logo">Trainer<span>/</span>Tascabile</div>
   <div class="tb-div"></div>
   <div class="tb-field">
     <label>Cliente</label>
@@ -390,6 +589,110 @@
   </div>
 </div>
 
+<!-- MENU LATERALE -->
+<div class="side-menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+<div class="side-menu" id="side-menu">
+  <div class="side-menu-logo">Trainer<span>/</span>Tascabile</div>
+  <div class="side-menu-items">
+    <div class="side-menu-item active" onclick="goTo('builder')">
+      <span class="side-menu-icon">✏️</span> Program Builder
+    </div>
+    <div class="side-menu-item" onclick="goTo('clienti')">
+      <span class="side-menu-icon">👤</span> Schede Clienti
+    </div>
+    <div class="side-menu-item" onclick="goTo('pagamenti')">
+      <span class="side-menu-icon">💳</span> Pagamenti
+    </div>
+  </div>
+</div>
+
+<!-- BARRA CLIENTE -->
+<div class="client-bar" id="client-bar">
+  <div id="client-pills" style="display:flex;gap:6px;align-items:center;flex:1;overflow:hidden;"></div>
+  <span class="client-bar-open" onclick="openClientModal()">+ dettagli</span>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="client-modal-overlay" id="client-modal-overlay" onclick="closeClientModalIfOutside(event)">
+  <div class="client-modal" id="client-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="client-modal-title" id="client-modal-name">Cliente</div>
+      <button class="btn-ghost" onclick="closeClientModal()" style="font-size:18px">✕</button>
+    </div>
+
+    <div>
+      <div class="client-section-label">Frequenza settimanale</div>
+      <input class="client-input" id="cm-frequenza" placeholder="es. 4 giorni/settimana" style="height:30px;">
+    </div>
+
+    <div>
+      <div class="client-section-label">Obiettivo breve termine</div>
+      <input class="client-input" id="cm-obj-breve" placeholder="es. Perdere 5kg entro marzo" style="height:30px;">
+    </div>
+
+    <div>
+      <div class="client-section-label">Obiettivo lungo termine</div>
+      <input class="client-input" id="cm-obj-lungo" placeholder="es. Costruire una base di forza solida" style="height:30px;">
+    </div>
+
+    <div>
+      <div class="client-section-label">Limitazioni / attrezzatura mancante</div>
+      <textarea class="client-input" id="cm-limitazioni" rows="2" placeholder="es. No leg curl · Lento avanti dà fastidio alla spalla destra"></textarea>
+    </div>
+
+    <div>
+      <div class="client-section-label">Esercizi problematici</div>
+      <textarea class="client-input" id="cm-problemi" rows="2" placeholder="es. Evitare stacco sumo · Dolore al ginocchio sullo squat bulgaro"></textarea>
+    </div>
+
+    <div>
+      <div class="client-section-label">Massimali</div>
+      <div class="client-massimali">
+        <div class="client-max-item">
+          <div class="client-max-label">Squat</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <input class="client-max-input" id="cm-max-squat" type="number" placeholder="—">
+            <span class="client-max-unit">kg</span>
+          </div>
+        </div>
+        <div class="client-max-item">
+          <div class="client-max-label">Panca piana</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <input class="client-max-input" id="cm-max-panca" type="number" placeholder="—">
+            <span class="client-max-unit">kg</span>
+          </div>
+        </div>
+        <div class="client-max-item">
+          <div class="client-max-label">Stacco</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <input class="client-max-input" id="cm-max-stacco" type="number" placeholder="—">
+            <span class="client-max-unit">kg</span>
+          </div>
+        </div>
+        <div class="client-max-item">
+          <div class="client-max-label">Military press</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <input class="client-max-input" id="cm-max-mp" type="number" placeholder="—">
+            <span class="client-max-unit">kg</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="client-section-label">Note dinamiche</div>
+      <div id="cm-note-list" style="margin-bottom:8px;"></div>
+      <div class="note-add-row">
+        <input class="client-input" id="cm-nota-input" placeholder="Aggiungi nota..." style="height:28px;flex:1;">
+        <button class="btn btn-outline" onclick="addClientNota()" style="height:28px;font-size:10px;padding:0 10px;flex-shrink:0;">+ Nota</button>
+      </div>
+    </div>
+
+    <button class="btn btn-accent" onclick="saveClientData()" style="width:100%;height:32px;font-size:11px;margin-top:4px;">Salva</button>
+  </div>
+</div>
+
+<div id="page-builder" class="page active">
 <div class="main">
   <div class="main-content">
     <div id="giorni-container"></div>
@@ -475,6 +778,7 @@ function loadSheet() {
     parseTSVData(saved);
     document.getElementById('sync-dot').className='sync-dot ok';
     document.getElementById('sync-label').textContent=lists.esercizi.length+' esercizi · '+lists.metodologie.length+' metod.';
+  window._sheetUsers = lists.utenti.filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
   } else {
     document.getElementById('sync-dot').className='sync-dot err';
     document.getElementById('sync-label').textContent='Nessun dato — clicca per importare';
@@ -1265,6 +1569,880 @@ function downloadCSV(){
 
 function toggleExport(){document.getElementById('export-panel').classList.toggle('open');}
 
+
+
+
+
+
+// ── STATS SIDEBAR ─────────────────────────────────────────────────────────────
+function parseDataIT(dataStr) {
+  if(!dataStr) return null;
+  const p = dataStr.split('/');
+  if(p.length!==3) return null;
+  return new Date(p[2], p[1]-1, p[0]);
+}
+
+function clienteCategoria(email) {
+  const pagDB = getPagamentiDB();
+  const pags = pagDB[email];
+  if(!pags || !pags.length) return 'inattivo';
+  const last = pags[pags.length-1];
+  const oggi = new Date(); oggi.setHours(0,0,0,0);
+  const treM = new Date(oggi); treM.setDate(treM.getDate()-90);
+  const scad = parseDataIT(last.scadenza);
+
+  // Scadenza futura
+  if(scad && scad >= oggi) {
+    if(!last.pagato) return 'pend'; // attivo ma non saldato
+    const diff = Math.round((scad-oggi)/86400000);
+    if(diff<=7) return 'warn';
+    return 'ok';
+  }
+  // Scadenza passata
+  if(scad && scad < treM) return 'inattivo'; // scaduto da 90+ giorni
+  return 'scaduto'; // scaduto da 1 a 89 giorni
+}
+
+function computeStats() {
+  const pagDB = getPagamentiDB();
+  const clientiDB = getClientiDB();
+
+  const tuttiEmail = new Set([
+    ...Object.keys(pagDB),
+    ...Object.keys(clientiDB),
+    ...(window._sheetUsers||[]).map(u=>u.email).filter(Boolean)
+  ]);
+
+  let attivi=0, scadenza=0, inattivi=0, scaduti=0;
+  let incassoTeorico=0, incassoReale=0;
+  const listAttivi=[], listScadenza=[], listInattivi=[], listScaduti=[], listPending=[];
+
+  tuttiEmail.forEach(email=>{
+    const pags = pagDB[email]||[];
+    const nome = pags[0]?.nome || clientiDB[email]?.nome || email;
+    const cat = clienteCategoria(email);
+    if(cat==='ok') { attivi++; listAttivi.push({email,nome}); }
+    else if(cat==='warn') { scadenza++; listScadenza.push({email,nome}); }
+    else if(cat==='pend') { scadenza++; listScadenza.push({email,nome}); }
+    else if(cat==='scaduto') { scaduti++; listScaduti.push({email,nome}); }
+    else { inattivi++; listInattivi.push({email,nome}); }
+    // Pending: tutti i pagamenti non saldati
+    pags.filter(p=>!p.pagato).forEach(p=>{
+      listPending.push({email, nome, data:p.data, importo:p.importo, scadenza:p.scadenza});
+    });
+
+    pags.forEach(p=>{
+      incassoTeorico += parseFloat(p.importo)||0;
+      if(p.pagato) incassoReale += parseFloat(p.importo)||0;
+    });
+  });
+
+  const totali = tuttiEmail.size;
+  const delta = incassoTeorico - incassoReale;
+
+  return { totali, attivi, scadenza, inattivi, scaduti, incassoTeorico, incassoReale, delta,
+           listAttivi, listScadenza, listInattivi, listScaduti, listPending };
+}
+
+let _lastStats = null;
+
+function renderStats(prefix) {
+  const s = computeStats();
+  _lastStats = s;
+  const set = (id, val) => { const el = document.getElementById(prefix+id); if(el) el.textContent = val; };
+  set('totali', s.totali);
+  set('attivi', s.attivi);
+  set('scadenza', s.scadenza);
+  set('inattivi', s.inattivi);
+  set('scaduti', s.scaduti);
+  set('incasso-teorico', '€'+s.incassoTeorico.toFixed(0));
+  set('incasso-reale', '€'+s.incassoReale.toFixed(0));
+  set('delta', s.delta > 0 ? '-€'+s.delta.toFixed(0) : '—');
+}
+
+function apriStatLista(tipo) {
+  if(!_lastStats) { renderStats('stat-'); }
+  const s = _lastStats;
+  const labels = { totali:'Tutti i clienti', attivi:'Clienti attivi', scadenza:'In scadenza',
+                   inattivi:'Clienti inattivi', scaduti:'Clienti scaduti', pending:'Da incassare' };
+  const liste = {
+    totali: [...s.listAttivi, ...s.listScadenza, ...s.listInattivi, ...s.listScaduti],
+    attivi: s.listAttivi, scadenza: s.listScadenza,
+    inattivi: s.listInattivi, scaduti: s.listScaduti, pending: s.listPending
+  };
+  const lista = (liste[tipo]||[]).sort((a,b)=>a.nome.localeCompare(b.nome));
+  document.getElementById('stat-lista-title').textContent = labels[tipo]||tipo + ' ('+lista.length+')';
+  const body = document.getElementById('stat-lista-body');
+  body.innerHTML = '';
+  if(!lista.length) {
+    body.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:8px 0;">Nessun cliente.</div>';
+  } else {
+    lista.forEach(u=>{
+      const div = document.createElement('div');
+      div.style.cssText = 'padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;';
+      const extra = u.importo ? ' · €'+u.importo+(u.data?' · '+u.data:'') : '';
+      div.innerHTML = '<div style="font-size:11px;">'+u.nome+'<span style="font-family:DM Mono,monospace;font-size:9px;color:#ff5555;margin-left:6px;">'+extra+'</span></div><div style="font-family:DM Mono,monospace;font-size:8px;color:var(--muted);">'+u.email+'</div>';
+      div.onclick = ()=>{ closeStatLista(); apriPagCliente(u.email); };
+      body.appendChild(div);
+    });
+  }
+  document.getElementById('stat-lista-overlay').classList.add('open');
+}
+
+function closeStatLista(e) {
+  if(!e || e.target===document.getElementById('stat-lista-overlay'))
+    document.getElementById('stat-lista-overlay').classList.remove('open');
+}
+
+// ── PAGAMENTI ─────────────────────────────────────────────────────────────────
+function getPagamentiDB() {
+  try { return JSON.parse(localStorage.getItem('coaching_pagamenti')||'{}'); } catch(e){ return {}; }
+}
+function setPagamentiDB(db) { localStorage.setItem('coaching_pagamenti', JSON.stringify(db)); }
+
+function pagStatus(scadenza, pagato) {
+  if(!scadenza) return 'none';
+  const parts = scadenza.split('/');
+  if(parts.length !== 3) return 'none';
+  const d = new Date(parts[2], parts[1]-1, parts[0]);
+  const oggi = new Date(); oggi.setHours(0,0,0,0);
+  const diff = Math.round((d - oggi) / 86400000);
+  if(diff < 0) return 'exp';
+  if(!pagato) return 'pend';
+  if(diff <= 7) return 'warn';
+  return 'ok';
+}
+
+function calcolaScadenza(dataPag, durata) {
+  const parts = dataPag.split('/');
+  if(parts.length !== 3) return '';
+  const d = new Date(parts[2], parts[1]-1, parts[0]);
+  d.setDate(d.getDate() + parseInt(durata||30));
+  return d.toLocaleDateString('it-IT');
+}
+
+function renderPagClientiList() {
+  const query = (document.getElementById('pag-search')?.value||'').toLowerCase();
+  const pagDB = getPagamentiDB();
+  const clientiDB = getClientiDB();
+  const list = document.getElementById('pag-clienti-list');
+  if(!list) return;
+  list.innerHTML = '';
+
+  // Unisci clienti da pagamenti + anagrafica
+  const clienti = {};
+  // Prima da anagrafica
+  Object.entries(clientiDB).forEach(([email, data])=>{
+    clienti[email] = { email, nome: data.nome||email, scadenza:'', pagato:null };
+  });
+  // Poi da pagamenti (sovrascrive con dati più aggiornati)
+  Object.entries(pagDB).forEach(([email, pags])=>{
+    const last = pags[pags.length-1];
+    const nome = last?.nome || clientiDB[email]?.nome || email;
+    clienti[email] = { email, nome, scadenza: last?.scadenza||'', pagato: last?.pagato };
+  });
+  // Aggiungi anche da sheet users se non già presenti
+  if(window._sheetUsers) {
+    window._sheetUsers.forEach(u=>{
+      if(u.email && !clienti[u.email]) clienti[u.email] = { email:u.email, nome:u.nome||u.email, scadenza:'', pagato:null };
+    });
+  }
+
+  const keys = Object.keys(clienti)
+    .filter(k=>!query || clienti[k].nome.toLowerCase().includes(query) || k.toLowerCase().includes(query))
+    .sort((a,b)=>clienti[a].nome.localeCompare(clienti[b].nome));
+
+  if(!keys.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:10px;">Nessun cliente.</div>';
+    return;
+  }
+
+  keys.forEach(email=>{
+    const u = clienti[email];
+    const st = pagStatus(u.scadenza, u.pagato);
+    const item = document.createElement('div');
+    item.className = 'pag-cliente-item';
+    item.innerHTML = `
+      <div style="display:flex;align-items:center;gap:7px;">
+        <div class="pag-status-dot ${st}"></div>
+        <div>
+          <div class="pag-cliente-nome">${u.nome}</div>
+          <div class="pag-cliente-email">${email}</div>
+        </div>
+      </div>`;
+    item.onclick = ()=>apriPagCliente(email);
+    list.appendChild(item);
+  });
+}
+
+let pagClienteSelezionato = null;
+
+function apriPagCliente(email) {
+  pagClienteSelezionato = email;
+  const db = getPagamentiDB();
+  const pags = db[email] || [];
+  const nome = pags[0]?.nome || email;
+  const main = document.getElementById('pag-main');
+
+  // Calcola summary
+  const totPagato = pags.filter(p=>p.pagato).reduce((s,p)=>s+(parseFloat(p.importo)||0),0);
+  const totDaPagare = pags.filter(p=>!p.pagato).reduce((s,p)=>s+(parseFloat(p.importo)||0),0);
+  const lastPag = pags[pags.length-1];
+  const lastScad = lastPag?.scadenza||'';
+  const st = pagStatus(lastScad, lastPag?.pagato);
+  const stLabel = {ok:'Attivo',warn:'Scade presto',exp:'Scaduto',pend:'In attesa pagamento',none:'—'}[st];
+  const stClass = st;
+
+  main.innerHTML = `
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;">
+      <div class="scheda-title">${nome}</div>
+      <span class="pag-badge ${stClass}">${stLabel}${lastScad?' · '+lastScad:''}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+      <div class="scheda-email" style="margin-bottom:0;">${email}</div>
+      <input id="pag-email-edit" value="${email}" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;outline:none;width:180px;" placeholder="Aggiorna email...">
+      <button class="btn btn-ghost" onclick="aggiornaPagEmail('${email}')" style="height:22px;font-size:9px;padding:0 8px;">✓</button>
+    </div>
+
+    <div class="pag-summary" style="grid-template-columns:1fr 1fr;">
+      <div class="pag-summary-card">
+        <div class="pag-summary-val">€${totPagato.toFixed(0)}</div>
+        <div class="pag-summary-label">Totale versato</div>
+      </div>
+      <div class="pag-summary-card" style="${totDaPagare>0?'border-color:#ff5555;':''}">
+        <div class="pag-summary-val" style="${totDaPagare>0?'color:#ff5555;':'color:var(--muted);'}">${totDaPagare>0?'-€'+totDaPagare.toFixed(0):'—'}</div>
+        <div class="pag-summary-label">Da saldare</div>
+      </div>
+    </div>
+
+    <div class="pag-add-form">
+      <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Nuovo pagamento</div>
+      <div class="pag-form-grid">
+        <div>
+          <div class="scheda-label" style="margin-bottom:3px;">Data pagamento</div>
+          <input class="pag-input" id="np-data" type="date">
+        </div>
+        <div>
+          <div class="scheda-label" style="margin-bottom:3px;">Importo (€)</div>
+          <input class="pag-input" id="np-importo" type="number" placeholder="37">
+        </div>
+        <div>
+          <div class="scheda-label" style="margin-bottom:3px;">Mensilità</div>
+          <input class="pag-input" id="np-durata" type="number" placeholder="1" value="1" min="1">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;">
+          <input type="checkbox" id="np-pagato" checked style="accent-color:var(--accent);"> Pagato
+        </label>
+        <button class="btn btn-accent" onclick="aggiungiPagamento('${email}')" style="height:28px;font-size:10px;padding:0 16px;">+ Aggiungi</button>
+      </div>
+    </div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+      <div class="pag-row header">
+        <div>Data</div><div>Importo</div><div>Mesi</div><div>Scadenza</div><div>Stato</div><div></div>
+      </div>
+      <div id="pag-storico"></div>
+    </div>`;
+
+  renderPagStorico(email);
+
+  // Setta data odierna nel form
+  const oggi = new Date();
+  document.getElementById('np-data').value = oggi.toISOString().split('T')[0];
+}
+
+function aggiornaPagEmail(oldEmail) {
+  const newEmail = document.getElementById('pag-email-edit').value.trim();
+  if(!newEmail || newEmail === oldEmail) return;
+  const db = getPagamentiDB();
+  if(db[oldEmail]) {
+    db[newEmail] = db[oldEmail];
+    delete db[oldEmail];
+    setPagamentiDB(db);
+    pagClienteSelezionato = newEmail;
+    renderPagClientiList();
+    apriPagCliente(newEmail);
+  }
+}
+
+function renderPagStorico(email) {
+  const db = getPagamentiDB();
+  const pags = [...(db[email]||[])].reverse();
+  const el = document.getElementById('pag-storico');
+  if(!el) return;
+  el.innerHTML = '';
+  if(!pags.length) {
+    el.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:11px;">Nessun pagamento registrato.</div>';
+    return;
+  }
+  pags.forEach((p, i)=>{
+    const realIdx = (db[email].length-1) - i;
+    const st = pagStatus(p.scadenza, p.pagato);
+    const stLabel = {ok:'Attivo',warn:'Scade presto',exp:'Scaduto',none:'—'}[st];
+    const row = document.createElement('div');
+    row.className = 'pag-row';
+    row.innerHTML = `
+      <div>${p.data||'—'}</div>
+      <div>€${parseFloat(p.importo||0).toFixed(2)}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;">${p.mesi||Math.round((p.durata||30)/30)} mes${(p.mesi||1)===1?'e':'i'}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;">${p.scadenza||'—'}</div>
+      <div><span class="pag-badge ${st}">${p.pagato?stLabel:'In attesa'}</span></div>
+      <div><button onclick="eliminaPagamento('${email}',${realIdx})" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:11px;">✕</button></div>`;
+    el.appendChild(row);
+  });
+}
+
+function aggiungiPagamento(email) {
+  const dataISO = document.getElementById('np-data').value;
+  const importo = document.getElementById('np-importo').value;
+  const mensilitaN = parseInt(document.getElementById('np-durata').value) || 1;
+  const pagato  = document.getElementById('np-pagato').checked;
+  if(!dataISO || !importo) return;
+
+  const nome = getPagamentiDB()[email]?.[0]?.nome || getClientiDB()[email]?.nome || email;
+  const db = getPagamentiDB();
+  if(!db[email]) db[email] = [];
+
+  // Genera una riga per ogni mensilità
+  let dataCorrente = dataISO; // ISO per calcoli
+  for(let i = 0; i < mensilitaN; i++) {
+    const [y,m,d] = dataCorrente.split('-');
+    const dataIT = `${d}/${m}/${y}`;
+    const scadenza = calcolaScadenza(dataIT, 30);
+    db[email].push({ nome, data: dataIT, importo: parseFloat(importo), mesi: 1, pagato, scadenza });
+    // Prossima mensilità: avanza di 30 giorni
+    const next = new Date(dataCorrente);
+    next.setDate(next.getDate() + 30);
+    dataCorrente = next.toISOString().split('T')[0];
+  }
+
+  db[email].sort((a,b)=>a.data.split('/').reverse().join('').localeCompare(b.data.split('/').reverse().join('')));
+  setPagamentiDB(db);
+  apriPagCliente(email);
+  renderPagClientiList();
+  renderStats('stat-');
+}
+
+function eliminaPagamento(email, idx) {
+  const db = getPagamentiDB();
+  if(!db[email]) return;
+  db[email].splice(idx,1);
+  setPagamentiDB(db);
+  apriPagCliente(email);
+  renderPagClientiList();
+  renderStats('stat-');
+}
+
+function trovEmailDaNome(nome) {
+  // Cerca nei clienti DB
+  const db = getClientiDB();
+  const match = Object.entries(db).find(([email, d])=>
+    (d.nome||'').toLowerCase() === nome.toLowerCase()
+  );
+  if(match) return match[0];
+  // Cerca nei dati sheet
+  if(window._sheetUsers) {
+    const u = window._sheetUsers.find(u=>u.nome.toLowerCase()===nome.toLowerCase());
+    if(u && u.email) return u.email;
+  }
+  // Fallback: usa nome come chiave
+  return nome.toLowerCase().replace(/\s+/g,'.');
+}
+
+function importaPagamenti() {
+  const text = document.getElementById('pag-import-area').value.trim();
+  const status = document.getElementById('pag-import-status');
+  if(!text) { status.textContent='Incolla prima il CSV.'; return; }
+
+  const lines = text.split('\n').map(l=>l.trim().replace(/^,/,'')).filter(l=>l);
+  if(lines.length < 2) { status.textContent='CSV non valido.'; return; }
+
+  const sep = lines[0].includes('\t') ? '\t' : ',';
+  const parseLine = sep==='\t' ? l=>l.split('\t').map(v=>v.trim()) : parseCSVLine;
+  const header = parseLine(lines[0].replace(/^\uFEFF/,'')).map(h=>h.trim());
+  const rows = lines.slice(1).map(l=>{ const cols=parseLine(l); const obj={}; header.forEach((h,i)=>{ obj[h]=(cols[i]||'').trim(); }); return obj; });
+
+  const db = getPagamentiDB();
+  let count = 0;
+  rows.forEach(r=>{
+    const nome  = (r['Nome membro']||r['Nome membro']||r['Nome']||'').trim();
+    if(!nome) return;
+    // Email: dalla colonna se presente, altrimenti cerca per nome
+    const email = r['Email']||r['email'] || trovEmailDaNome(nome);
+    if(!db[email]) db[email]=[];
+    const data     = r['Data pagamento']||'';
+    const importo  = parseFloat((r['Importo']||'0').replace('€','').replace(',','.'))||0;
+    const durata   = parseInt(r['Durata (giorni)']||'30')||30;
+    const pagatoVal = (r['Pagato']||r['Pagato?']||'').trim(); const pagato = pagatoVal.toLowerCase().includes('true')||pagatoVal==='1'||pagatoVal==='✓'||pagatoVal==='TRUE';
+    const scadenza = (r['Data scadenza']||r['Data scadenza ']||'').trim() || calcolaScadenza(data, durata);
+    const mesiN = Math.round(durata/30) || 1;
+    // Espandi in righe mensili
+    let dataCorrenteIT = data;
+    for(let i=0; i<mesiN; i++){
+      const [dd,mm,yy] = dataCorrenteIT.split('/');
+      const scad = calcolaScadenza(dataCorrenteIT, 30);
+      const exists = db[email].find(p=>p.data===dataCorrenteIT && p.importo===importo);
+      if(!exists){ db[email].push({ nome, data:dataCorrenteIT, importo, mesi:1, pagato, scadenza:scad }); count++; }
+      // Avanza 30 giorni
+      const next = new Date(yy,mm-1,dd); next.setDate(next.getDate()+30);
+      dataCorrenteIT = next.toLocaleDateString('it-IT');
+    }
+  });
+
+  Object.keys(db).forEach(k=>db[k].sort((a,b)=>a.data.split('/').reverse().join('').localeCompare(b.data.split('/').reverse().join(''))));
+  setPagamentiDB(db);
+  status.textContent = '✓ '+count+' pagamenti importati';
+  document.getElementById('pag-import-area').value='';
+  renderPagClientiList();
+}
+
+// ── PAGINA CLIENTI ────────────────────────────────────────────────────────────
+let clienteSelezionato = null;
+
+function renderClientiList() {
+  const query = (document.getElementById('clienti-search')?.value||'').toLowerCase();
+  const db = getClientiDB();
+
+  // Raccogli clienti da DB + da sheet data
+  const tuttiClienti = {};
+  Object.entries(db).forEach(([email, data])=>{
+    tuttiClienti[email] = { email, nome: data.nome||'' };
+  });
+  // Aggiungi clienti dal foglio Google
+  if(window._sheetUsers) {
+    window._sheetUsers.forEach(u=>{
+      if(!tuttiClienti[u.email]) tuttiClienti[u.email] = { email: u.email, nome: u.nome||'' };
+    });
+  }
+
+  const list = document.getElementById('clienti-list');
+  if(!list) return;
+  list.innerHTML = '';
+
+  const keys = Object.keys(tuttiClienti)
+    .filter(k=>{
+      const u = tuttiClienti[k];
+      return !query || u.nome.toLowerCase().includes(query) || u.email.toLowerCase().includes(query);
+    })
+    .sort((a,b)=>(tuttiClienti[a].nome||a).localeCompare(tuttiClienti[b].nome||b));
+
+  if(!keys.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:10px;padding:8px 0">Nessun cliente.</div>';
+    return;
+  }
+
+  keys.forEach(email=>{
+    const u = tuttiClienti[email];
+    const item = document.createElement('div');
+    item.className = 'cliente-list-item' + (clienteSelezionato===email?' active':'');
+    const nome = document.createElement('div');
+    nome.className = 'cliente-list-nome';
+    nome.textContent = u.nome || email;
+    const mail = document.createElement('div');
+    mail.className = 'cliente-list-email';
+    mail.textContent = email;
+    item.appendChild(nome);
+    item.appendChild(mail);
+    item.onclick = (e)=>{ if(e.target.classList.contains('cliente-del')) return; apriScheda(email, u.nome); };
+
+    const del = document.createElement('button');
+    del.className = 'cliente-del';
+    del.textContent = '✕';
+    del.style.cssText = 'position:absolute;top:6px;right:6px;background:none;border:none;color:var(--accent2);cursor:pointer;font-size:10px;padding:2px;opacity:0;transition:opacity 0.15s;';
+    del.onclick = (e)=>{ e.stopPropagation(); eliminaCliente(email); };
+    item.style.position = 'relative';
+    item.onmouseenter = ()=>del.style.opacity='1';
+    item.onmouseleave = ()=>del.style.opacity='0';
+    item.appendChild(del);
+    list.appendChild(item);
+  });
+}
+
+function apriScheda(email, nomeDefault) {
+  clienteSelezionato = email;
+  renderClientiList();
+
+  const db = getClientiDB();
+  const data = db[email] || DEMO_CLIENTI[email] || {};
+  const nome = data.nome || nomeDefault || email;
+
+  const main = document.getElementById('clienti-main');
+  main.innerHTML = `
+    <div class="scheda-title">${nome}</div>
+    <div class="scheda-email">${email}</div>
+
+    <div class="scheda-grid">
+      <div class="scheda-field">
+        <div class="scheda-label">Nome</div>
+        <input class="scheda-input" id="sc-nome" value="${data.nome||nomeDefault||''}" placeholder="Nome completo">
+      </div>
+      <div class="scheda-field">
+        <div class="scheda-label">Frequenza settimanale</div>
+        <input class="scheda-input" id="sc-frequenza" value="${data.frequenza||''}" placeholder="es. 4 giorni/settimana">
+      </div>
+      <div class="scheda-field">
+        <div class="scheda-label">Obiettivo breve termine</div>
+        <input class="scheda-input" id="sc-obj-breve" value="${data.obj_breve||''}" placeholder="es. Perdere 5kg entro marzo">
+      </div>
+      <div class="scheda-field">
+        <div class="scheda-label">Obiettivo lungo termine</div>
+        <input class="scheda-input" id="sc-obj-lungo" value="${data.obj_lungo||''}" placeholder="es. Costruire una base di forza">
+      </div>
+      <div class="scheda-field full">
+        <div class="scheda-label">Limitazioni / attrezzatura mancante</div>
+        <textarea class="scheda-input" id="sc-limitazioni" rows="2" placeholder="es. No leg curl · Spalla destra problematica">${data.limitazioni||''}</textarea>
+      </div>
+      <div class="scheda-field full">
+        <div class="scheda-label">Esercizi problematici</div>
+        <textarea class="scheda-input" id="sc-problemi" rows="2" placeholder="es. Evitare squat bulgaro · Dolore al ginocchio">${data.problemi||''}</textarea>
+      </div>
+    </div>
+
+    <div class="scheda-label" style="margin-bottom:8px;">Massimali</div>
+    <div class="massimali-grid">
+      <div class="max-card">
+        <div class="max-card-label">Squat</div>
+        <input class="max-card-input" id="sc-max-squat" type="number" placeholder="—" value="${data.massimali?.squat||''}">
+        <div class="max-card-unit">kg</div>
+      </div>
+      <div class="max-card">
+        <div class="max-card-label">Panca</div>
+        <input class="max-card-input" id="sc-max-panca" type="number" placeholder="—" value="${data.massimali?.panca||''}">
+        <div class="max-card-unit">kg</div>
+      </div>
+      <div class="max-card">
+        <div class="max-card-label">Stacco</div>
+        <input class="max-card-input" id="sc-max-stacco" type="number" placeholder="—" value="${data.massimali?.stacco||''}">
+        <div class="max-card-unit">kg</div>
+      </div>
+      <div class="max-card">
+        <div class="max-card-label">Military Press</div>
+        <input class="max-card-input" id="sc-max-mp" type="number" placeholder="—" value="${data.massimali?.mp||''}">
+        <div class="max-card-unit">kg</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="scheda-label">Note dinamiche</div>
+    </div>
+    <div id="sc-note-list" style="margin-bottom:10px;"></div>
+    <div style="display:flex;gap:6px;margin-bottom:20px;">
+      <input class="scheda-input" id="sc-nota-input" placeholder="Aggiungi nota..." style="height:30px;flex:1;">
+      <button class="btn btn-outline" onclick="addSchedaNota('${email}')" style="height:30px;font-size:10px;padding:0 12px;flex-shrink:0;">+ Nota</button>
+    </div>
+
+    <button class="btn btn-accent" onclick="saveScheda('${email}')" style="width:200px;height:32px;font-size:11px;">Salva scheda</button>
+  `;
+
+  renderSchedaNote(data.note||[], email);
+}
+
+function renderSchedaNote(note, email) {
+  const list = document.getElementById('sc-note-list');
+  if(!list) return;
+  list.innerHTML = '';
+  [...note].reverse().forEach((n,i)=>{
+    const realIdx = note.length - 1 - i;
+    const div = document.createElement('div');
+    div.className = 'note-scheda-item';
+    const del = document.createElement('button');
+    del.className = 'note-scheda-del';
+    del.textContent = '✕';
+    del.onclick = ()=>deleteSchedaNota(email, realIdx);
+    const date = document.createElement('div');
+    date.className = 'note-scheda-date';
+    date.textContent = n.data;
+    const text = document.createElement('div');
+    text.className = 'note-scheda-text';
+    text.textContent = n.testo;
+    div.appendChild(del);
+    div.appendChild(date);
+    div.appendChild(text);
+    list.appendChild(div);
+  });
+}
+
+function addSchedaNota(email) {
+  const inp = document.getElementById('sc-nota-input');
+  const testo = inp.value.trim();
+  if(!testo) return;
+  const db = getClientiDB();
+  if(!db[email]) db[email] = {};
+  if(!db[email].note) db[email].note = [];
+  const oggi = new Date().toLocaleDateString('it-IT');
+  db[email].note.push({ data:oggi, testo });
+  setClientiDB(db);
+  inp.value = '';
+  renderSchedaNote(db[email].note, email);
+  updateClientBar();
+}
+
+function deleteSchedaNota(email, idx) {
+  const db = getClientiDB();
+  if(!db[email]?.note) return;
+  db[email].note.splice(idx, 1);
+  setClientiDB(db);
+  renderSchedaNote(db[email].note, email);
+  updateClientBar();
+}
+
+function saveScheda(email) {
+  const db = getClientiDB();
+  const existing = db[email] || {};
+  db[email] = {
+    ...existing,
+    nome:        document.getElementById('sc-nome').value.trim(),
+    frequenza:   document.getElementById('sc-frequenza').value.trim(),
+    obj_breve:   document.getElementById('sc-obj-breve').value.trim(),
+    obj_lungo:   document.getElementById('sc-obj-lungo').value.trim(),
+    limitazioni: document.getElementById('sc-limitazioni').value.trim(),
+    problemi:    document.getElementById('sc-problemi').value.trim(),
+    massimali: {
+      squat:  parseFloat(document.getElementById('sc-max-squat').value)||null,
+      panca:  parseFloat(document.getElementById('sc-max-panca').value)||null,
+      stacco: parseFloat(document.getElementById('sc-max-stacco').value)||null,
+      mp:     parseFloat(document.getElementById('sc-max-mp').value)||null,
+    }
+  };
+  setClientiDB(db);
+  // Sincronizza nome anche nei pagamenti
+  const pagDB = getPagamentiDB();
+  if(pagDB[email] && db[email].nome) {
+    pagDB[email].forEach(p=>p.nome = db[email].nome);
+    setPagamentiDB(pagDB);
+  }
+  updateClientBar();
+  // Feedback visivo
+  const btn = document.querySelector('#clienti-main .btn-accent');
+  if(btn){ btn.textContent='✓ Salvato'; setTimeout(()=>btn.textContent='Salva scheda', 1500); }
+}
+
+function toggleNuovoClienteForm() {
+  const form = document.getElementById('nuovo-cliente-form');
+  const btn  = document.getElementById('btn-nuovo-cliente');
+  const open = form.style.display === 'none';
+  form.style.display = open ? 'block' : 'none';
+  btn.textContent = open ? '✕' : '+';
+  if(open) document.getElementById('nc-nome').focus();
+}
+
+function confermaNuovoCliente() {
+  const nome  = document.getElementById('nc-nome').value.trim();
+  const email = document.getElementById('nc-email').value.trim();
+  if(!email || !email.includes('@')) {
+    document.getElementById('nc-email').style.borderColor = 'var(--accent2)';
+    return;
+  }
+  const db = getClientiDB();
+  if(!db[email]) db[email] = { nome, note:[] };
+  else if(nome) db[email].nome = nome;
+  setClientiDB(db);
+  document.getElementById('nc-nome').value = '';
+  document.getElementById('nc-email').value = '';
+  toggleNuovoClienteForm();
+  renderClientiList();
+  apriScheda(email, nome);
+}
+
+function eliminaCliente(email) {
+  if(!confirm('Eliminare la scheda di ' + email + '?\nI dati non potranno essere recuperati.')) return;
+  const db = getClientiDB();
+  delete db[email];
+  setClientiDB(db);
+  if(clienteSelezionato === email) {
+    clienteSelezionato = null;
+    document.getElementById('clienti-main').innerHTML = '<div class="scheda-placeholder">← Seleziona un cliente</div>';
+  }
+  renderClientiList();
+}
+
+function nuovoCliente() {
+  const email = prompt('Email del nuovo cliente:');
+  if(!email || !email.includes('@')) return;
+  const db = getClientiDB();
+  if(!db[email]) db[email] = { nome:'', note:[] };
+  setClientiDB(db);
+  renderClientiList();
+  apriScheda(email, '');
+}
+
+// ── NAVIGAZIONE ───────────────────────────────────────────────────────────────
+function toggleMenu() {
+  document.getElementById('side-menu').classList.toggle('open');
+  document.getElementById('menu-overlay').classList.toggle('open');
+}
+
+function goTo(page) {
+  toggleMenu();
+  document.querySelectorAll('.side-menu-item').forEach(el=>el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  // Nascondi barra cliente nella pagina clienti
+  const bar = document.getElementById('client-bar');
+  if(bar) bar.style.display = (page==='clienti'||page==='pagamenti') ? 'none' : '';
+  if(page==='clienti') { renderClientiList(); }
+  if(page==='pagamenti') { renderPagClientiList(); renderStats('stat-'); }
+}
+
+// ── DATI CLIENTE ─────────────────────────────────────────────────────────────
+// Dati demo per esempio visivo
+const DEMO_CLIENTI = {
+  'digiuseppeantonello8@gmail.com': {
+    frequenza: '4 giorni/settimana',
+    obj_breve: 'Half marathon entro luglio',
+    obj_lungo: 'Hybrid athlete — forza + resistenza',
+    limitazioni: 'Dolore Achille mattutino · Tendinopatia rotulea',
+    problemi: 'Attenzione squat bulgaro · Evitare volume alto corsa in salita',
+    massimali: { squat: 235, panca: 160, stacco: 250, mp: 100 },
+    note: [
+      { data: '10/03/2025', testo: 'Vuole tirare una singola di stacco nel prossimo blocco' },
+      { data: '24/02/2025', testo: 'Sente che il lavoro sui quad sta funzionando' },
+      { data: '10/02/2025', testo: 'Prossimo programma: più volume aerobico, mantenere forza' }
+    ]
+  }
+};
+
+function getClientiDB() {
+  try { return JSON.parse(localStorage.getItem('coaching_clienti')||'{}'); }
+  catch(e) { return {}; }
+}
+function setClientiDB(db) {
+  localStorage.setItem('coaching_clienti', JSON.stringify(db));
+}
+function getClienteData(email) {
+  if(!email) return null;
+  const db = getClientiDB();
+  return db[email] || DEMO_CLIENTI[email] || null;
+}
+
+function updateClientBar() {
+  const email = document.getElementById('email_cliente').value.trim();
+  const nome  = document.getElementById('nome_cliente').value.trim();
+  const bar   = document.getElementById('client-bar');
+  const pills = document.getElementById('client-pills');
+  pills.innerHTML = '';
+
+  if(!email && !nome) { bar.classList.remove('visible'); return; }
+
+  const data = getClienteData(email);
+  bar.classList.add('visible');
+
+  if(!data) {
+    const p = document.createElement('span');
+    p.className = 'client-pill freq';
+    p.textContent = 'Nessun dato cliente — clicca + dettagli per aggiungere';
+    pills.appendChild(p);
+    return;
+  }
+
+  if(data.frequenza) addPill(pills, '📅 '+data.frequenza, 'freq');
+  if(data.obj_breve) addPill(pills, '🎯 '+data.obj_breve, 'goal');
+  if(data.limitazioni) data.limitazioni.split('·').forEach(l=>{ if(l.trim()) addPill(pills, '⚠ '+l.trim(), 'warn'); });
+  if(data.note && data.note.length) addPill(pills, '📝 '+data.note[0].testo, 'note');
+  if(data.massimali) {
+    const m = data.massimali;
+    const parts = [];
+    if(m.squat) parts.push('SQ '+m.squat);
+    if(m.panca) parts.push('BP '+m.panca);
+    if(m.stacco) parts.push('DL '+m.stacco);
+    if(parts.length) addPill(pills, parts.join(' · ')+' kg', 'freq');
+  }
+}
+
+function addPill(container, text, type) {
+  const p = document.createElement('span');
+  p.className = 'client-pill '+type;
+  p.textContent = text;
+  container.appendChild(p);
+}
+
+function openClientModal() {
+  const email = document.getElementById('email_cliente').value.trim();
+  const nome  = document.getElementById('nome_cliente').value.trim();
+  document.getElementById('client-modal-name').textContent = nome || email || 'Cliente';
+
+  const data = getClienteData(email) || {};
+  document.getElementById('cm-frequenza').value   = data.frequenza||'';
+  document.getElementById('cm-obj-breve').value   = data.obj_breve||'';
+  document.getElementById('cm-obj-lungo').value   = data.obj_lungo||'';
+  document.getElementById('cm-limitazioni').value = data.limitazioni||'';
+  document.getElementById('cm-problemi').value    = data.problemi||'';
+  document.getElementById('cm-max-squat').value   = data.massimali?.squat||'';
+  document.getElementById('cm-max-panca').value   = data.massimali?.panca||'';
+  document.getElementById('cm-max-stacco').value  = data.massimali?.stacco||'';
+  document.getElementById('cm-max-mp').value      = data.massimali?.mp||'';
+
+  renderNoteList(data.note||[]);
+  document.getElementById('client-modal-overlay').classList.add('open');
+}
+
+function closeClientModal() {
+  document.getElementById('client-modal-overlay').classList.remove('open');
+}
+function closeClientModalIfOutside(e) {
+  if(e.target===document.getElementById('client-modal-overlay')) closeClientModal();
+}
+
+function renderNoteList(note) {
+  const list = document.getElementById('cm-note-list');
+  list.innerHTML = '';
+  [...note].reverse().forEach((n,i)=>{
+    const div = document.createElement('div');
+    div.className = 'note-item';
+    const date = document.createElement('div');
+    date.className = 'note-item-date';
+    date.textContent = n.data;
+    const text = document.createElement('div');
+    text.textContent = n.testo;
+    div.appendChild(date);
+    div.appendChild(text);
+    list.appendChild(div);
+  });
+}
+
+function addClientNota() {
+  const inp = document.getElementById('cm-nota-input');
+  const testo = inp.value.trim();
+  if(!testo) return;
+  const email = document.getElementById('email_cliente').value.trim();
+  const db = getClientiDB();
+  if(!db[email]) db[email] = {};
+  if(!db[email].note) db[email].note = [];
+  const oggi = new Date().toLocaleDateString('it-IT');
+  db[email].note.push({ data:oggi, testo });
+  setClientiDB(db);
+  inp.value='';
+  renderNoteList(db[email].note);
+  updateClientBar();
+}
+
+function saveClientData() {
+  const email = document.getElementById('email_cliente').value.trim();
+  if(!email) { alert('Seleziona prima un cliente'); return; }
+  const db = getClientiDB();
+  const existing = db[email]||{};
+  db[email] = {
+    ...existing,
+    frequenza:   document.getElementById('cm-frequenza').value.trim(),
+    obj_breve:   document.getElementById('cm-obj-breve').value.trim(),
+    obj_lungo:   document.getElementById('cm-obj-lungo').value.trim(),
+    limitazioni: document.getElementById('cm-limitazioni').value.trim(),
+    problemi:    document.getElementById('cm-problemi').value.trim(),
+    massimali: {
+      squat:  parseFloat(document.getElementById('cm-max-squat').value)||null,
+      panca:  parseFloat(document.getElementById('cm-max-panca').value)||null,
+      stacco: parseFloat(document.getElementById('cm-max-stacco').value)||null,
+      mp:     parseFloat(document.getElementById('cm-max-mp').value)||null,
+    }
+  };
+  setClientiDB(db);
+  closeClientModal();
+  updateClientBar();
+}
+
 // ── PROGRAMMI SALVATI ─────────────────────────────────────────────────────────
 function getSavedPrograms() {
   try { return JSON.parse(localStorage.getItem('coaching_saved_programs')||'[]'); }
@@ -1767,10 +2945,16 @@ if (localStorage.getItem('coaching_program')) {
 }
 
 // Autosave su modifiche topbar
+['nome_cliente','email_cliente'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateClientBar);
+  document.getElementById(id).addEventListener('change', updateClientBar);
+});
 ['nome_cliente','email_cliente','nome_programma','data_programma','settimane'].forEach(id=>{
   document.getElementById(id).addEventListener('input', scheduleAutosave);
   document.getElementById(id).addEventListener('change', scheduleAutosave);
 });
+// Init barra cliente
+updateClientBar();
 
 // ── POPUP PROGRESSIONI ────────────────────────────────────────────────────────
 let currentPopupExId = null;
@@ -2079,6 +3263,106 @@ function hideTooltip() {
     box-shadow:0 4px 16px rgba(200,241,53,0.3);
     transition:transform 0.15s;
   " title="Esporta">⬇</button>
+</div>
+
+</div><!-- /main -->
+</div><!-- /page-builder -->
+
+<!-- PAGE PAGAMENTI -->
+<div id="page-pagamenti" class="page">
+  <div class="pag-layout">
+    <!-- Sidebar clienti -->
+    <div class="pag-sidebar">
+      <input class="cliente-search" id="pag-search" placeholder="Cerca cliente..." oninput="renderPagClientiList()" style="margin-bottom:10px;">
+      <div id="pag-clienti-list"></div>
+      <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px;">
+        <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Importa CSV storico</div>
+        <textarea id="pag-import-area" placeholder="Incolla CSV con header&#10;Nome membro,Data pagamento,Importo,Durata (giorni),Pagato,Data scadenza&#10;(Email opzionale)" style="width:100%;height:70px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:9px;padding:6px;border-radius:4px;outline:none;resize:none;"></textarea>
+        <button class="btn btn-outline" onclick="importaPagamenti()" style="width:100%;height:26px;font-size:10px;margin-top:6px;">Importa</button>
+        <div id="pag-import-status" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);margin-top:4px;"></div>
+      </div>
+    </div>
+    <!-- Main -->
+    <div class="pag-main" id="pag-main">
+      <div class="pag-placeholder">← Seleziona un cliente</div>
+    </div>
+    <!-- Stats sidebar -->
+    <div class="stats-bar" id="pag-stats-bar">
+      <div class="stats-bar-title">Riepilogo</div>
+      <div class="stat-card accent" style="cursor:pointer;" onclick="apriStatLista('totali')">
+        <div class="stat-val" id="stat-totali">—</div>
+        <div class="stat-label">Clienti totali ›</div>
+      </div>
+      <div class="stat-card green" style="cursor:pointer;" onclick="apriStatLista('attivi')">
+        <div class="stat-val" id="stat-attivi">—</div>
+        <div class="stat-label">Attivi ›</div>
+      </div>
+      <div class="stat-card yellow" style="cursor:pointer;" onclick="apriStatLista('scadenza')">
+        <div class="stat-val" id="stat-scadenza">—</div>
+        <div class="stat-label">In scadenza ›</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer;border-color:var(--border);" onclick="apriStatLista('inattivi')">
+        <div class="stat-val" id="stat-inattivi" style="color:var(--muted);">—</div>
+        <div class="stat-label">Inattivi ›</div>
+      </div>
+      <div class="stat-card red" style="cursor:pointer;" onclick="apriStatLista('scaduti')">
+        <div class="stat-val" id="stat-scaduti">—</div>
+        <div class="stat-label">Scaduti ›</div>
+      </div>
+      <hr class="stat-divider">
+      <div class="stat-card accent">
+        <div class="stat-val" id="stat-incasso-teorico">—</div>
+        <div class="stat-label">Incasso teorico</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-val" id="stat-incasso-reale">—</div>
+        <div class="stat-label">Incasso reale</div>
+      </div>
+      <div class="stat-card red" style="cursor:pointer;" onclick="apriStatLista('pending')">
+        <div class="stat-val" id="stat-delta">—</div>
+        <div class="stat-label">Da incassare ›</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE CLIENTI -->
+<div id="page-clienti" class="page">
+  <div class="clienti-layout">
+    <!-- Sidebar lista clienti -->
+    <div class="clienti-sidebar">
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <input class="cliente-search" id="clienti-search" placeholder="Cerca cliente..." oninput="renderClientiList()" style="margin-bottom:0;flex:1;">
+        <button class="btn btn-outline" onclick="toggleNuovoClienteForm()" id="btn-nuovo-cliente" style="height:28px;font-size:14px;padding:0 10px;flex-shrink:0;">+</button>
+      </div>
+      <div id="nuovo-cliente-form" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:10px;">
+        <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Nuovo cliente</div>
+        <input class="cliente-search" id="nc-nome" placeholder="Nome completo" style="margin-bottom:6px;">
+        <input class="cliente-search" id="nc-email" placeholder="Email *" style="margin-bottom:8px;">
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-accent" onclick="confermaNuovoCliente()" style="flex:1;height:26px;font-size:10px;">Aggiungi</button>
+          <button class="btn btn-ghost" onclick="toggleNuovoClienteForm()" style="height:26px;font-size:10px;padding:0 8px;">Annulla</button>
+        </div>
+      </div>
+      <div id="clienti-list"></div>
+    </div>
+    <!-- Scheda dettaglio -->
+    <div class="clienti-main" id="clienti-main">
+      <div class="scheda-placeholder">← Seleziona un cliente</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL STAT LISTA -->
+<div class="val-overlay" id="stat-lista-overlay" onclick="closeStatLista(event)">
+  <div class="val-modal" style="width:360px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0;">
+      <div class="val-title" id="stat-lista-title">Clienti</div>
+      <button class="btn-ghost" onclick="document.getElementById('stat-lista-overlay').classList.remove('open')" style="font-size:18px">✕</button>
+    </div>
+    <div id="stat-lista-body" style="overflow-y:auto;flex:1;"></div>
+  </div>
 </div>
 
 <!-- MODAL LISTA PROGRAMMI -->
