@@ -1559,7 +1559,17 @@ function closeValAndExport() {
 function downloadCSV(){
   if(!csvData.length){buildCSV();return;}
   const cols=Object.keys(csvData[0]);
-  const sep=',';const lines=[cols.join(sep),...csvData.map(row=>cols.map(c=>{const v=String(row[c]??'').replace(/"/g,'""');return(v.includes(sep)||v.includes('"')||v.includes('\n'))?'"'+v+'"':v;}).join(sep))];
+  const sep=',';
+  const escapeCSV = v => {
+    const s = String(v??'');
+    // Sostituisci · con * per compatibilità Glide
+    const clean = s.replace(/·/g,'*');
+    if(clean.includes(sep)||clean.includes('"')||clean.includes('\n')){
+      return '"'+clean.replace(/"/g,'""')+'"';
+    }
+    return clean;
+  };
+  const lines=[cols.join(sep),...csvData.map(row=>cols.map(col=>escapeCSV(row[col])).join(sep))];
   const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url;
