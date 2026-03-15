@@ -1563,7 +1563,7 @@ function downloadCSV(){
   const escapeCSV = v => {
     const s = String(v??'');
     // Sostituisci · con * per compatibilità Glide
-    const clean = s.replace(/·/g,'*');
+    const clean = s;
     if(clean.includes(sep)||clean.includes('"')||clean.includes('\n')){
       return '"'+clean.replace(/"/g,'""')+'"';
     }
