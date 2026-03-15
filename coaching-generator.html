@@ -3130,9 +3130,21 @@ function propagaStruttura(wIdx, value) {
   for(const day of giorni){ ex=day.esercizi.find(e=>e.id===currentPopupExId); if(ex) break; }
   if(!ex) return;
 
+  // Calcola recupero smart per questo esercizio
+  const _metW = ex.settimane[wIdx].metodologia || ex.metodologia || '';
+  let _bloccoW = ex.blocco||'';
+  if(!_bloccoW && ex.esercizio) {
+    const exS = lists.esercizi.find(e=>e.nome.toLowerCase()===(ex.esercizio||'').toLowerCase());
+    if(exS) _bloccoW = exS.blocco||'';
+  }
+  const recSmart = getRecuperoDefault(ex.esercizio||'', _metW, _bloccoW);
+
   // Salva la settimana corrente — non sovrascrivere campi già compilati
   ex.settimane[wIdx].struttura = value;
-  if(!ex.settimane[wIdx].recupero && parsed.recupero) ex.settimane[wIdx].recupero = parsed.recupero;
+  // Recupero: usa smart se non già impostato manualmente
+  if(!ex.settimane[wIdx].recupero) {
+    ex.settimane[wIdx].recupero = recSmart !== '' ? recSmart : (parsed.recupero||'');
+  }
   if(!ex.settimane[wIdx].consiglio && parsed.consiglio) ex.settimane[wIdx].consiglio = parsed.consiglio;
   // campi derivati sempre aggiornati
   ex.settimane[wIdx].serie = parsed.serie;
@@ -3145,7 +3157,7 @@ function propagaStruttura(wIdx, value) {
   for(let w=wIdx+1;w<sw;w++){
     if(!ex.settimane[w].struttura){
       ex.settimane[w].struttura = value;
-      if(!ex.settimane[w].recupero) ex.settimane[w].recupero = parsed.recupero || DEFAULT_RECUPERO;
+      if(!ex.settimane[w].recupero) ex.settimane[w].recupero = recSmart !== '' ? recSmart : (parsed.recupero||DEFAULT_RECUPERO);
       if(!ex.settimane[w].consiglio && parsed.consiglio) ex.settimane[w].consiglio = parsed.consiglio;
     }
   }
