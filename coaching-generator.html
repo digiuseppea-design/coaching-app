@@ -1695,6 +1695,30 @@ function closeStatLista(e) {
 }
 
 // ── PAGAMENTI ─────────────────────────────────────────────────────────────────
+
+function esportaPagamentiCSV() {
+  const db = getPagamentiDB();
+  const clientiDB = getClientiDB();
+  const rows = [];
+  rows.push('Nome membro,Email,Data pagamento,Importo,Mensilità,Pagato,Data scadenza');
+  Object.entries(db).forEach(([email, pags])=>{
+    pags.forEach(p=>{
+      const nome = p.nome || clientiDB[email]?.nome || '';
+      rows.push([
+        nome, email, p.data||'',
+        p.importo||'', p.mesi||1,
+        p.pagato?'TRUE':'FALSE',
+        p.scadenza||''
+      ].join(','));
+    });
+  });
+  const blob = new Blob(['﻿'+rows.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pagamenti_backup_'+new Date().toLocaleDateString('it-IT').replace(/\//g,'-')+'.csv';
+  a.click();
+}
+
 function getPagamentiDB() {
   try { return JSON.parse(localStorage.getItem('coaching_pagamenti')||'{}'); } catch(e){ return {}; }
 }
@@ -1899,7 +1923,16 @@ function aggiungiPagamento(email) {
   const importo = document.getElementById('np-importo').value;
   const mensilitaN = parseInt(document.getElementById('np-durata').value) || 1;
   const pagato  = document.getElementById('np-pagato').checked;
-  if(!dataISO || !importo) return;
+  // Validazione con feedback visivo
+  let valid = true;
+  const npData   = document.getElementById('np-data');
+  const npImporto = document.getElementById('np-importo');
+  const npDurata  = document.getElementById('np-durata');
+  [npData, npImporto, npDurata].forEach(el=>{
+    if(!el.value) { el.style.borderColor='var(--accent2)'; valid=false; }
+    else el.style.borderColor='';
+  });
+  if(!valid) return;
 
   const nome = getPagamentiDB()[email]?.[0]?.nome || getClientiDB()[email]?.nome || email;
   const db = getPagamentiDB();
@@ -2959,6 +2992,24 @@ updateClientBar();
 // ── POPUP PROGRESSIONI ────────────────────────────────────────────────────────
 let currentPopupExId = null;
 
+
+function getRecuperoDefault(esercizio, metodologia, blocco) {
+  const es  = (esercizio||'').toLowerCase().trim();
+  const met = (metodologia||'').toLowerCase().trim();
+  // Corsa + lavoro a tempo → vuoto
+  if(es.includes('corsa') && met.includes('lavoro a tempo')) return '';
+  // Corsa + ripetute → 2.00
+  if(es.includes('corsa') && met.includes('ripetute')) return '2.00';
+  // For time → vuoto
+  if(met.includes('for time')) return '';
+  // AMRAP → vuoto
+  if(met.includes('amrap')) return '';
+  // Blocco A → 2.00
+  if((blocco||'').toUpperCase() === 'A') return '2.00';
+  // Default
+  return '1.45';
+}
+
 function openProg(exId, btn) {
   currentPopupExId = exId;
   let ex = null;
@@ -3029,9 +3080,16 @@ function openProg(exId, btn) {
     };
     inpStr.onblur = ()=>propagaStruttura(w, inpStr.value);
 
-    // Recupero
+    // Recupero — default intelligente
+    const recDefault = getRecuperoDefault(
+      sd.esercizio !== undefined ? sd.esercizio : (ex.esercizio||''),
+      sd.metodologia !== undefined ? sd.metodologia : (ex.metodologia||''),
+      ex.blocco||''
+    );
     const inpRec = document.createElement('input');
-    inpRec.type='text'; inpRec.value=sd.recupero||''; inpRec.placeholder='1.45';
+    inpRec.type='text';
+    inpRec.value = sd.recupero !== undefined && sd.recupero !== '' ? sd.recupero : recDefault;
+    inpRec.placeholder = recDefault || 'es. 1.45';
     inpRec.oninput = ()=>popupUpdate(w,'recupero',inpRec.value);
 
     // Consiglio
@@ -3288,7 +3346,10 @@ function hideTooltip() {
     </div>
     <!-- Stats sidebar -->
     <div class="stats-bar" id="pag-stats-bar">
-      <div class="stats-bar-title">Riepilogo</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="stats-bar-title" style="margin-bottom:0;">Riepilogo</div>
+        <button class="btn-ghost" onclick="esportaPagamentiCSV()" title="Esporta backup CSV" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:3px;color:var(--muted);">⬇ CSV</button>
+      </div>
       <div class="stat-card accent" style="cursor:pointer;" onclick="apriStatLista('totali')">
         <div class="stat-val" id="stat-totali">—</div>
         <div class="stat-label">Clienti totali ›</div>
