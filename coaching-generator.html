@@ -3081,15 +3081,20 @@ function openProg(exId, btn) {
     inpStr.onblur = ()=>propagaStruttura(w, inpStr.value);
 
     // Recupero — default intelligente
-    const recDefault = getRecuperoDefault(
-      sd.esercizio !== undefined ? sd.esercizio : (ex.esercizio||''),
-      sd.metodologia !== undefined ? sd.metodologia : (ex.metodologia||''),
-      ex.blocco||''
-    );
+    const _esNome = ex.esercizio||'';
+    const _met    = sd.metodologia !== undefined && sd.metodologia !== '' ? sd.metodologia : (ex.metodologia||'');
+    // Cerca blocco: prima da ex, poi dal foglio
+    let _blocco = ex.blocco||'';
+    if(!_blocco && _esNome) {
+      const exSheet = lists.esercizi.find(e=>e.nome.toLowerCase()===_esNome.toLowerCase());
+      if(exSheet) _blocco = exSheet.blocco||'';
+    }
+    const recDefault = getRecuperoDefault(_esNome, _met, _blocco);
     const inpRec = document.createElement('input');
     inpRec.type='text';
-    inpRec.value = sd.recupero !== undefined && sd.recupero !== '' ? sd.recupero : recDefault;
-    inpRec.placeholder = recDefault || 'es. 1.45';
+    // Usa valore salvato solo se esplicitamente impostato dall'utente
+    inpRec.value = (sd.recupero !== undefined && sd.recupero !== null && sd.recupero !== '') ? sd.recupero : recDefault;
+    inpRec.placeholder = recDefault !== '' ? recDefault : 'es. 1.45';
     inpRec.oninput = ()=>popupUpdate(w,'recupero',inpRec.value);
 
     // Consiglio
