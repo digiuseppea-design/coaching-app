@@ -1207,7 +1207,14 @@ function acSidebar(input) {
   const val=input.value.toLowerCase();
   const listEl=document.getElementById('ac-nome_cliente');
   listEl.innerHTML='';
-  const items=lists.utenti.filter(u=>u.nome.toLowerCase().includes(val)).slice(0,8);
+  // Unisci utenti dal foglio + clienti DB locale
+  const dbClienti = getClientiDB();
+  const dbUtenti = Object.entries(dbClienti)
+    .filter(([email, d])=>d.nome)
+    .map(([email, d])=>({nome:d.nome, email}));
+  const tuttiUtenti = [...lists.utenti, ...dbUtenti]
+    .filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
+  const items=tuttiUtenti.filter(u=>u.nome.toLowerCase().includes(val)).slice(0,8);
   if(!val||!items.length){listEl.classList.remove('open');return;}
   items.forEach(item=>{
     const d=document.createElement('div'); d.className='ac-item';
