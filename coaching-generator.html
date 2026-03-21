@@ -1825,24 +1825,22 @@ function apriPagCliente(email) {
   const nome = pags[0]?.nome || email;
   const main = document.getElementById('pag-main');
 
-  // Calcola summary
   const totPagato = pags.filter(p=>p.pagato).reduce((s,p)=>s+(parseFloat(p.importo)||0),0);
   const totDaPagare = pags.filter(p=>!p.pagato).reduce((s,p)=>s+(parseFloat(p.importo)||0),0);
   const lastPag = pags[pags.length-1];
   const lastScad = lastPag?.scadenza||'';
   const st = pagStatus(lastScad, lastPag?.pagato);
   const stLabel = {ok:'Attivo',warn:'Scade presto',exp:'Scaduto',pend:'In attesa pagamento',none:'—'}[st];
-  const stClass = st;
 
   main.innerHTML = `
     <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;">
-      <div class="scheda-title">${nome}</div>
-      <span class="pag-badge ${stClass}">${stLabel}${lastScad?' · '+lastScad:''}</span>
+      <div class="scheda-title">${esc(nome)}</div>
+      <span class="pag-badge ${st}">${stLabel}${lastScad?' · '+lastScad:''}</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-      <div class="scheda-email" style="margin-bottom:0;">${email}</div>
-      <input id="pag-email-edit" value="${email}" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;outline:none;width:180px;" placeholder="Aggiorna email...">
-      <button class="btn btn-ghost" onclick="aggiornaPagEmail('${email}')" style="height:22px;font-size:9px;padding:0 8px;">✓</button>
+      <div class="scheda-email" style="margin-bottom:0;">${esc(email)}</div>
+      <input id="pag-email-edit" value="${esc(email)}" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;outline:none;width:180px;" placeholder="Aggiorna email...">
+      <button class="btn btn-ghost" id="btn-update-email" style="height:22px;font-size:9px;padding:0 8px;">✓</button>
     </div>
 
     <div class="pag-summary" style="grid-template-columns:1fr 1fr;">
@@ -1868,7 +1866,7 @@ function apriPagCliente(email) {
           <input class="pag-input" id="np-importo" type="number" placeholder="37">
         </div>
         <div>
-          <div class="scheda-label" style="margin-bottom:3px;">Mensilità</div>
+          <div class="scheda-label" style="margin-bottom:3px;">Mensilià</div>
           <input class="pag-input" id="np-durata" type="number" placeholder="1" value="1" min="1">
         </div>
       </div>
@@ -1876,7 +1874,7 @@ function apriPagCliente(email) {
         <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;">
           <input type="checkbox" id="np-pagato" checked style="accent-color:var(--accent);"> Pagato
         </label>
-        <button class="btn btn-accent" onclick="aggiungiPagamento('${email}')" style="height:28px;font-size:10px;padding:0 16px;">+ Aggiungi</button>
+        <button class="btn btn-accent" id="btn-aggiungi-pag" style="height:28px;font-size:10px;padding:0 16px;">+ Aggiungi</button>
       </div>
     </div>
 
@@ -1887,13 +1885,15 @@ function apriPagCliente(email) {
       <div id="pag-storico"></div>
     </div>`;
 
+  // Bind via JS — niente email interpolata negli onclick inline
+  document.getElementById('btn-aggiungi-pag').onclick = () => aggiungiPagamento(email);
+  document.getElementById('btn-update-email').onclick = () => aggiornaPagEmail(email);
+
   renderPagStorico(email);
 
-  // Setta data odierna nel form
   const oggi = new Date();
   document.getElementById('np-data').value = oggi.toISOString().split('T')[0];
 }
-
 function aggiornaPagEmail(oldEmail) {
   const newEmail = document.getElementById('pag-email-edit').value.trim();
   if(!newEmail || newEmail === oldEmail) return;
@@ -1924,17 +1924,38 @@ function renderPagStorico(email) {
     const stLabel = {ok:'Attivo',warn:'Scade presto',exp:'Scaduto',none:'—'}[st];
     const row = document.createElement('div');
     row.className = 'pag-row';
+    // Colonne: data | importo | mesi | scadenza | stato (badge cliccabile) | azioni (elimina)
     row.innerHTML = `
       <div>${p.data||'—'}</div>
       <div>€${parseFloat(p.importo||0).toFixed(2)}</div>
       <div style="font-family:'DM Mono',monospace;font-size:9px;">${p.mesi||Math.round((p.durata||30)/30)} mes${(p.mesi||1)===1?'e':'i'}</div>
       <div style="font-family:'DM Mono',monospace;font-size:9px;">${p.scadenza||'—'}</div>
-      <div><span class="pag-badge ${st}">${p.pagato?stLabel:'In attesa'}</span></div>
-      <div><button onclick="eliminaPagamento('${email}',${realIdx})" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:11px;">✕</button></div>`;
+      <div>
+        <span class="pag-badge ${st}" id="badge-pag-${realIdx}" style="${!p.pagato?'cursor:pointer;border:1px dashed #f0c040;':''}" title="${!p.pagato?'Clicca per segnare come pagato':''}">
+          ${p.pagato?stLabel:'In attesa ✓?'}
+        </span>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <button id="del-pag-${realIdx}" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:11px;padding:2px 4px;">✕</button>
+      </div>`;
+    // Bind via JS — nessuna email inline
+    if(!p.pagato) {
+      row.querySelector('#badge-pag-'+realIdx).onclick = () => togglePagato(email, realIdx);
+    }
+    row.querySelector('#del-pag-'+realIdx).onclick = () => eliminaPagamento(email, realIdx);
     el.appendChild(row);
   });
 }
 
+function togglePagato(email, idx) {
+  const db = getPagamentiDB();
+  if(!db[email] || !db[email][idx]) return;
+  db[email][idx].pagato = true;
+  setPagamentiDB(db);
+  apriPagCliente(email);
+  renderPagClientiList();
+  renderStats('stat-');
+}
 function aggiungiPagamento(email) {
   const dataISO = document.getElementById('np-data').value;
   const importo = document.getElementById('np-importo').value;
@@ -3314,6 +3335,434 @@ function hideTooltip() {
   document.getElementById('prog-tooltip').classList.remove('visible');
 }
 
+// ── VIDEO LOOKUP TABLE ────────────────────────────────────────────────────────
+const VIDEO_LINKS = {
+  "Stacco regular":"https://drive.google.com/file/d/1k7XlNUfDMCKt8vb4Pw02W_iLKhbnIvy7/view?usp=sharing",
+  "Pull up":"https://drive.google.com/file/d/1XQ0MZBBRI5d1KBufNH3Pqnuo79BcfGqi/view?usp=sharing",
+  "Dip":"https://drive.google.com/file/d/1Z1ZmSLVaYS-8wdhYc6EhpdISinh8nfL8/view?usp=sharing",
+  "Stacco Sumo":"https://drive.google.com/file/d/1im15J5r5xWVRdlieqxg7qhks_ii4Z8MB/view?usp=drive_link",
+  "Squat bulgaro bilanciere":"https://drive.google.com/file/d/1AqwyOPzzXaMP4TxLqyp7nqYgUJr6aV1f/view?usp=sharing",
+  "Squat HB":"https://drive.google.com/file/d/1fc46IJ9X6jMQvur0SqLDWWkt-kDQCgwZ/view?usp=sharing",
+  "Panca piana":"https://drive.google.com/file/d/1WGf9sBMNpIuJd3loD8BNpSiytb6M8mT5/view?usp=sharing",
+  "Squat LB":"https://drive.google.com/file/d/1xVkHw5eXNrJtB-xs_whvS5Zzx32a2qPl/view?usp=sharing",
+  "Panca piana presa stretta":"https://drive.google.com/file/d/1Zr3DxQkljo8v53MPbOjw7rOpMVMkfAvK/view?usp=sharing",
+  "Panca piana larsen":"https://drive.google.com/file/d/1m_NGHq9UJOizKBn4tlo7UtLtFDvXZzOc/view?usp=sharing",
+  "Pendulum squat":"https://drive.google.com/file/d/13m55I6FWI7X_JRV7awq5dPRSPf_2QMPF/view?usp=sharing",
+  "Overhead extension al cavo":"https://drive.google.com/file/d/1qzAU8e2e0e5izi7ufpmWxG66ETHR_Y2r/view?usp=drive_link",
+  "Reverse pec deck":"https://drive.google.com/file/d/1Ho2CCQwHZkUBBGCzEFe4vYrYuQIQj0_l/view?usp=sharing",
+  "Military press":"https://drive.google.com/file/d/1HZ62h2ebWQ4fFNVncDS7rPFos04wL/view?usp=sharing",
+  "Squat bulgaro manubri":"https://drive.google.com/file/d/1pvcX2KT3VzM3q7Egb7vFlZ5n31E966i1/view?usp=sharing",
+  "High row machine":"https://drive.google.com/file/d/12zfJSxnZzIyJ5tSqb9pUQ_e4VW4iNsEc/view?usp=sharing",
+  "Rowing machine inclinata":"https://drive.google.com/file/d/1b5pb1LTPTjihWqE6kF360uYflgQkHRCN/view?usp=sharing",
+  "Dip machine":"https://drive.google.com/file/d/1I-zGKl6UBEw1cOwLyyYVfZKxv7l0f4gS/view?usp=sharing",
+  "Alzate laterali al cavo":"https://drive.google.com/file/d/1PYBfz55kXn82HmINVx90ZaRiv0cPf-3Y/view?usp=sharing",
+  "Alzate laterali":"https://drive.google.com/file/d/1L8XxeTRCGBFg96OJHAYn39-JM7nbRa2z/view?usp=sharing",
+  "Alzate laterali seduto":"https://drive.google.com/file/d/1L8XxeTRCGBFg96OJHAYn39-JM7nbRa2z/view?usp=sharing&t=134",
+  "Lento avanti MP":"https://drive.google.com/file/d/1XxPB9KZxfKmge3-m0Ezzs1N2e1Hyx3EE/view?usp=sharing",
+  "Chin up":"https://drive.google.com/file/d/1j1Y8mKMv7Y-xDRuLiYnwQfLdSV74LExK/view?usp=sharing",
+  "Croci con manubri su panca":"https://drive.google.com/file/d/1dC4N06Z9V9g0riCHGTJDoGwScVf5feIt/view?usp=sharing",
+  "Croci con manubri su panca inclinata":"https://drive.google.com/file/d/1dC4N06Z9V9g0riCHGTJDoGwScVf5feIt/view?usp=sharing",
+  "Strict curl":"https://drive.google.com/file/d/1QMXPPUSlqtCy0JAdBHqFZDa-Rv_QCj8q/view?usp=sharing",
+  "Preacher curl":"https://drive.google.com/file/d/1TtiIRT1b_tLk9eml94VY1W-Bz8DDWgSx/view?usp=sharing",
+  "Pendlay row":"https://drive.google.com/file/d/1rbiThBReGbbvjLbRNLz2TslT8LFOgnQB/view?usp=sharing",
+  "Arnold Press":"https://drive.google.com/file/d/1UyE4xIDoMtyuRRN880OEX7huDdLA2wyc/view?usp=sharing",
+  "Australian pull up":"https://drive.google.com/file/d/1sPLCXpJrhsfCNrjBCAT_i0evyBJMtyEY/view?usp=sharing",
+  "Chest press":"https://drive.google.com/file/d/1Yyz0W92pamb22secJpHLU01YKU2b_9wp/view?usp=sharing",
+  "Croci ai cavi":"https://drive.google.com/file/d/1YqGLt1Ra59So76aXTxiowzmpHPRxnX_z/view?usp=sharing",
+  "Croci ai cavi dal basso":"https://drive.google.com/file/d/1YqGLt1Ra59So76aXTxiowzmpHPRxnX_z/view?usp=sharing",
+  "Croci ai cavi altezza spalla":"https://drive.google.com/file/d/1YqGLt1Ra59So76aXTxiowzmpHPRxnX_z/view?usp=sharing",
+  "Croci ai cavi su panca piana":"https://drive.google.com/file/d/1Yu3U-pTEtquTPF8iWQcyuBdUUgLMLnMU/view?usp=sharing",
+  "Croci ai cavi su panca inclinata":"https://drive.google.com/file/d/1Yu3U-pTEtquTPF8iWQcyuBdUUgLMLnMU/view?usp=sharing",
+  "Curl manubri":"https://drive.google.com/file/d/1W_4TBGtQZiCFkw_M6GEsVLolzjXAlFZz/view?usp=sharing",
+  "Dorsy bar":"https://drive.google.com/file/d/1pIq9-C_YkxJeQUEQQVHUC4xhwMajM2rG/view?usp=sharing",
+  "Kick back al cavo":"https://drive.google.com/file/d/1Jfb3cHhorvjvG0YUvJwZKpbXRD-vJGxW/view?usp=sharing",
+  "Kick back":"https://drive.google.com/file/d/1Jfb3cHhorvjvG0YUvJwZKpbXRD-vJGxW/view?usp=sharing",
+  "Lat machine presa supina":"https://drive.google.com/file/d/1uUXNw8_zBd01udFdCmzS_GMfxjTBrv3g/view?usp=sharing",
+  "Lat machine presa V":"https://drive.google.com/file/d/1uUXNw8_zBd01udFdCmzS_GMfxjTBrv3g/view?usp=sharing",
+  "Lat machine trazy bar":"https://drive.google.com/file/d/1uUXNw8_zBd01udFdCmzS_GMfxjTBrv3g/view?usp=sharing",
+  "Panca inclinata con bilanciere":"https://drive.google.com/file/d/1HhxgyJih9aASM1r283Drns0M_UsSj1_p/view?usp=sharing",
+  "Panca paralimpica":"https://drive.google.com/file/d/1ZtLoWdvgXFuKW7u5-6GsZLLOFzlvwn_Ei/view?usp=sharing",
+  "Pectoral machine":"https://drive.google.com/file/d/1Z-oij0yxfiyQNunTiMgBDwyqJEVG0MFU/view?usp=sharing",
+  "Pull down al cavo":"https://drive.google.com/file/d/1rzMUT8vMucEP7vZ9aNqIDYouuuY7F8pP/view?usp=sharing",
+  "Pull over con manubrio":"https://drive.google.com/file/d/1s-Q1gIk0p6kXbvmWtvsFRGsBlwLBFsgp/view?usp=sharing",
+  "Pulley presa V":"https://drive.google.com/file/d/1pJf8yLjc6DWnyJNhdk_xME2w0mVKMQor/view?usp=sharing",
+  "Pulley monolaterale":"https://drive.google.com/file/d/1pJf8yLjc6DWnyJNhdk_xME2w0mVKMQor/view?usp=sharing",
+  "Pulley trazy bar":"https://drive.google.com/file/d/1pJf8yLjc6DWnyJNhdk_xME2w0mVKMQor/view?usp=sharing",
+  "Push down":"https://drive.google.com/file/d/1IUIL4VunijaGQ9JlS0d2XC_PZYytVXv0/view?usp=sharing",
+  "Push down schiena al pacco pesi":"https://drive.google.com/file/d/1IUIL4VunijaGQ9JlS0d2XC_PZYytVXv0/view?usp=sharing&t=50",
+  "Push up":"https://drive.google.com/file/d/1ZluoVmgS6lgtXWcMaGV9wixKEtm50hxY/view?usp=sharing",
+  "Rematore con bilanciere":"https://drive.google.com/file/d/1WbU-30EY-eigrTNqJuXsp1hjYgUa2tMc/view?usp=sharing",
+  "Rowing machine":"https://drive.google.com/file/d/1pKTA-LGN32J2TIKlKfySn8vUArpktVYS/view?usp=sharing",
+  "Skull crusher":"https://drive.google.com/file/d/1Jh0NwG8lEMDIiwVlnJ7u3B8XNh7V4ABh/view?usp=sharing",
+  "Rematore cavo basso":"https://drive.google.com/file/d/1ryiKNbP43Hu7F2kDZ3u0QKgw9BaEnQ_N/view?usp=sharing",
+  "Spinte manubri su panca piana":"https://drive.google.com/file/d/1UwaQPyH3QIFLxxcwsdtaAlLeJe6P_klx/view?usp=sharing",
+  "Leg extension":"https://drive.google.com/file/d/1oyULGyTVVQmDoq9acxnQr8atUI9sX-C7/view?usp=sharing",
+  "Leg press":"https://drive.google.com/file/d/1oyULGyTVVQmDoq9acxnQr8atUI9sX-C7/view?usp=sharing",
+  "Leg curl":"https://drive.google.com/file/d/1WMeAEgfkD-JQz74cY9iO_cPq3NnubILi/view?usp=sharing",
+  "Leg curl seduto":"https://drive.google.com/file/d/1WMeAEgfkD-JQz74cY9iO_cPq3NnubILi/view?usp=sharing",
+  "Calf raise":"https://drive.google.com/file/d/1oyULGyTVVQmDoq9acxnQr8atUI9sX-C7/view?usp=sharing",
+  "Glute bridge":"https://youtube.com/shorts/G2L9xQXLRgI?feature=share",
+  "Glute bridge 1 leg":"https://youtube.com/shorts/aH6G8alY-Uc?feature=share",
+  "Heel bridge":"https://youtube.com/shorts/bGxUxoxaGnE?feature=share",
+  "Plank":"https://youtube.com/shorts/FRuOvqn7uoE?feature=share",
+  "Plank +":"https://youtube.com/shorts/vBrR-ZZqZqo?feature=share",
+  "Plank shoulder tap":"https://youtube.com/shorts/0ai0aMk_Q-Q?feature=share",
+  "Push ups":"https://youtube.com/shorts/VETzQ9hRvhY?feature=share",
+  "Cat-Cow":"https://youtube.com/shorts/6aVDN2Gi5sk?feature=share",
+  "Cobra":"https://youtube.com/shorts/MrytE2GlcBw?feature=share",
+  "Tilt pelvico":"https://youtube.com/shorts/iMYrrBwVvmw?feature=share",
+  "Child pose":"https://youtube.com/shorts/fabDnaLZRBc?feature=share",
+  "Wall sit":"https://www.youtube.com/shorts/xv_12e2JaEs?feature=share",
+  "Affondo sul posto":"https://youtube.com/shorts/5ZyWPcKg15A?feature=share",
+  "Stretching gambe posteriori seduto 1":"https://youtube.com/shorts/0plN_yvansU?feature=share",
+  "Stretching gambe posteriori in ginocchio 1":"https://youtube.com/shorts/DNfz6UZag-g?feature=share",
+  "Stretching gambe anteriori in ginocchio 1":"https://youtube.com/shorts/qKbLkM4l4Gk?feature=share",
+  "Stretching gambe anteriori in piedi 1":"https://youtube.com/shorts/AxPzNE0INLg?feature=share",
+  "Respirazione diaframmatica":"https://youtube.com/shorts/i7M0J0QGVxg?feature=share",
+  "Side stretch seduto 90/90":"https://youtube.com/shorts/TKGtFLpItU0?feature=share",
+  "Advanced plank":"https://youtube.com/shorts/25klpecccII?feature=share",
+  "Aperture laterali elastico":"https://youtube.com/shorts/PWaERRJSaWc?feature=share",
+  "Pull down elastico":"https://youtube.com/shorts/9xeYNtzK53c?feature=share",
+  "Alzate frontali elastico":"https://youtube.com/shorts/07mg4LvFOHs?feature=share",
+  "Croci elastico":"https://youtube.com/shorts/q4dGF4hKoYs?feature=share",
+  "Croci elastico dal basso":"https://youtube.com/shorts/MRr2rX9JpxQ?feature=share",
+  "Alzate laterali bastone":"https://youtube.com/shorts/dED3R7z3OvM?feature=share",
+  "Alzate frontali bastone":"https://youtube.com/shorts/i2CtLlQY9Ww?feature=share",
+  "Alzate laterali elastico":"https://youtube.com/shorts/Y0lXJh-oays?feature=share",
+  "Mobilità spalla con bastone in piedi":"https://youtube.com/shorts/fcPTsWw1gxI?feature=share",
+  "Mobilità spalla con bastone steso":"https://youtube.com/shorts/jqgu6zdp7t0?feature=share",
+  "Rematore bilanciere presa supina":"https://drive.google.com/file/d/1WbU-30EY-eigrTNqJuXsp1hjYgUa2tMc/view?usp=sharing&t=41",
+  "Leg press focus quadricipiti":"https://drive.google.com/file/d/1oyULGyTVVQmDoq9acxnQr8atUI9sX-C7/view?usp=sharing&t=57",
+  "Leg press orizzontale":"https://drive.google.com/file/d/1oyULGyTVVQmDoq9acxnQr8atUI9sX-C7/view?usp=sharing",
+  "Lateral raise machine":"https://youtube.com/shorts/1pGaTwiHGp8?feature=share",
+  "Hammer curl":"https://drive.google.com/file/d/1W_4TBGtQZiCFkw_M6GEsVLolzjXAlFZz/view?usp=sharing&t=31",
+  "Push up fermo a terra mani staccate":"https://drive.google.com/file/d/1_8QkuEy9vVSbaObs1qk4hvrCqYgh8S02/view?usp=sharing",
+  "Pull up solo eccentrica":"https://drive.google.com/file/d/1Z3iGCahrAK2vbUeQ_x1PK--bfbgsMMnP/view?usp=sharing",
+  "Hyperextension":"https://drive.google.com/file/d/1ci2en5kQ1VoWNToXl1cIJRW_kSYj44GD/view?usp=sharing",
+  "Chin up easy power":"https://drive.google.com/file/d/18o6JMuTMUqMEVaiRiujk06F2zfvAp1Cf/view?usp=sharing",
+  "Chin up chest to bar":"https://drive.google.com/file/d/1j1Y8mKMv7Y-xDRuLiYnwQfLdSV74LExK/view?usp=sharing&t=138",
+  "Push up declinati":"https://drive.google.com/file/d/1zp6mdO9WLh-s_cHw9MuDRX6fiv1M4X5q/view?usp=sharing",
+  "Panca larsen presa stretta":"https://drive.google.com/file/d/1m_NGHq9UJOizKBn4tlo7UtLtFDvXZzOc/view?usp=sharing",
+  "Panca piana larsen presa stretta":"https://drive.google.com/file/d/1m_NGHq9UJOizKBn4tlo7UtLtFDvXZzOc/view?usp=sharing",
+  "High row al cavo":"https://drive.google.com/file/d/1R_kM4L6JfX2RNSlRrSVWcl9-2FG62KFR/view?usp=sharing",
+  "Rematore con manubrio su panca a 30°":"https://drive.google.com/file/d/1jrP_jaNq5Yx93UFYxO0U3MfMPlnQNy2P/view?usp=drive_link",
+  "Pull up easy power":"https://drive.google.com/file/d/1Sk0BMwBcHEtFZJDZEkaKcEg1KjcZzc59/view?usp=drive_link",
+  "Trazioni presa neutra easy power":"https://drive.google.com/file/d/18o6JMuTMUqMEVaiRiujk06F2zfvAp1Cf/view?usp=drive_link",
+  "Dip easy power":"https://drive.google.com/file/d/1TihMe7kLZqWN7u5-6GsZLLOFzlvwn_Ei/view?usp=sharing",
+  "Curl su panca a 45°":"https://drive.google.com/file/d/1qi7ywdeVtFk3yVzC0RIo1AP-TtSoasu_/view?usp=drive_link",
+  "Curl hammer su panca a 45°":"https://drive.google.com/file/d/1qi7ywdeVtFk3yVzC0RIo1AP-TtSoasu_/view?usp=drive_link",
+  "Overhead extension con manubrio":"https://drive.google.com/file/d/1E5bLfKLL77qrFViEpl-_XVwtba8-kHkA/view?usp=drive_link"
+};
+
+function getVideoLink(nomeEsercizio) {
+  if(!nomeEsercizio) return null;
+  const key = nomeEsercizio.trim();
+  // Exact match first
+  if(VIDEO_LINKS[key]) return VIDEO_LINKS[key];
+  // Case-insensitive fallback
+  const lower = key.toLowerCase();
+  const found = Object.keys(VIDEO_LINKS).find(k => k.toLowerCase() === lower);
+  return found ? VIDEO_LINKS[found] : null;
+}
+
+// ── EXPORT HTML ───────────────────────────────────────────────────────────────
+const EXPORT_PAGE_SCRIPT = [
+  '<scr','ipt>',
+  'function showWeek(idx){',
+  'document.querySelectorAll(".week-panel").forEach(function(p,i){p.classList.toggle("active",i===idx);});',
+  'document.querySelectorAll(".week-tab").forEach(function(t,i){t.classList.toggle("active",i===idx);});',
+  'window.scrollTo({top:0,behavior:"smooth"});',
+  '}',
+  '<\/scr','ipt>'
+].join('');
+function exportHTML() {
+  const nome     = document.getElementById('nome_cliente').value.trim();
+  const email    = document.getElementById('email_cliente').value.trim();
+  const nomeProg = document.getElementById('nome_programma').value.trim();
+  const dataProg = document.getElementById('data_programma').value;
+  const sw       = parseInt(document.getElementById('settimane').value) || 4;
+
+  if(!nome || !nomeProg) {
+    alert('Compila Nome cliente e Nome programma prima di esportare.');
+    return;
+  }
+
+  const dataF = dataProg ? dataProg.split('-').reverse().join('/') : '';
+
+  // Raccoglie tutti gli esercizi validi per giorno
+  const giorniValidi = giorni.map(day => ({
+    nome: day.nome,
+    esercizi: day.esercizi.filter(ex => ex.esercizio)
+  })).filter(day => day.esercizi.length > 0);
+
+  if(!giorniValidi.length) {
+    alert('Nessun esercizio nel programma.');
+    return;
+  }
+
+  // Costruisce le settimane disponibili (solo quelle con almeno una struttura)
+  const settimaneAttive = [];
+  for(let w = 0; w < sw; w++) {
+    const hasDati = giorniValidi.some(day =>
+      day.esercizi.some(ex => (ex.settimane[w]||{}).struttura)
+    );
+    if(hasDati) settimaneAttive.push(w);
+  }
+  // Se nessuna settimana ha struttura, mostra tutte
+  const settimane = settimaneAttive.length > 0 ? settimaneAttive : Array.from({length:sw},(_,i)=>i);
+
+  // ── HTML OUTPUT ──
+  const html = `<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escH(nomeProg)} — ${escH(nome)}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg:#0d0d0d; --surface:#141414; --surface2:#1c1c1c;
+    --border:#2a2a2a; --accent:#c8f135; --accent2:#ff4d4d;
+    --text:#e8e8e8; --muted:#666; --radius:4px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-weight: 300;
+    min-height: 100vh; padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 20px 24px 16px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo {
+    font-family: 'Bebas Neue', sans-serif; font-size: 13px;
+    letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px;
+  }
+  .header-logo span { color: var(--text); opacity: 0.3; }
+  .header-prog {
+    font-family: 'Bebas Neue', sans-serif; font-size: 28px;
+    letter-spacing: 0.05em; color: var(--accent); line-height: 1;
+  }
+  .header-meta {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--muted); margin-top: 4px; letter-spacing: 0.05em;
+  }
+
+  /* WEEK TABS */
+  .week-tabs {
+    display: flex; gap: 6px; padding: 12px 24px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    overflow-x: auto; position: sticky; top: 88px; z-index: 99;
+  }
+  .week-tab {
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em;
+    padding: 5px 14px; border-radius: 20px; cursor: pointer; flex-shrink: 0;
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    transition: all 0.15s;
+  }
+  .week-tab.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
+  .week-tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  /* CONTENT */
+  .content { padding: 20px 24px; max-width: 720px; }
+
+  /* WEEK PANEL */
+  .week-panel { display: none; }
+  .week-panel.active { display: block; }
+
+  /* GIORNO */
+  .giorno {
+    margin-bottom: 24px; border: 1px solid var(--border);
+    border-radius: 6px; overflow: hidden;
+  }
+  .giorno-header {
+    background: var(--surface2); padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .giorno-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px;
+    letter-spacing: 0.08em; color: var(--accent);
+  }
+  .giorno-count {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--muted); letter-spacing: 0.06em;
+  }
+
+  /* ESERCIZIO */
+  .ex-card {
+    padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .ex-card:last-child { border-bottom: none; }
+  .ex-num {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); flex-shrink: 0; width: 20px;
+    padding-top: 2px;
+  }
+  .ex-body { flex: 1; min-width: 0; }
+  .ex-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .ex-name {
+    font-size: 14px; font-weight: 400; color: var(--text); line-height: 1.2;
+  }
+  .ex-blocco {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--accent); background: rgba(200,241,53,0.1);
+    border: 1px solid rgba(200,241,53,0.2); border-radius: 3px;
+    padding: 1px 6px; flex-shrink: 0;
+  }
+  .ex-metod {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--muted); flex-shrink: 0;
+  }
+  .ex-details {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 4px;
+  }
+  .ex-detail {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .ex-detail-label {
+    font-family: 'DM Mono', monospace; font-size: 8px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
+  .ex-detail-val {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--text); letter-spacing: 0.02em;
+  }
+  .ex-detail-val.accent { color: var(--accent); }
+  .ex-note-row { margin-top: 6px; }
+  .ex-note {
+    font-size: 11px; color: var(--muted); font-style: italic;
+    border-left: 2px solid var(--border); padding-left: 8px;
+  }
+  .ex-consiglio {
+    display: inline-block; margin-top: 6px;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: #f5a623; background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.2); border-radius: 3px;
+    padding: 2px 8px;
+  }
+  .ex-video-col { flex-shrink: 0; padding-top: 2px; }
+  .ex-video-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(200,241,53,0.1); border: 1px solid rgba(200,241,53,0.25);
+    color: var(--accent); font-size: 14px; text-decoration: none;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .ex-video-btn:hover { background: rgba(200,241,53,0.25); border-color: var(--accent); }
+  .ex-no-video {
+    width: 36px; height: 36px; display: flex; align-items: center;
+    justify-content: center; opacity: 0.15; font-size: 14px;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 40px; padding: 16px 24px;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--muted); letter-spacing: 0.06em; text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 480px) {
+    .header { padding: 14px 16px 12px; }
+    .content { padding: 14px 12px; }
+    .week-tabs { padding: 10px 12px; }
+    .ex-card { padding: 10px 12px; gap: 8px; }
+    .ex-detail-val { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">Trainer<span>/</span>Tascabile</div>
+  <div class="header-prog">${escH(nomeProg)}</div>
+  <div class="header-meta">${escH(nome)}${email?' · '+escH(email):''}${dataF?' · '+escH(dataF):''}</div>
+</div>
+
+<div class="week-tabs" id="week-tabs">
+${settimane.map((w,i) => `  <button class="week-tab${i===0?' active':''}" onclick="showWeek(${i})" id="tab-${i}">Settimana ${w+1}</button>`).join('\n')}
+</div>
+
+<div class="content">
+${settimane.map((w, wi) => {
+  return `<div class="week-panel${wi===0?' active':''}" id="panel-${wi}">
+${giorniValidi.map(day => {
+    const exValidi = day.esercizi.filter(ex => (ex.settimane[w]||{}).struttura || ex.esercizio);
+    if(!exValidi.length) return '';
+    return `  <div class="giorno">
+    <div class="giorno-header">
+      <div class="giorno-title">${escH(day.nome)}</div>
+      <div class="giorno-count">${exValidi.length} esercizi</div>
+    </div>
+${exValidi.map((ex, ei) => {
+      const sd = ex.settimane[w] || {};
+      const esNome = (sd.esercizio !== undefined && sd.esercizio !== '') ? sd.esercizio : ex.esercizio;
+      const nota   = (sd.note !== undefined && sd.note !== '') ? sd.note : (ex.note||'');
+      const metod  = (sd.metodologia !== undefined && sd.metodologia !== '') ? sd.metodologia : (ex.metodologia||'');
+      const struttura = (sd.struttura||'').replace(/\*/g,'·');
+      const recupero  = sd.recupero || '';
+      const consiglio = sd.consiglio || '';
+      const videoUrl  = getVideoLink(esNome);
+      return `    <div class="ex-card">
+      <div class="ex-num">${ei+1}</div>
+      <div class="ex-body">
+        <div class="ex-name-row">
+          <span class="ex-name">${escH(esNome)}</span>
+          ${ex.blocco ? `<span class="ex-blocco">${escH(ex.blocco)}</span>` : ''}
+          ${metod ? `<span class="ex-metod">${escH(metod)}</span>` : ''}
+        </div>
+        <div class="ex-details">
+          ${struttura ? `<div class="ex-detail"><div class="ex-detail-label">Struttura</div><div class="ex-detail-val accent">${escH(struttura)}</div></div>` : ''}
+          ${recupero ? `<div class="ex-detail"><div class="ex-detail-label">Recupero</div><div class="ex-detail-val">${escH(recupero)}'</div></div>` : ''}
+        </div>
+        ${nota ? `<div class="ex-note-row"><div class="ex-note">${escH(nota)}</div></div>` : ''}
+        ${consiglio ? `<span class="ex-consiglio">📌 ${escH(consiglio)}</span>` : ''}
+      </div>
+      <div class="ex-video-col">
+        ${videoUrl
+          ? `<a class="ex-video-btn" href="${videoUrl}" target="_blank" rel="noopener" title="Guarda video">▶</a>`
+          : `<div class="ex-no-video">▶</div>`}
+      </div>
+    </div>`;
+    }).join('\n')}
+  </div>`;
+  }).join('\n')}
+</div>`;
+}).join('\n')}
+</div>
+
+<div class="footer">
+  Trainer Tascabile · ${escH(nomeProg)} · ${escH(nome)} · Generato il ${new Date().toLocaleDateString('it-IT')}
+</div>
+
+${EXPORT_PAGE_SCRIPT}
+</body>
+</html>`;
+
+  // Download
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = (nomeProg.replace(/\s+/g,'_') + '_' + nome.replace(/\s+/g,'_') + '.html');
+  a.click();
+  URL.revokeObjectURL(url);
+  toggleFab();
+}
+
+function escH(v) {
+  return String(v||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
 </script>
 
 
@@ -3346,6 +3795,7 @@ function hideTooltip() {
     <button class="btn btn-outline" onclick="openProgList()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">📂 Programmi</button>
     <button class="btn btn-outline" onclick="salvaPrograma()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">💾 Salva</button>
     <button class="btn btn-outline" onclick="toggleExport()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">Anteprima</button>
+    <button class="btn btn-outline" onclick="exportHTML()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">📄 Scheda HTML</button>
     <button class="btn btn-accent" onclick="buildAndExport()" style="height:32px;font-size:11px;padding:0 14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)">⚡ Genera CSV</button>
   </div>
   <button id="fab-btn" onclick="toggleFab()" style="
