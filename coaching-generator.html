@@ -14,6 +14,19 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;}
 
+  /* LOGIN SCREEN */
+  .login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+  .login-screen.hidden{display:none;}
+  .login-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:40px 36px;width:320px;max-width:90vw;text-align:center;}
+  .login-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.06em;color:var(--accent);margin-bottom:4px;}
+  .login-logo span{color:var(--text);opacity:0.25;}
+  .login-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:32px;}
+  .login-btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;background:#fff;border:1px solid #ddd;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:14px;color:#333;cursor:pointer;transition:background 0.15s;}
+  .login-btn-google:hover{background:#f5f5f5;}
+  .login-btn-google svg{flex-shrink:0;}
+  .login-err{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent2);margin-top:12px;display:none;}
+  .login-loading{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:12px;display:none;}
+
   /* TOPBAR */
   .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:5px;height:46px;position:sticky;top:0;z-index:200;flex-wrap:nowrap;}
   .logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:var(--accent);white-space:nowrap;flex-shrink:0;}
@@ -523,6 +536,20 @@
 </style>
 </head>
 <body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Trainer<span>/</span>Tascabile</div>
+    <div class="login-sub">Coach Dashboard</div>
+    <button class="login-btn-google" id="btn-google-login">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Accedi con Google
+    </button>
+    <div class="login-err" id="login-err">Errore di accesso. Riprova.</div>
+    <div class="login-loading" id="login-loading">Accesso in corso...</div>
+  </div>
+</div>
 
 <div class="import-overlay" id="import-overlay" onclick="if(event.target===this)closeImport()">
   <div class="import-box">
@@ -3966,5 +3993,159 @@ function escH(v) {
 
 <!-- HOVER TOOLTIP -->
 <div class="prog-tooltip" id="prog-tooltip"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAzL4HxMrV-euk61zlo4ipcqcUYWuiJwMc",
+  authDomain: "trainer-tascabile.firebaseapp.com",
+  projectId: "trainer-tascabile",
+  storageBucket: "trainer-tascabile.firebasestorage.app",
+  messagingSenderId: "464307021985",
+  appId: "1:464307021985:web:bb66f7cfb46a00a5d6e8e0"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+const loginScreen = document.getElementById('login-screen');
+const loginErr    = document.getElementById('login-err');
+const loginLoad   = document.getElementById('login-loading');
+
+function showLogin()  { loginScreen.classList.remove('hidden'); }
+function hideLogin()  { loginScreen.classList.add('hidden'); }
+
+// ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
+document.getElementById('btn-google-login').onclick = async () => {
+  loginErr.style.display  = 'none';
+  loginLoad.style.display = 'block';
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    loginLoad.style.display = 'none';
+    loginErr.style.display  = 'block';
+    console.error(e);
+  }
+};
+
+// ── AUTH STATE ────────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    hideLogin();
+    // Aggiungi bottone logout alla topbar
+    if (!document.getElementById('btn-logout')) {
+      const btn = document.createElement('button');
+      btn.id = 'btn-logout';
+      btn.className = 'btn-ghost';
+      btn.style.cssText = 'height:24px;font-size:9px;font-family:"DM Mono",monospace;letter-spacing:0.06em;color:var(--muted);flex-shrink:0;';
+      btn.textContent = '⎋ Esci';
+      btn.title = user.email || '';
+      btn.onclick = () => signOut(auth);
+      document.querySelector('.topbar .tb-actions').prepend(btn);
+    }
+    // Sync iniziale: carica da Firestore → localStorage
+    await syncFromFirestore(user.uid);
+    // Ricarica dati nell'app
+    loadSheet();
+    if (typeof restoreProgram === 'function') restoreProgram();
+    if (typeof renderClientiList === 'function') renderClientiList();
+    if (typeof renderPagClientiList === 'function') renderPagClientiList();
+    if (typeof renderStats === 'function') renderStats('stat-');
+  } else {
+    showLogin();
+    // Rimuovi bottone logout se presente
+    const btn = document.getElementById('btn-logout');
+    if (btn) btn.remove();
+  }
+});
+
+// ── FIRESTORE: LETTURA ────────────────────────────────────────────────────────
+async function syncFromFirestore(uid) {
+  try {
+    const keys = ['coaching_clienti', 'coaching_pagamenti', 'coaching_saved_programs', 'coaching_sheet_data'];
+    for (const key of keys) {
+      const snap = await getDoc(doc(db, 'users', uid, 'data', key));
+      if (snap.exists()) {
+        const val = snap.data().value;
+        if (val !== undefined && val !== null) {
+          localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+        }
+      }
+    }
+    // Programma corrente
+    const progSnap = await getDoc(doc(db, 'users', uid, 'data', 'coaching_program'));
+    if (progSnap.exists()) {
+      const val = progSnap.data().value;
+      if (val) localStorage.setItem('coaching_program', typeof val === 'string' ? val : JSON.stringify(val));
+    }
+    console.log('✓ Sync da Firestore completato');
+  } catch(e) {
+    console.warn('Sync Firestore fallito, uso localStorage locale', e);
+  }
+}
+
+// ── FIRESTORE: SCRITTURA ──────────────────────────────────────────────────────
+async function saveToFirestore(key, value) {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await setDoc(doc(db, 'users', user.uid, 'data', key), { value, updatedAt: Date.now() });
+  } catch(e) {
+    console.warn('Salvataggio Firestore fallito per', key, e);
+  }
+}
+
+// ── INTERCETTA localStorage PER SYNC AUTOMATICO ───────────────────────────────
+const SYNC_KEYS = ['coaching_clienti','coaching_pagamenti','coaching_saved_programs','coaching_program','coaching_sheet_data'];
+const _origSetItem = localStorage.setItem.bind(localStorage);
+localStorage.setItem = function(key, value) {
+  _origSetItem(key, value);
+  if (SYNC_KEYS.includes(key) && auth.currentUser) {
+    saveToFirestore(key, value);
+  }
+};
+
+// ── SYNC COMPLETO localStorage → FIRESTORE ────────────────────────────────────
+async function syncAllToFirestore() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const btn = document.getElementById('btn-sync-all');
+  if (btn) { btn.textContent = '⏳ Caricamento...'; btn.disabled = true; }
+  try {
+    for (const key of SYNC_KEYS) {
+      const val = localStorage.getItem(key);
+      if (val) await saveToFirestore(key, val);
+    }
+    if (btn) { btn.textContent = '✓ Sincronizzato'; btn.style.color = 'var(--accent)'; }
+    setTimeout(() => {
+      if (btn) { btn.textContent = '☁ Carica tutto su Firestore'; btn.disabled = false; btn.style.color = ''; }
+    }, 2500);
+  } catch(e) {
+    if (btn) { btn.textContent = '✕ Errore'; btn.disabled = false; }
+    console.error(e);
+  }
+}
+
+// Aggiungi bottone sync dopo login
+onAuthStateChanged(auth, user => {
+  if (user && !document.getElementById('btn-sync-all')) {
+    const btn = document.createElement('button');
+    btn.id = 'btn-sync-all';
+    btn.className = 'btn-ghost';
+    btn.style.cssText = 'height:24px;font-size:9px;font-family:"DM Mono",monospace;letter-spacing:0.06em;color:var(--muted);flex-shrink:0;border:1px solid var(--border);border-radius:3px;padding:0 8px;';
+    btn.textContent = '☁ Carica tutto su Firestore';
+    btn.onclick = syncAllToFirestore;
+    document.querySelector('.topbar .tb-actions').prepend(btn);
+  }
+});
+
+</script>
 </body>
 </html>
