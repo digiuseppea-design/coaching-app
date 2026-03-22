@@ -28,7 +28,9 @@
   .login-loading{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:12px;display:none;}
 
   /* TOPBAR */
-  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:5px;height:46px;position:sticky;top:0;z-index:200;flex-wrap:nowrap;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:5px;height:46px;position:sticky;top:0;z-index:200;flex-wrap:nowrap;overflow:hidden;}
+  .topbar-left{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden;}
+  .topbar-right{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto;}
   .logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:var(--accent);white-space:nowrap;flex-shrink:0;}
   .logo span{color:var(--text);opacity:0.25;}
   .tb-div{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px;}
@@ -566,53 +568,55 @@
 
 
 <div class="topbar">
-  <button id="hamburger" onclick="toggleMenu()" style="
-    background:none;border:none;cursor:pointer;padding:4px 6px;
-    display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-right:4px;">
-    <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
-    <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
-    <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
-  </button>
-  <div class="logo">Trainer<span>/</span>Tascabile</div>
-  <div class="tb-div"></div>
-  <div class="tb-field">
-    <label>Cliente</label>
-    <input type="text" id="nome_cliente" placeholder="Cerca..." autocomplete="off" style="width:100px"
-      oninput="acSidebar(this)" onkeydown="acKey(event,this)" onblur="acBlur(this)">
-    <div class="ac-list" id="ac-nome_cliente"></div>
+  <div class="topbar-left">
+    <button id="hamburger" onclick="toggleMenu()" style="background:none;border:none;cursor:pointer;padding:4px 6px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-right:4px;">
+      <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
+      <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
+      <span style="display:block;width:16px;height:1.5px;background:var(--muted);transition:all 0.2s;"></span>
+    </button>
+    <div class="logo">Trainer<span>/</span>Tascabile</div>
+    <div class="tb-div"></div>
+    <div class="tb-field">
+      <label>Cliente</label>
+      <input type="text" id="nome_cliente" placeholder="Cerca..." autocomplete="off" style="width:100px"
+        oninput="acSidebar(this)" onkeydown="acKey(event,this)" onblur="acBlur(this)">
+      <div class="ac-list" id="ac-nome_cliente"></div>
+    </div>
+    <div class="tb-field">
+      <label>@</label>
+      <input type="email" id="email_cliente" placeholder="auto" readonly style="width:130px;color:var(--muted)">
+    </div>
+    <div class="tb-div"></div>
+    <div class="tb-field">
+      <label>Programma</label>
+      <input type="text" id="nome_programma" placeholder="Nome programma" style="width:130px">
+    </div>
+    <div class="tb-field">
+      <label>Data</label>
+      <input type="date" id="data_programma" style="width:100px">
+    </div>
+    <div class="tb-field">
+      <label>Sett.</label>
+      <select id="settimane" onchange="onSettimaneChange()" style="width:80px">
+        <option value="2">2 sett.</option>
+        <option value="3">3 sett.</option>
+        <option value="4" selected>4 sett.</option>
+        <option value="5">5 sett.</option>
+      </select>
+    </div>
+    <div class="tb-field">
+      <button class="btn btn-outline" onclick="addDay()" style="height:24px;font-size:9px">+ G</button>
+    </div>
   </div>
-  <div class="tb-field">
-    <label>@</label>
-    <input type="email" id="email_cliente" placeholder="auto" readonly style="width:130px;color:var(--muted)">
-  </div>
-  <div class="tb-div"></div>
-  <div class="tb-field">
-    <label>Programma</label>
-    <input type="text" id="nome_programma" placeholder="Nome programma" style="width:130px">
-  </div>
-  <div class="tb-field">
-    <label>Data</label>
-    <input type="date" id="data_programma" style="width:100px">
-  </div>
-  <div class="tb-field">
-    <label>Sett.</label>
-    <select id="settimane" onchange="onSettimaneChange()" style="width:80px">
-      <option value="2">2 sett.</option>
-      <option value="3">3 sett.</option>
-      <option value="4" selected>4 sett.</option>
-      <option value="5">5 sett.</option>
-    </select>
-  </div>
-  <div class="tb-field">
-    <button class="btn btn-outline" onclick="addDay()" style="height:24px;font-size:9px">+ G</button>
-  </div>
-  <div class="sync-pill" onclick="openImport()" style="cursor:pointer" title="Clicca per aggiornare i dati">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-label">Caricamento...</span>
-  </div>
-  <span class="save-indicator" id="save-indicator">salvato</span>
-  <div class="tb-actions">
-    <button class="btn btn-ghost" onclick="nuovoProgramma()" style="height:24px;font-size:9px" title="Nuovo programma">✕ Nuovo</button>
+  <div class="topbar-right">
+    <div class="sync-pill" onclick="openImport()" style="cursor:pointer" title="Clicca per aggiornare i dati">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Caricamento...</span>
+    </div>
+    <span class="save-indicator" id="save-indicator">salvato</span>
+    <div class="tb-actions" style="display:flex;gap:4px;align-items:center;">
+      <button class="btn btn-ghost" onclick="nuovoProgramma()" style="height:24px;font-size:9px" title="Nuovo programma">✕ Nuovo</button>
+    </div>
   </div>
 </div>
 
@@ -4021,6 +4025,10 @@ const loginLoad   = document.getElementById('login-loading');
 function showLogin()  { loginScreen.classList.remove('hidden'); }
 function hideLogin()  { loginScreen.classList.add('hidden'); }
 
+// ── MOSTRA LOGIN SUBITO (evita schermo nero su mobile) ───────────────────────
+// La login screen è visibile di default, Firebase la nasconde dopo auth check
+document.getElementById('login-screen').classList.remove('hidden');
+
 // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
 document.getElementById('btn-google-login').onclick = async () => {
   loginErr.style.display  = 'none';
@@ -4039,16 +4047,27 @@ document.getElementById('btn-google-login').onclick = async () => {
 onAuthStateChanged(auth, async user => {
   if (user) {
     hideLogin();
-    // Aggiungi bottone logout alla topbar
+    // Aggiungi bottoni logout e sync nella topbar-right
     if (!document.getElementById('btn-logout')) {
-      const btn = document.createElement('button');
-      btn.id = 'btn-logout';
-      btn.className = 'btn-ghost';
-      btn.style.cssText = 'height:24px;font-size:9px;font-family:"DM Mono",monospace;letter-spacing:0.06em;color:var(--muted);flex-shrink:0;';
-      btn.textContent = '⎋ Esci';
-      btn.title = user.email || '';
-      btn.onclick = () => signOut(auth);
-      document.querySelector('.topbar .tb-actions').prepend(btn);
+      const right = document.querySelector('.topbar-right');
+
+      const btnSync = document.createElement('button');
+      btnSync.id = 'btn-sync-all';
+      btnSync.className = 'btn-ghost';
+      btnSync.style.cssText = 'height:24px;font-size:9px;font-family:"DM Mono",monospace;letter-spacing:0.06em;color:var(--muted);flex-shrink:0;border:1px solid var(--border);border-radius:3px;padding:0 8px;white-space:nowrap;';
+      btnSync.textContent = '☁ Sync';
+      btnSync.title = 'Carica tutti i dati su Firestore';
+      btnSync.onclick = syncAllToFirestore;
+      right.prepend(btnSync);
+
+      const btnLogout = document.createElement('button');
+      btnLogout.id = 'btn-logout';
+      btnLogout.className = 'btn-ghost';
+      btnLogout.style.cssText = 'height:24px;font-size:9px;font-family:"DM Mono",monospace;letter-spacing:0.06em;color:var(--muted);flex-shrink:0;white-space:nowrap;';
+      btnLogout.textContent = '⎋';
+      btnLogout.title = 'Esci (' + (user.email||'') + ')';
+      btnLogout.onclick = () => signOut(auth);
+      right.prepend(btnLogout);
     }
     // Sync iniziale: carica da Firestore → localStorage
     await syncFromFirestore(user.uid);
@@ -4060,9 +4079,10 @@ onAuthStateChanged(auth, async user => {
     if (typeof renderStats === 'function') renderStats('stat-');
   } else {
     showLogin();
-    // Rimuovi bottone logout se presente
-    const btn = document.getElementById('btn-logout');
-    if (btn) btn.remove();
+    const btnL = document.getElementById('btn-logout');
+    const btnS = document.getElementById('btn-sync-all');
+    if (btnL) btnL.remove();
+    if (btnS) btnS.remove();
   }
 });
 
@@ -4132,19 +4152,6 @@ async function syncAllToFirestore() {
     console.error(e);
   }
 }
-
-// Aggiungi bottone sync dopo login
-onAuthStateChanged(auth, user => {
-  if (user && !document.getElementById('btn-sync-all')) {
-    const btn = document.createElement('button');
-    btn.id = 'btn-sync-all';
-    btn.className = 'btn-ghost';
-    btn.style.cssText = 'height:24px;font-size:9px;font-family:"DM Mono",monospace;letter-spacing:0.06em;color:var(--muted);flex-shrink:0;border:1px solid var(--border);border-radius:3px;padding:0 8px;';
-    btn.textContent = '☁ Carica tutto su Firestore';
-    btn.onclick = syncAllToFirestore;
-    document.querySelector('.topbar .tb-actions').prepend(btn);
-  }
-});
 
 </script>
 </body>
