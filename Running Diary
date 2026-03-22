@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Running Diary</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f3ee;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: #e0dbd0;
+    --border-strong: #c8c2b4;
+    --text: #1a1814;
+    --text-muted: #6b6660;
+    --text-hint: #9e9890;
+    --accent: #2d5a3d;
+    --accent-light: #e8f0eb;
+    --accent-mid: #4a8c5c;
+    --warn: #8c5a1a;
+    --warn-light: #f5ebe0;
+    --danger: #8c2020;
+    --danger-light: #f5e0e0;
+    --info: #1a3d6b;
+    --info-light: #e0eaf5;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --font: 'Georgia', serif;
+    --font-mono: 'Courier New', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141210;
+      --surface: #1e1c18;
+      --surface2: #252220;
+      --border: #2e2b26;
+      --border-strong: #3e3a34;
+      --text: #f0ede6;
+      --text-muted: #9e9890;
+      --text-hint: #6b6660;
+      --accent: #5aad74;
+      --accent-light: #1a2e20;
+      --accent-mid: #4a8c5c;
+      --warn: #d4924a;
+      --warn-light: #2e2010;
+      --danger: #d45050;
+      --danger-light: #2e1010;
+      --info: #5a8cd4;
+      --info-light: #101e30;
+    }
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .app-shell {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 1rem 4rem;
+  }
+
+  header {
+    padding: 2.5rem 0 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .logo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .logo-title {
+    font-size: 22px;
+    font-weight: normal;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .logo-sub {
+    font-size: 12px;
+    color: var(--text-hint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* TABS */
+  nav.tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  nav.tabs button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 18px;
+    margin-bottom: -1px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  nav.tabs button:hover { color: var(--text); }
+  nav.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* FORM */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 1.5rem;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1 / -1; }
+  .field.third { grid-column: span 1; }
+
+  .field label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--accent-mid);
+  }
+
+  .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  .field .hint {
+    font-size: 11px;
+    color: var(--text-hint);
+    font-family: var(--font-mono);
+  }
+
+  /* TOGGLE indoor/outdoor */
+  .toggle-group {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .toggle-group button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 8px 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .toggle-group button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    text-decoration: none;
+  }
+
+  .btn:hover { background: var(--surface2); border-color: var(--border-strong); }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { opacity: 0.88; background: var(--accent); }
+
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  .btn-ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--text-muted);
+  }
+
+  .btn-ghost:hover { background: var(--surface2); border-color: var(--border); color: var(--text); }
+
+  .btn-danger {
+    border-color: var(--danger-light);
+    color: var(--danger);
+    background: transparent;
+  }
+
+  .btn-danger:hover { background: var(--danger-light); }
+
+  /* SAVE MSG */
+  .save-msg {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 8px;
+  }
+
+  /* CARDS */
+  .session-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+
+  .session-card:hover { border-color: var(--border-strong); }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .card-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+  }
+
+  .badge-z2 { background: var(--accent-light); color: var(--accent); }
+  .badge-threshold { background: var(--warn-light); color: var(--warn); }
+  .badge-interval { background: var(--danger-light); color: var(--danger); }
+  .badge-long { background: var(--info-light); color: var(--info); }
+  .badge-outdoor { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+  .badge-indoor { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .card-metrics {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .metric { display: flex; flex-direction: column; }
+  .metric-val { font-size: 15px; font-weight: bold; color: var(--text); }
+  .metric-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--text-hint); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 1px; }
+
+  .card-notes {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* PROGRESS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+
+  .stat-box .val { font-size: 24px; letter-spacing: -0.02em; }
+  .stat-box .lbl { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-box .trend { font-family: var(--font-mono); font-size: 11px; margin-top: 4px; }
+  .trend-good { color: var(--accent); }
+  .trend-bad { color: var(--danger); }
+
+  .chart-section { margin-bottom: 2.5rem; }
+  .chart-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-hint);
+    margin-bottom: 10px;
+  }
+
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* DATA MGMT */
+  .data-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .data-section h3 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .data-section p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .data-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .import-zone {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    margin-top: 12px;
+  }
+
+  .import-zone:hover { border-color: var(--accent-mid); background: var(--accent-light); }
+  .import-zone p { font-size: 13px; color: var(--text-muted); margin: 0; }
+  .import-zone strong { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--text); margin-bottom: 4px; }
+
+  #import-file { display: none; }
+
+  .msg-box {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .msg-success { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-mid); }
+  .msg-error { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text-muted);
+  }
+
+  .empty-state p { font-size: 14px; margin-top: 8px; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 520px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: 1; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    header { padding-top: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header>
+    <div class="logo">
+      <h1 class="logo-title">Running Diary</h1>
+      <span class="logo-sub">Trainer Tascabile · v1.0</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-sm" onclick="exportJSON()">↓ Esporta dati</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="active" onclick="switchTab('log', this)">Inserisci</button>
+    <button onclick="switchTab('history', this)">Storico</button>
+    <button onclick="switchTab('progress', this)">Progressi</button>
+    <button onclick="switchTab('data', this)">Dati</button>
+  </nav>
+
+  <!-- ===== TAB: LOG ===== -->
+  <div id="tab-log" class="tab-panel active">
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Data</label>
+        <input type="date" id="f-date" />
+      </div>
+
+      <div class="field">
+        <label>Tipo sessione</label>
+        <select id="f-type">
+          <option value="z2">Zona 2 / easy</option>
+          <option value="threshold">Threshold / soglia</option>
+          <option value="interval">Intervalli / ripetute</option>
+          <option value="long">Long run</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Ambiente</label>
+        <div class="toggle-group" id="env-toggle">
+          <button class="active" data-val="outdoor" onclick="setEnv('outdoor', this)">Outdoor</button>
+          <button data-val="indoor" onclick="setEnv('indoor', this)">Indoor / tapis</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Condizioni meteo</label>
+        <select id="f-cond">
+          <option value="">—</option>
+          <option>Soleggiato</option>
+          <option>Nuvoloso</option>
+          <option>Caldo</option>
+          <option>Fresco</option>
+          <option>Freddo</option>
+          <option>Vento</option>
+          <option>Pioggia</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Distanza (km)</label>
+        <input type="number" id="f-dist" step="0.1" min="0" placeholder="es. 8.5" />
+      </div>
+
+      <div class="field">
+        <label>Durata (min)</label>
+        <input type="number" id="f-dur" step="1" min="0" placeholder="es. 52" />
+      </div>
+
+      <div class="field">
+        <label>FC media (bpm)</label>
+        <input type="number" id="f-hr" step="1" min="0" placeholder="es. 142" />
+        <span class="hint">Z2 ≈ 134–155 bpm (70–80% FCmax 194)</span>
+      </div>
+
+      <div class="field">
+        <label>FC massima sessione</label>
+        <input type="number" id="f-hrmax" step="1" min="0" placeholder="es. 162" />
+      </div>
+
+      <div class="field">
+        <label>SPM medi (passi/min)</label>
+        <input type="number" id="f-spm" step="1" min="0" placeholder="es. 168" />
+        <span class="hint">Target efficienza: 170–180 spm</span>
+      </div>
+
+      <div class="field">
+        <label>RPE (1–10)</label>
+        <input type="number" id="f-rpe" step="1" min="1" max="10" placeholder="es. 6" />
+      </div>
+
+      <div class="field full">
+        <label>Note (sensazioni, dolori, osservazioni)</label>
+        <textarea id="f-notes" placeholder="es. Tibia ok, respirazione conversazionale per i primi 40 min, leggero appesantimento nel finale. Achille silenzioso."></textarea>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveSession()">Salva sessione</button>
+    <div class="save-msg" id="save-msg">
+      <span>✓</span> Sessione salvata
+    </div>
+  </div>
+
+  <!-- ===== TAB: HISTORY ===== -->
+  <div id="tab-history" class="tab-panel">
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ===== TAB: PROGRESS ===== -->
+  <div id="tab-progress" class="tab-panel">
+    <div class="stats-row" id="stats-row"></div>
+
+    <div class="chart-section">
+      <p class="chart-label">Passo medio per sessione (min/km) — scende = meglio</p>
+      <div class="chart-wrap" style="height:220px;"><canvas id="chart-pace"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <p class="chart-label">FC media per sessione — scende a parità di sforzo = adattamento</p>
+      <div class="chart-wrap" style="height:200px;"><canvas id="chart-hr"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <p class="chart-label">SPM medi per sessione</p>
+      <div class="chart-wrap" style="height:200px;"><canvas id="chart-spm"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <p class="chart-label">Volume settimanale (km)</p>
+      <div class="chart-wrap" style="height:200px;"><canvas id="chart-vol"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: DATA ===== -->
+  <div id="tab-data" class="tab-panel">
+
+    <div class="data-section">
+      <h3>Esporta dati</h3>
+      <p>Scarica tutte le sessioni in formato JSON. Usa questo file per fare backup o per importarlo in una versione aggiornata dell'app.</p>
+      <div class="data-actions">
+        <button class="btn" onclick="exportJSON()">↓ Esporta JSON</button>
+        <button class="btn" onclick="exportCSV()">↓ Esporta CSV</button>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <h3>Importa dati</h3>
+      <p>Importa un file JSON esportato in precedenza. I dati esistenti verranno uniti con quelli importati (nessuna cancellazione). In caso di ID duplicati, viene tenuta la sessione più recente.</p>
+      <div class="import-zone" onclick="document.getElementById('import-file').click()">
+        <strong>Clicca per scegliere un file</strong>
+        <p>Seleziona un file .json esportato da Running Diary</p>
+      </div>
+      <input type="file" id="import-file" accept=".json" onchange="importJSON(event)" />
+      <div id="import-msg" class="msg-box"></div>
+    </div>
+
+    <div class="data-section">
+      <h3>Cancella tutti i dati</h3>
+      <p>Rimuove tutte le sessioni dal browser. L'operazione è irreversibile — fai un backup prima.</p>
+      <div class="data-actions">
+        <button class="btn btn-danger" onclick="clearAllData()">✕ Cancella tutto</button>
+      </div>
+    </div>
+
+    <hr class="divider" />
+    <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-hint); line-height: 1.6;">
+      Running Diary v1.0 · Trainer Tascabile<br>
+      Dati salvati in localStorage (solo sul tuo browser).<br>
+      Esporta regolarmente per non perdere i progressi.
+    </p>
+
+  </div>
+
+</div><!-- app-shell -->
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let sessions = [];
+let envValue = 'outdoor';
+let chartPace, chartHR, chartSPM, chartVol;
+
+const TYPE_LABELS = { z2: 'Zona 2', threshold: 'Threshold', interval: 'Intervalli', long: 'Long run' };
+const TYPE_CLASS  = { z2: 'badge-z2', threshold: 'badge-threshold', interval: 'badge-interval', long: 'badge-long' };
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
+  setTodayDate();
+});
+
+function setTodayDate() {
+  const d = new Date();
+  const s = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  document.getElementById('f-date').value = s;
+}
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem('running_diary_v1');
+    if (raw) sessions = JSON.parse(raw);
+  } catch(e) { sessions = []; }
+}
+
+function saveToStorage() {
+  localStorage.setItem('running_diary_v1', JSON.stringify(sessions));
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'history') renderHistory();
+  if (name === 'progress') renderProgress();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function fmtDate(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function paceSecFromDistDur(dist, dur) {
+  if (!dist || !dur || dist === 0) return null;
+  return (dur / dist) * 60;
+}
+
+function fmtPace(sec) {
+  if (!sec) return '—';
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}:${pad(s)}`;
+}
+
+function getWeekMonday(dateStr) {
+  const d = new Date(dateStr);
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+// ─── ENV TOGGLE ───────────────────────────────────────────────────────────────
+function setEnv(val, btn) {
+  envValue = val;
+  document.querySelectorAll('#env-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── SAVE SESSION ─────────────────────────────────────────────────────────────
+function saveSession() {
+  const date = document.getElementById('f-date').value;
+  const dist = parseFloat(document.getElementById('f-dist').value);
+  const dur  = parseFloat(document.getElementById('f-dur').value);
+
+  if (!date || isNaN(dist) || isNaN(dur) || dist <= 0 || dur <= 0) {
+    alert('Inserisci almeno data, distanza e durata.');
+    return;
+  }
+
+  const session = {
+    id:    Date.now(),
+    date,
+    type:  document.getElementById('f-type').value,
+    env:   envValue,
+    cond:  document.getElementById('f-cond').value || null,
+    dist,
+    dur,
+    hr:    parseInt(document.getElementById('f-hr').value)    || null,
+    hrmax: parseInt(document.getElementById('f-hrmax').value) || null,
+    spm:   parseInt(document.getElementById('f-spm').value)   || null,
+    rpe:   parseInt(document.getElementById('f-rpe').value)   || null,
+    notes: document.getElementById('f-notes').value.trim()    || null,
+    pace:  paceSecFromDistDur(dist, dur)
+  };
+
+  sessions.push(session);
+  sessions.sort((a, b) => a.date.localeCompare(b.date));
+  saveToStorage();
+
+  // Reset form
+  ['f-dist','f-hr','f-hrmax','f-spm','f-rpe','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-dur').value  = '';
+  document.getElementById('f-cond').value = '';
+  document.getElementById('f-type').value = 'z2';
+  setEnv('outdoor', document.querySelector('#env-toggle button[data-val="outdoor"]'));
+  setTodayDate();
+
+  const msg = document.getElementById('save-msg');
+  msg.style.display = 'flex';
+  setTimeout(() => msg.style.display = 'none', 2500);
+}
+
+// ─── DELETE ───────────────────────────────────────────────────────────────────
+function deleteSession(id) {
+  if (!confirm('Eliminare questa sessione?')) return;
+  sessions = sessions.filter(s => s.id !== id);
+  saveToStorage();
+  renderHistory();
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!sessions.length) {
+    el.innerHTML = `<div class="empty-state"><p>Nessuna sessione salvata.</p><p style="margin-top:4px; font-size:13px;">Vai su "Inserisci" per aggiungere la prima corsa.</p></div>`;
+    return;
+  }
+  const sorted = [...sessions].reverse();
+  el.innerHTML = sorted.map(s => {
+    const pace = s.pace ? fmtPace(s.pace) : null;
+    return `
+    <div class="session-card">
+      <div class="card-header">
+        <div class="card-meta">
+          <span class="card-date">${fmtDate(s.date)}</span>
+          <span class="badge ${TYPE_CLASS[s.type]}">${TYPE_LABELS[s.type]}</span>
+          <span class="badge ${s.env === 'indoor' ? 'badge-indoor' : 'badge-outdoor'}">${s.env === 'indoor' ? 'indoor' : 'outdoor'}</span>
+          ${s.cond ? `<span class="badge badge-outdoor">${s.cond}</span>` : ''}
+        </div>
+        <button class="btn btn-sm btn-danger" onclick="deleteSession(${s.id})">✕</button>
+      </div>
+      <div class="card-metrics">
+        <div class="metric"><span class="metric-val">${s.dist.toFixed(1)} km</span><span class="metric-lbl">distanza</span></div>
+        <div class="metric"><span class="metric-val">${Math.round(s.dur)} min</span><span class="metric-lbl">durata</span></div>
+        ${pace ? `<div class="metric"><span class="metric-val">${pace}</span><span class="metric-lbl">passo /km</span></div>` : ''}
+        ${s.hr    ? `<div class="metric"><span class="metric-val">${s.hr} bpm</span><span class="metric-lbl">FC media</span></div>` : ''}
+        ${s.hrmax ? `<div class="metric"><span class="metric-val">${s.hrmax} bpm</span><span class="metric-lbl">FC max</span></div>` : ''}
+        ${s.spm   ? `<div class="metric"><span class="metric-val">${s.spm} spm</span><span class="metric-lbl">cadenza</span></div>` : ''}
+        ${s.rpe   ? `<div class="metric"><span class="metric-val">RPE ${s.rpe}</span><span class="metric-lbl">sforzo</span></div>` : ''}
+      </div>
+      ${s.notes ? `<div class="card-notes">${s.notes}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─── PROGRESS ─────────────────────────────────────────────────────────────────
+function renderProgress() {
+  const statsRow = document.getElementById('stats-row');
+
+  if (sessions.length < 2) {
+    statsRow.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-muted); font-size:14px;">Inserisci almeno 2 sessioni per vedere i progressi.</div>`;
+    return;
+  }
+
+  const sorted = [...sessions].sort((a,b) => a.date.localeCompare(b.date));
+  const withPace = sorted.filter(s => s.pace);
+  const withHR   = sorted.filter(s => s.hr);
+  const withSPM  = sorted.filter(s => s.spm);
+
+  const totalKm   = sorted.reduce((a,s) => a + s.dist, 0);
+  const totalSess = sorted.length;
+  const avgKm     = (totalKm / totalSess).toFixed(1);
+
+  let paceHtml = `<div class="stat-box"><div class="val">${totalKm.toFixed(1)}</div><div class="lbl">km totali</div></div>`;
+  paceHtml += `<div class="stat-box"><div class="val">${totalSess}</div><div class="lbl">sessioni</div></div>`;
+
+  if (withPace.length >= 2) {
+    const n = Math.min(3, Math.floor(withPace.length / 2));
+    const firstAvg = withPace.slice(0, n).reduce((a,s) => a + s.pace, 0) / n;
+    const lastAvg  = withPace.slice(-n).reduce((a,s) => a + s.pace, 0) / n;
+    const diff = firstAvg - lastAvg;
+    const absSec = Math.round(Math.abs(diff));
+    const m = Math.floor(absSec / 60), sc = absSec % 60;
+    const sign = diff > 0 ? '↓ −' : '↑ +';
+    const cls  = diff > 0 ? 'trend-good' : 'trend-bad';
+    const lastPaceStr = fmtPace(lastAvg);
+    paceHtml += `<div class="stat-box"><div class="val">${lastPaceStr}</div><div class="lbl">passo recente /km</div><div class="trend ${cls}">${sign}${m}:${pad(sc)} vs inizio</div></div>`;
+  } else {
+    paceHtml += `<div class="stat-box"><div class="val">—</div><div class="lbl">trend passo</div></div>`;
+  }
+
+  statsRow.innerHTML = paceHtml;
+
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const col = { pace: '#4a8c5c', hr: '#c0522a', spm: '#2a6ea6', vol: '#7a5a2a' };
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const tickColor = isDark ? '#6b6660' : '#9e9890';
+
+  const baseOpts = (reverse = false) => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { titleFont: { family: 'Courier New' }, bodyFont: { family: 'Courier New' }, padding: 10, cornerRadius: 6 } },
+    scales: {
+      x: { ticks: { color: tickColor, font: { family: 'Courier New', size: 10 }, maxRotation: 35 }, grid: { color: gridColor } },
+      y: { reverse, ticks: { color: tickColor, font: { family: 'Courier New', size: 10 } }, grid: { color: gridColor } }
+    }
+  });
+
+  if (chartPace) chartPace.destroy();
+  if (chartHR)   chartHR.destroy();
+  if (chartSPM)  chartSPM.destroy();
+  if (chartVol)  chartVol.destroy();
+
+  // PACE chart
+  if (withPace.length >= 2) {
+    chartPace = new Chart(document.getElementById('chart-pace'), {
+      type: 'line',
+      data: {
+        labels: withPace.map(s => fmtDate(s.date)),
+        datasets: [{
+          data: withPace.map(s => parseFloat((s.pace / 60).toFixed(3))),
+          borderColor: col.pace,
+          backgroundColor: col.pace + '20',
+          tension: 0.35, fill: true, pointRadius: 4, pointHoverRadius: 6
+        }]
+      },
+      options: {
+        ...baseOpts(true),
+        plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip,
+          callbacks: { label: ctx => ` ${fmtPace(ctx.raw * 60)} /km` }
+        }},
+        scales: { ...baseOpts(true).scales, y: { ...baseOpts(true).scales.y,
+          ticks: { ...baseOpts(true).scales.y.ticks, callback: v => fmtPace(v * 60) }
+        }}
+      }
+    });
+  }
+
+  // HR chart
+  if (withHR.length >= 2) {
+    chartHR = new Chart(document.getElementById('chart-hr'), {
+      type: 'line',
+      data: {
+        labels: withHR.map(s => fmtDate(s.date)),
+        datasets: [{
+          data: withHR.map(s => s.hr),
+          borderColor: col.hr,
+          backgroundColor: col.hr + '20',
+          tension: 0.35, fill: true, pointRadius: 4, pointHoverRadius: 6
+        }]
+      },
+      options: { ...baseOpts(), plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip,
+        callbacks: { label: ctx => ` ${ctx.raw} bpm` }
+      }}}
+    });
+  }
+
+  // SPM chart
+  if (withSPM.length >= 2) {
+    chartSPM = new Chart(document.getElementById('chart-spm'), {
+      type: 'line',
+      data: {
+        labels: withSPM.map(s => fmtDate(s.date)),
+        datasets: [{
+          data: withSPM.map(s => s.spm),
+          borderColor: col.spm,
+          backgroundColor: col.spm + '20',
+          tension: 0.35, fill: true, pointRadius: 4, pointHoverRadius: 6
+        }]
+      },
+      options: { ...baseOpts(), plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip,
+        callbacks: { label: ctx => ` ${ctx.raw} spm` }
+      }}}
+    });
+  }
+
+  // VOL chart
+  const weekMap = {};
+  sorted.forEach(s => { const w = getWeekMonday(s.date); weekMap[w] = (weekMap[w] || 0) + s.dist; });
+  const weeks = Object.keys(weekMap).sort();
+  if (weeks.length >= 2) {
+    chartVol = new Chart(document.getElementById('chart-vol'), {
+      type: 'bar',
+      data: {
+        labels: weeks.map(w => { const [,m,d] = w.split('-'); return `${d}/${m}`; }),
+        datasets: [{
+          data: weeks.map(w => parseFloat(weekMap[w].toFixed(1))),
+          backgroundColor: col.vol + 'BB',
+          borderColor: col.vol,
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: { ...baseOpts(), plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip,
+        callbacks: { label: ctx => ` ${ctx.raw} km` }
+      }}}
+    });
+  }
+}
+
+// ─── EXPORT JSON ──────────────────────────────────────────────────────────────
+function exportJSON() {
+  if (!sessions.length) { alert('Nessuna sessione da esportare.'); return; }
+  const payload = { version: 1, exportedAt: new Date().toISOString(), sessions };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `running-diary-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── EXPORT CSV ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!sessions.length) { alert('Nessuna sessione da esportare.'); return; }
+  const headers = ['id','date','type','env','cond','dist_km','dur_min','hr_avg','hr_max','spm','rpe','pace_sec_km','notes'];
+  const rows = sessions.map(s => headers.map(h => {
+    const v = s[h.replace('_km','').replace('_min','').replace('_avg','').replace('_sec_km','').replace('hr_max','hrmax')] ?? s[h] ?? '';
+    return `"${String(v).replace(/"/g,'""')}"`;
+  }).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `running-diary-${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── IMPORT JSON ──────────────────────────────────────────────────────────────
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const imported = data.sessions || (Array.isArray(data) ? data : null);
+      if (!imported) throw new Error('Formato non riconosciuto');
+
+      const existingIds = new Set(sessions.map(s => s.id));
+      let added = 0, skipped = 0;
+      imported.forEach(s => {
+        if (!s.id || !s.date || !s.dist) { skipped++; return; }
+        if (existingIds.has(s.id)) { skipped++; return; }
+        // Ricalcola pace se mancante
+        if (!s.pace && s.dist && s.dur) s.pace = paceSecFromDistDur(s.dist, s.dur);
+        sessions.push(s);
+        added++;
+      });
+
+      sessions.sort((a, b) => a.date.localeCompare(b.date));
+      saveToStorage();
+
+      showImportMsg(`✓ Importate ${added} sessioni. ${skipped > 0 ? `${skipped} saltate (già presenti o non valide).` : ''}`, 'success');
+    } catch(err) {
+      showImportMsg(`✕ Errore: ${err.message}`, 'error');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function showImportMsg(text, type) {
+  const el = document.getElementById('import-msg');
+  el.textContent = text;
+  el.className = `msg-box ${type === 'success' ? 'msg-success' : 'msg-error'}`;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+// ─── CLEAR ────────────────────────────────────────────────────────────────────
+function clearAllData() {
+  if (!confirm('Sei sicuro? Tutti i dati verranno eliminati definitivamente. Fai prima un export.')) return;
+  sessions = [];
+  localStorage.removeItem('running_diary_v1');
+  alert('Dati cancellati.');
+}
+</script>
+</body>
+</html>
