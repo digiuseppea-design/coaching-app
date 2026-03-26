@@ -3807,59 +3807,6 @@ ${exValidi.map((ex, ei) => {
 
 ${EXPORT_PAGE_SCRIPT}
 
-<script>
-// ── BACKUP & RESTORE ──────────────────────────────────────────────────────────
-function openBackup() {
-  document.getElementById('backup-overlay').style.display = 'flex';
-  document.getElementById('backup-status').textContent = '';
-  toggleMenu();
-}
-function closeBackup() {
-  document.getElementById('backup-overlay').style.display = 'none';
-}
-function esportaBackup() {
-  const data = {
-    coaching_clienti: localStorage.getItem('coaching_clienti'),
-    coaching_pagamenti: localStorage.getItem('coaching_pagamenti'),
-    coaching_saved_programs: localStorage.getItem('coaching_saved_programs'),
-    exportedAt: new Date().toISOString()
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'trainer-tascabile-backup-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  document.getElementById('backup-status').textContent = '✓ Backup esportato';
-}
-function importaBackup(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      const keys = ['coaching_clienti', 'coaching_pagamenti', 'coaching_saved_programs'];
-      let restored = 0;
-      keys.forEach(key => {
-        if (data[key]) {
-          localStorage.setItem(key, data[key]);
-          restored++;
-        }
-      });
-      // Ricarica viste
-      if (typeof renderClientiList === 'function') renderClientiList();
-      if (typeof renderPagClientiList === 'function') renderPagClientiList();
-      if (typeof renderStats === 'function') renderStats('stat-');
-      document.getElementById('backup-status').textContent = '✓ Ripristinati ' + restored + ' archivi';
-    } catch(err) {
-      document.getElementById('backup-status').textContent = '✕ File non valido';
-    }
-  };
-  reader.readAsText(file);
-}
-</script>
 </body>
 </html>`;
 
@@ -4247,6 +4194,58 @@ async function syncAllToFirestore() {
 }
 
 
+</script>
+<script>
+// ── BACKUP & RESTORE ──────────────────────────────────────────────────────────
+function openBackup() {
+  document.getElementById('backup-overlay').style.display = 'flex';
+  document.getElementById('backup-status').textContent = '';
+  toggleMenu();
+}
+function closeBackup() {
+  document.getElementById('backup-overlay').style.display = 'none';
+}
+function esportaBackup() {
+  const data = {
+    coaching_clienti: localStorage.getItem('coaching_clienti'),
+    coaching_pagamenti: localStorage.getItem('coaching_pagamenti'),
+    coaching_saved_programs: localStorage.getItem('coaching_saved_programs'),
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'trainer-tascabile-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('backup-status').textContent = '\u2713 Backup esportato';
+}
+function importaBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      const keys = ['coaching_clienti', 'coaching_pagamenti', 'coaching_saved_programs'];
+      let restored = 0;
+      keys.forEach(key => {
+        if (data[key]) {
+          localStorage.setItem(key, data[key]);
+          restored++;
+        }
+      });
+      if (typeof renderClientiList === 'function') renderClientiList();
+      if (typeof renderPagClientiList === 'function') renderPagClientiList();
+      if (typeof renderStats === 'function') renderStats('stat-');
+      document.getElementById('backup-status').textContent = '\u2713 Ripristinati ' + restored + ' archivi';
+    } catch(err) {
+      document.getElementById('backup-status').textContent = '\u2715 File non valido';
+    }
+  };
+  reader.readAsText(file);
+}
 </script>
 </body>
 </html>
