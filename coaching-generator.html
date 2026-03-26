@@ -809,7 +809,11 @@ function loadSheet() {
     parseTSVData(saved);
     document.getElementById('sync-dot').className='sync-dot ok';
     document.getElementById('sync-label').textContent=lists.esercizi.length+' esercizi · '+lists.metodologie.length+' metod.';
-  window._sheetUsers = lists.utenti.filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
+    // Deduplicazione: usa email se presente, altrimenti nome
+    window._sheetUsers = lists.utenti.filter((u,i,arr)=>{
+      const key = u.email || u.nome;
+      return arr.findIndex(x=>(x.email||x.nome)===key)===i;
+    });
   } else {
     document.getElementById('sync-dot').className='sync-dot err';
     document.getElementById('sync-label').textContent='Nessun dato — clicca per importare';
@@ -1243,14 +1247,22 @@ function acSidebar(input) {
   const dbUtenti = Object.entries(dbClienti)
     .filter(([email, d])=>d.nome)
     .map(([email, d])=>({nome:d.nome, email}));
+  // Deduplicazione per email se presente, altrimenti per nome
   const tuttiUtenti = [...lists.utenti, ...dbUtenti]
-    .filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
-  const items=tuttiUtenti.filter(u=>u.nome.toLowerCase().includes(val)).slice(0,8);
+    .filter((u,i,arr)=>{
+      const key = u.email || u.nome;
+      return arr.findIndex(x=>(x.email||x.nome)===key)===i;
+    });
+  const items=tuttiUtenti.filter(u=>u.nome && u.nome.toLowerCase().includes(val)).slice(0,8);
   if(!val||!items.length){listEl.classList.remove('open');return;}
   items.forEach(item=>{
     const d=document.createElement('div'); d.className='ac-item';
-    d.innerHTML=`<span>${item.nome}</span><span class="ac-badge">${item.email}</span>`;
-    d.onmousedown=()=>{ input.value=item.nome; document.getElementById('email_cliente').value=item.email; listEl.classList.remove('open'); };
+    d.innerHTML=`<span>${item.nome}</span><span class="ac-badge">${item.email||'—'}</span>`;
+    d.onmousedown=()=>{
+      input.value=item.nome;
+      document.getElementById('email_cliente').value=item.email||'';
+      listEl.classList.remove('open');
+    };
     listEl.appendChild(d);
   });
   listEl.classList.add('open');
@@ -1608,10 +1620,13 @@ function downloadCSV(){
     return clean;
   };
   const lines=[cols.join(sep),...csvData.map(row=>cols.map(col=>escapeCSV(row[col])).join(sep))];
+  const nome = document.getElementById('nome_cliente').value.trim().replace(/\s+/g,'_') || 'cliente';
+  const data = document.getElementById('data_programma').value.replace(/-/g,'') || '';
+  const filename = [nome, data].filter(Boolean).join('_') + '.csv';
   const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url;
-  a.download=(document.getElementById('nome_programma').value.trim().replace(/\s+/g,'_')||'programma')+'_glide.csv';
+  a.download=filename;
   a.click(); URL.revokeObjectURL(url);
 }
 
@@ -2771,7 +2786,7 @@ function apriConfronto(id) {
     const w = row['Settimana']||'?';
     const pos = parseInt(row['Posizione'])||0;
     if(!giorni_map[g]) giorni_map[g] = {};
-    if(!giorni_map[g][pos]) giorni_map[g][pos] = { esercizio:row['Esercizio'], blocco:row['Blocco'], settimane:{} };
+    if(!giorni_map[g][pos]) giorni_map[g][pos] = { esercizio:row['Esercizio'], blocco:row['Blocco'], note:row['Note']||'', settimane:{} };
     giorni_map[g][pos].settimane[w] = {
       struttura: row['Struttura']||'',
       recupero:  row['Recupero']||'',
@@ -2794,7 +2809,7 @@ function apriConfronto(id) {
     posizioni.forEach(pos=>{
       const ex = giorni_map[g][pos];
       html += `<tr>
-        <td class="ex-name">${ex.esercizio}<br><span style="color:var(--muted);font-size:8px">${ex.blocco}</span></td>
+        <td class="ex-name">${ex.esercizio}${ex.note?`<br><span style="color:var(--muted);font-size:8px">${ex.note}</span>`:''}</td>
         ${sw_list.map(w=>{
           const sd = ex.settimane[w]||{};
           return `<td class="struttura">${sd.struttura||'—'}<br><span style="font-size:8px;color:#555">${sd.recupero||''}</span></td>`;
