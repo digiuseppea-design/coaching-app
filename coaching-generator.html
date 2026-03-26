@@ -634,6 +634,25 @@
     <div class="side-menu-item" onclick="goTo('pagamenti')">
       <span class="side-menu-icon">💳</span> Pagamenti
     </div>
+    <div style="height:1px;background:var(--border);margin:8px 20px;"></div>
+    <div class="side-menu-item" onclick="openBackup()">
+      <span class="side-menu-icon">💾</span> Backup &amp; Restore
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP OVERLAY -->
+<div id="backup-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:32px;width:340px;max-width:90vw;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:var(--accent);margin-bottom:4px;">Backup &amp; Restore</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:24px;">Clienti · Pagamenti · Programmi salvati</div>
+    <button onclick="esportaBackup()" style="width:100%;padding:12px;background:var(--accent);color:#000;border:none;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;cursor:pointer;margin-bottom:10px;">⬇ Esporta dati</button>
+    <label style="width:100%;display:block;">
+      <div style="width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-align:center;box-sizing:border-box;">⬆ Importa dati</div>
+      <input type="file" accept=".json" onchange="importaBackup(event)" style="display:none;">
+    </label>
+    <div id="backup-status" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:12px;min-height:16px;text-align:center;"></div>
+    <button onclick="closeBackup()" style="width:100%;margin-top:16px;padding:8px;background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Chiudi</button>
   </div>
 </div>
 
@@ -4171,6 +4190,59 @@ async function syncAllToFirestore() {
     if (btn) { btn.textContent = '✕ Errore'; btn.disabled = false; }
     console.error(e);
   }
+}
+
+
+// ── BACKUP & RESTORE ──────────────────────────────────────────────────────────
+function openBackup() {
+  document.getElementById('backup-overlay').style.display = 'flex';
+  document.getElementById('backup-status').textContent = '';
+  toggleMenu();
+}
+function closeBackup() {
+  document.getElementById('backup-overlay').style.display = 'none';
+}
+function esportaBackup() {
+  const data = {
+    coaching_clienti: localStorage.getItem('coaching_clienti'),
+    coaching_pagamenti: localStorage.getItem('coaching_pagamenti'),
+    coaching_saved_programs: localStorage.getItem('coaching_saved_programs'),
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'trainer-tascabile-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('backup-status').textContent = '✓ Backup esportato';
+}
+function importaBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      const keys = ['coaching_clienti', 'coaching_pagamenti', 'coaching_saved_programs'];
+      let restored = 0;
+      keys.forEach(key => {
+        if (data[key]) {
+          localStorage.setItem(key, data[key]);
+          restored++;
+        }
+      });
+      // Ricarica viste
+      if (typeof renderClientiList === 'function') renderClientiList();
+      if (typeof renderPagClientiList === 'function') renderPagClientiList();
+      if (typeof renderStats === 'function') renderStats('stat-');
+      document.getElementById('backup-status').textContent = '✓ Ripristinati ' + restored + ' archivi';
+    } catch(err) {
+      document.getElementById('backup-status').textContent = '✕ File non valido';
+    }
+  };
+  reader.readAsText(file);
 }
 
 </script>
