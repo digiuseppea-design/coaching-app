@@ -29,7 +29,7 @@
 
   /* TOPBAR */
   .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:5px;height:46px;position:sticky;top:0;z-index:200;flex-wrap:nowrap;}
-  .topbar-left{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:visible;}
+  .topbar-left{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden;}
   .topbar-right{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto;}
   .logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:var(--accent);white-space:nowrap;flex-shrink:0;}
   .logo span{color:var(--text);opacity:0.25;}
@@ -4016,7 +4016,7 @@ function escH(v) {
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -4037,12 +4037,12 @@ const loginScreen = document.getElementById('login-screen');
 const loginErr    = document.getElementById('login-err');
 const loginLoad   = document.getElementById('login-loading');
 
-function showLogin()  { loginScreen.classList.add('hidden'); }
+function showLogin()  { loginScreen.classList.remove('hidden'); }
 function hideLogin()  { loginScreen.classList.add('hidden'); }
 
 // ── MOSTRA LOGIN SUBITO (evita schermo nero su mobile) ───────────────────────
 // La login screen è visibile di default, Firebase la nasconde dopo auth check
-document.getElementById('login-screen').classList.add('hidden');
+document.getElementById('login-screen').classList.remove('hidden');
 
 // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
 document.getElementById('btn-google-login').onclick = async () => {
@@ -4050,13 +4050,18 @@ document.getElementById('btn-google-login').onclick = async () => {
   loginLoad.style.display = 'block';
   try {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   } catch(e) {
     loginLoad.style.display = 'none';
     loginErr.style.display  = 'block';
     console.error(e);
   }
 };
+
+// Gestisce il ritorno dal redirect Google
+getRedirectResult(auth).catch(e => {
+  console.error('Redirect error:', e);
+});
 
 // ── AUTH STATE ────────────────────────────────────────────────────────────────
 onAuthStateChanged(auth, async user => {
