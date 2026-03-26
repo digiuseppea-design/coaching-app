@@ -29,7 +29,7 @@
 
   /* TOPBAR */
   .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:5px;height:46px;position:sticky;top:0;z-index:200;flex-wrap:nowrap;}
-  .topbar-left{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden;}
+  .topbar-left{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:visible;}
   .topbar-right{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto;}
   .logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:var(--accent);white-space:nowrap;flex-shrink:0;}
   .logo span{color:var(--text);opacity:0.25;}
@@ -4021,7 +4021,7 @@ import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } fro
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzL4HxMrV-euk61zlo4ipcqcUYWuiJwMc",
-  authDomain: "digiuseppea-design.github.io",
+  authDomain: "trainer-tascabile.firebaseapp.com",
   projectId: "trainer-tascabile",
   storageBucket: "trainer-tascabile.firebasestorage.app",
   messagingSenderId: "464307021985",
@@ -4042,7 +4042,7 @@ function hideLogin()  { loginScreen.classList.add('hidden'); }
 
 // ── MOSTRA LOGIN SUBITO (evita schermo nero su mobile) ───────────────────────
 // La login screen è visibile di default, Firebase la nasconde dopo auth check
-document.getElementById('login-screen').classList.add('hidden');
+document.getElementById('login-screen').classList.remove('hidden');
 
 // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
 document.getElementById('btn-google-login').onclick = async () => {
