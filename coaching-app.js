@@ -3063,9 +3063,8 @@ const loginLoad   = document.getElementById('login-loading');
 function showLogin()  { loginScreen.classList.add('hidden'); }
 function hideLogin()  { loginScreen.classList.add('hidden'); }
 
-// ── MOSTRA LOGIN SUBITO (evita schermo nero su mobile) ───────────────────────
-// La login screen è visibile di default, Firebase la nasconde dopo auth check
-// document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('login-screen').classList.add('hidden'); // bypass login
+// ── BYPASS LOGIN (login Google non funziona su GitHub Pages) ─────────────────
+document.getElementById('login-screen').classList.add('hidden');
 
 // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
 document.getElementById('btn-google-login').onclick = async () => {
@@ -3121,7 +3120,7 @@ onAuthStateChanged(auth, async user => {
     if (typeof renderPagClientiList === 'function') renderPagClientiList();
     if (typeof renderStats === 'function') renderStats('stat-');
   } else {
-    showLogin();
+    hideLogin(); // bypass: non mostrare mai il login
     const btnL = document.getElementById('btn-logout');
     const btnS = document.getElementById('btn-sync-all');
     if (btnL) btnL.remove();
