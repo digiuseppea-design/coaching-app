@@ -3065,7 +3065,7 @@ function hideLogin()  { loginScreen.classList.add('hidden'); }
 
 // ── MOSTRA LOGIN SUBITO (evita schermo nero su mobile) ───────────────────────
 // La login screen è visibile di default, Firebase la nasconde dopo auth check
-document.getElementById('login-screen').classList.remove('hidden');
+// document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('login-screen').classList.add('hidden'); // bypass login
 
 // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
 document.getElementById('btn-google-login').onclick = async () => {
