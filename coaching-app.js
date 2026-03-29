@@ -2417,8 +2417,53 @@ function openProg(exId, btn) {
     row.appendChild(inpNote);
     row.appendChild(inpMet);
     row.appendChild(inpStr);
-    row.appendChild(inpRec);
-    row.appendChild(inpCons);
+
+    // Wrapper recupero + pulsante propaga (solo W1)
+    if(w === 0) {
+      const wrapRec = document.createElement('div');
+      wrapRec.className = 'popup-field-wrap';
+      const btnPropagaRec = document.createElement('button');
+      btnPropagaRec.type='button';
+      btnPropagaRec.className='btn-propaga';
+      btnPropagaRec.title='Copia in tutte le settimane';
+      btnPropagaRec.textContent='↓';
+      btnPropagaRec.onclick = ()=>{
+        const val = inpRec.value;
+        const allRec = container.querySelectorAll('.popup-row input.input-rec');
+        allRec.forEach((inp, i)=>{ if(i>0){ inp.value=val; popupUpdate(i,'recupero',val); } });
+      };
+      wrapRec.appendChild(inpRec);
+      inpRec.classList.add('input-rec');
+      wrapRec.appendChild(btnPropagaRec);
+      row.appendChild(wrapRec);
+    } else {
+      inpRec.classList.add('input-rec');
+      row.appendChild(inpRec);
+    }
+
+    // Wrapper consiglio + pulsante propaga (solo W1)
+    if(w === 0) {
+      const wrapCons = document.createElement('div');
+      wrapCons.className = 'popup-field-wrap';
+      const btnPropagaCons = document.createElement('button');
+      btnPropagaCons.type='button';
+      btnPropagaCons.className='btn-propaga';
+      btnPropagaCons.title='Copia in tutte le settimane';
+      btnPropagaCons.textContent='↓';
+      btnPropagaCons.onclick = ()=>{
+        const val = inpCons.value;
+        const allCons = container.querySelectorAll('.popup-row input.input-cons');
+        allCons.forEach((inp, i)=>{ if(i>0){ inp.value=val; popupUpdate(i,'consiglio',val); } });
+      };
+      wrapCons.appendChild(inpCons);
+      inpCons.classList.add('input-cons');
+      wrapCons.appendChild(btnPropagaCons);
+      row.appendChild(wrapCons);
+    } else {
+      inpCons.classList.add('input-cons');
+      row.appendChild(inpCons);
+    }
+
     container.appendChild(row);
   }
 

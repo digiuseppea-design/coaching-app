@@ -166,6 +166,12 @@
     border-radius:var(--radius);outline:none;width:100%;height:26px;transition:border-color 0.15s;}
   .popup-row input:focus{border-color:var(--accent);background:#1a1f0a;}
   .popup-row input::placeholder{color:var(--muted);font-size:10px;}
+  .popup-field-wrap{display:flex;align-items:center;gap:3px;}
+  .popup-field-wrap input{flex:1;min-width:0;}
+  .btn-propaga{flex-shrink:0;width:18px;height:18px;padding:0;border:1px solid var(--border);
+    border-radius:3px;background:var(--surface2);color:var(--accent);font-size:11px;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s,border-color 0.15s;}
+  .btn-propaga:hover{background:var(--accent);color:#000;border-color:var(--accent);}
   .popup-footer{margin-top:14px;display:flex;justify-content:flex-end;gap:8px;}
 
   /* PROGRAMMI SALVATI */
