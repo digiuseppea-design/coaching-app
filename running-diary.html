@@ -4,143 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Running Diary</title>
+<link rel="stylesheet" href="style.css" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
-<meta name="theme-color" content="#2d5a3d" />
+<meta name="theme-color" content="#00d4ff" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Running Diary" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #f5f3ee; --surface: #ffffff; --surface2: #f0ede6;
-    --border: #e0dbd0; --border-strong: #c8c2b4;
-    --text: #1a1814; --text-muted: #6b6660; --text-hint: #9e9890;
-    --accent: #2d5a3d; --accent-light: #e8f0eb; --accent-mid: #4a8c5c;
-    --warn: #8c5a1a; --warn-light: #f5ebe0;
-    --danger: #8c2020; --danger-light: #f5e0e0;
-    --info: #1a3d6b; --info-light: #e0eaf5;
-    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
-    --font: 'Georgia', serif; --font-mono: 'Courier New', monospace;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #141210; --surface: #1e1c18; --surface2: #252220;
-      --border: #2e2b26; --border-strong: #3e3a34;
-      --text: #f0ede6; --text-muted: #9e9890; --text-hint: #6b6660;
-      --accent: #5aad74; --accent-light: #1a2e20; --accent-mid: #4a8c5c;
-      --warn: #d4924a; --warn-light: #2e2010;
-      --danger: #d45050; --danger-light: #2e1010;
-      --info: #5a8cd4; --info-light: #101e30;
-    }
-  }
-  html,body { min-height:100vh; background:var(--bg); color:var(--text); font-family:var(--font); font-size:15px; line-height:1.6; }
-  .app-shell { max-width:780px; margin:0 auto; padding:0 1rem calc(4rem + var(--safe-bottom)); padding-top: var(--safe-top); }
-  header { padding:1.5rem 0 1rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:0.75rem; }
-  .logo-title { font-size:20px; font-weight:normal; letter-spacing:-0.02em; }
-  .logo-sub { font-size:11px; color:var(--text-hint); letter-spacing:0.08em; text-transform:uppercase; font-family:var(--font-mono); }
-  .sync-status { display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; color:var(--text-hint); }
-  .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--text-hint); transition:background 0.3s; flex-shrink:0; }
-  .sync-dot.ok { background:var(--accent-mid); }
-  .sync-dot.err { background:var(--danger); }
-  .sync-dot.loading { background:var(--warn); animation:pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
-
-  /* TABS — fixed bottom bar on mobile */
-  nav.tabs { display:flex; margin-bottom:2rem; border-bottom:1px solid var(--border); }
-  nav.tabs button { background:none; border:none; border-bottom:2px solid transparent; padding:8px 14px; margin-bottom:-1px; font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); cursor:pointer; transition:color 0.15s,border-color 0.15s; flex:1; }
-  nav.tabs button:hover { color:var(--text); }
-  nav.tabs button.active { color:var(--accent); border-bottom-color:var(--accent); }
-
-  @media (max-width:520px) {
-    nav.tabs { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-top:1px solid var(--border); border-bottom:none; margin-bottom:0; z-index:100; padding-bottom:var(--safe-bottom); }
-    nav.tabs button { border-bottom:none; border-top:2px solid transparent; padding:12px 4px 8px; font-size:10px; }
-    nav.tabs button.active { border-bottom:none; border-top-color:var(--accent); }
-    .app-shell { padding-bottom: calc(5rem + var(--safe-bottom)); }
-  }
-
-  .tab-panel { display:none; }
-  .tab-panel.active { display:block; }
-  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:1.5rem; }
-  .field { display:flex; flex-direction:column; gap:4px; }
-  .field.full { grid-column:1/-1; }
-  .field label { font-family:var(--font-mono); font-size:11px; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-muted); }
-  .field input,.field select,.field textarea { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 10px; font-family:var(--font); font-size:16px; color:var(--text); transition:border-color 0.15s; width:100%; -webkit-appearance:none; }
-  .field input:focus,.field select:focus,.field textarea:focus { outline:none; border-color:var(--accent-mid); }
-  .field textarea { resize:vertical; min-height:80px; line-height:1.5; font-size:15px; }
-  .field .hint { font-size:11px; color:var(--text-hint); font-family:var(--font-mono); }
-  .toggle-group { display:flex; border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; }
-  .toggle-group button { flex:1; background:none; border:none; padding:10px 0; font-family:var(--font-mono); font-size:12px; color:var(--text-muted); cursor:pointer; transition:background 0.15s,color 0.15s; }
-  .toggle-group button.active { background:var(--accent); color:#fff; }
-  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 20px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; cursor:pointer; transition:background 0.15s,border-color 0.15s; }
-  .btn:hover { background:var(--surface2); border-color:var(--border-strong); }
-  .btn-primary { background:var(--accent); border-color:var(--accent); color:#fff; width:100%; padding:14px; font-size:13px; }
-  .btn-primary:hover { opacity:0.88; }
-  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
-  .btn-sm { padding:5px 10px; font-size:11px; }
-  .btn-danger { border-color:var(--danger-light); color:var(--danger); background:transparent; }
-  .btn-danger:hover { background:var(--danger-light); }
-  .save-msg { display:none; align-items:center; justify-content:center; gap:6px; font-family:var(--font-mono); font-size:12px; color:var(--accent); margin-top:10px; }
-  .session-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px 16px; margin-bottom:10px; }
-  .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; flex-wrap:wrap; }
-  .card-meta { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .card-date { font-family:var(--font-mono); font-size:12px; color:var(--text-muted); }
-  .badge { font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; padding:2px 7px; border-radius:var(--radius-sm); }
-  .badge-z2 { background:var(--accent-light); color:var(--accent); }
-  .badge-threshold { background:var(--warn-light); color:var(--warn); }
-  .badge-interval { background:var(--danger-light); color:var(--danger); }
-  .badge-long { background:var(--info-light); color:var(--info); }
-  .badge-env { background:var(--surface2); color:var(--text-muted); border:1px solid var(--border); }
-  .card-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:8px; }
-  @media (min-width:480px) { .card-metrics { display:flex; gap:20px; flex-wrap:wrap; } }
-  .metric { display:flex; flex-direction:column; }
-  .metric-val { font-size:15px; font-weight:bold; }
-  .metric-lbl { font-family:var(--font-mono); font-size:10px; color:var(--text-hint); letter-spacing:0.05em; text-transform:uppercase; margin-top:1px; }
-  .card-notes { font-size:13px; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border); line-height:1.5; font-style:italic; }
-  .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:1.5rem; }
-  .stat-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; }
-  .stat-box .val { font-size:22px; letter-spacing:-0.02em; }
-  .stat-box .lbl { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.05em; }
-  .stat-box .trend { font-family:var(--font-mono); font-size:10px; margin-top:4px; }
-  .trend-good { color:var(--accent); }
-  .trend-bad { color:var(--danger); }
-  .chart-section { margin-bottom:2rem; }
-  .chart-label { font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-hint); margin-bottom:8px; }
-  .chart-wrap { position:relative; width:100%; }
-  .data-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; margin-bottom:14px; }
-  .data-section h3 { font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-muted); margin-bottom:8px; }
-  .data-section p { font-size:13px; color:var(--text-muted); margin-bottom:14px; line-height:1.5; }
-  .data-actions { display:flex; gap:10px; flex-wrap:wrap; }
-  .import-zone { border:1.5px dashed var(--border-strong); border-radius:var(--radius-md); padding:24px 16px; text-align:center; cursor:pointer; transition:border-color 0.15s,background 0.15s; margin-top:12px; }
-  .import-zone:hover { border-color:var(--accent-mid); background:var(--accent-light); }
-  .import-zone p { font-size:13px; color:var(--text-muted); margin:0; }
-  .import-zone strong { display:block; font-family:var(--font-mono); font-size:12px; color:var(--text); margin-bottom:4px; }
-  #import-file { display:none; }
-  .msg-box { padding:10px 14px; border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:12px; margin-top:10px; display:none; }
-  .msg-success { background:var(--accent-light); color:var(--accent); border:1px solid var(--accent-mid); }
-  .msg-error { background:var(--danger-light); color:var(--danger); border:1px solid var(--danger); }
-  .empty-state { text-align:center; padding:4rem 1rem; color:var(--text-muted); }
-  .loading-state { text-align:center; padding:3rem 1rem; color:var(--text-hint); font-family:var(--font-mono); font-size:13px; }
-  .divider { border:none; border-top:1px solid var(--border); margin:1.5rem 0; }
-  @media (max-width:520px) {
-    .form-grid { grid-template-columns:1fr 1fr; gap:10px; }
-    .field.full { grid-column:1/-1; }
-    .stats-row { grid-template-columns:1fr 1fr; }
-    .stats-row .stat-box:last-child { grid-column:1/-1; }
-    header { padding-top:1rem; }
-  }
-</style>
 </head>
 <body>
 <div class="app-shell">
+
+  <!-- HEADER -->
   <header>
     <div class="logo">
+      <div class="logo-eyebrow">Trainer Tascabile</div>
       <h1 class="logo-title">Running Diary</h1>
-      <span class="logo-sub">Trainer Tascabile · v2.0</span>
+      <span class="logo-sub">v3.0</span>
     </div>
     <div class="sync-status" id="sync-status">
       <div class="sync-dot loading" id="sync-dot"></div>
@@ -148,68 +30,185 @@
     </div>
   </header>
 
+  <!-- TABS -->
   <nav class="tabs">
-    <button class="active" onclick="switchTab('log',this)">Inserisci</button>
+    <button class="active" onclick="switchTab('log',this)">Log</button>
     <button onclick="switchTab('history',this)">Storico</button>
     <button onclick="switchTab('progress',this)">Progressi</button>
+    <button onclick="switchTab('profile',this)">Profilo</button>
     <button onclick="switchTab('data',this)">Dati</button>
   </nav>
 
+  <!-- TAB LOG -->
   <div id="tab-log" class="tab-panel active">
     <div class="form-grid">
-      <div class="field"><label>Data</label><input type="date" id="f-date"/></div>
-      <div class="field"><label>Tipo sessione</label>
+      <div class="field">
+        <label>Data</label>
+        <input type="date" id="f-date"/>
+      </div>
+      <div class="field">
+        <label>Tipo sessione</label>
         <select id="f-type">
           <option value="z2">Zona 2 / easy</option>
           <option value="threshold">Threshold / soglia</option>
           <option value="interval">Intervalli / ripetute</option>
           <option value="long">Long run</option>
+          <option value="vo2max">VO2max</option>
         </select>
       </div>
-      <div class="field"><label>Ambiente</label>
+      <div class="field">
+        <label>Ambiente</label>
         <div class="toggle-group" id="env-toggle">
           <button class="active" data-val="outdoor" onclick="setEnv('outdoor',this)">Outdoor</button>
           <button data-val="indoor" onclick="setEnv('indoor',this)">Indoor</button>
         </div>
       </div>
-      <div class="field"><label>Condizioni meteo</label>
+      <div class="field">
+        <label>Condizioni meteo</label>
         <select id="f-cond">
           <option value="">—</option>
-          <option>Soleggiato</option><option>Nuvoloso</option><option>Caldo</option>
-          <option>Fresco</option><option>Freddo</option><option>Vento</option><option>Pioggia</option>
+          <option>Soleggiato</option>
+          <option>Nuvoloso</option>
+          <option>Caldo</option>
+          <option>Fresco</option>
+          <option>Freddo</option>
+          <option>Vento</option>
+          <option>Pioggia</option>
         </select>
       </div>
-      <div class="field"><label>Distanza (km)</label><input type="number" id="f-dist" step="0.1" min="0" placeholder="8.5" inputmode="decimal"/></div>
-      <div class="field"><label>Durata (min)</label><input type="number" id="f-dur" step="1" min="0" placeholder="52" inputmode="numeric"/></div>
-      <div class="field"><label>FC media (bpm)</label><input type="number" id="f-hr" step="1" min="0" placeholder="142" inputmode="numeric"/><span class="hint">Z2 ≈ 134–155 bpm</span></div>
-      <div class="field"><label>FC max sessione</label><input type="number" id="f-hrmax" step="1" min="0" placeholder="162" inputmode="numeric"/></div>
-      <div class="field"><label>SPM medi</label><input type="number" id="f-spm" step="1" min="0" placeholder="168" inputmode="numeric"/><span class="hint">Target: 170–180 spm</span></div>
-      <div class="field"><label>RPE (1–10)</label><input type="number" id="f-rpe" step="1" min="1" max="10" placeholder="6" inputmode="numeric"/></div>
-      <div class="field full"><label>Note</label><textarea id="f-notes" placeholder="Sensazioni, dolori, osservazioni..."></textarea></div>
+      <div class="field">
+        <label>Distanza (km)</label>
+        <input type="number" id="f-dist" step="0.1" min="0" placeholder="8.5" inputmode="decimal"/>
+      </div>
+      <div class="field">
+        <label>Durata (min)</label>
+        <input type="number" id="f-dur" step="1" min="0" placeholder="52" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>FC media (bpm)</label>
+        <input type="number" id="f-hr" step="1" min="0" placeholder="142" inputmode="numeric"
+               oninput="updateZoneHint(this.value)"/>
+        <span class="hint" id="hr-zone-hint">—</span>
+      </div>
+      <div class="field">
+        <label>FC max sessione</label>
+        <input type="number" id="f-hrmax" step="1" min="0" placeholder="162" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>SPM medi</label>
+        <input type="number" id="f-spm" step="1" min="0" placeholder="168" inputmode="numeric"/>
+        <span class="hint">Target: 170–180 spm</span>
+      </div>
+      <div class="field">
+        <label>RPE (1–10)</label>
+        <input type="number" id="f-rpe" step="1" min="1" max="10" placeholder="6" inputmode="numeric"/>
+      </div>
+      <div class="field full">
+        <label>Note</label>
+        <textarea id="f-notes" placeholder="Sensazioni, dolori, osservazioni..."></textarea>
+      </div>
     </div>
     <button class="btn btn-primary" id="save-btn" onclick="saveSession()">Salva sessione</button>
     <div class="save-msg" id="save-msg"><span>✓</span> Sessione salvata</div>
   </div>
 
+  <!-- TAB STORICO -->
   <div id="tab-history" class="tab-panel">
+    <div class="filter-bar" id="history-filter-bar">
+      <button class="filter-chip active-chip" data-type="all"       onclick="filterHistory('all',this)">Tutti</button>
+      <button class="filter-chip" data-type="z2"        onclick="filterHistory('z2',this)">Z2</button>
+      <button class="filter-chip" data-type="threshold" onclick="filterHistory('threshold',this)">Threshold</button>
+      <button class="filter-chip" data-type="interval"  onclick="filterHistory('interval',this)">Intervalli</button>
+      <button class="filter-chip" data-type="long"      onclick="filterHistory('long',this)">Long run</button>
+      <button class="filter-chip" data-type="vo2max"    onclick="filterHistory('vo2max',this)">VO2max</button>
+    </div>
     <div id="history-list"><div class="loading-state">Caricamento...</div></div>
   </div>
 
+  <!-- TAB PROGRESSI -->
   <div id="tab-progress" class="tab-panel">
+    <div class="period-selector">
+      <button class="period-btn active" data-period="all"   onclick="setPeriod('all',this)">Tutto</button>
+      <button class="period-btn" data-period="year"         onclick="setPeriod('year',this)">Anno</button>
+      <button class="period-btn" data-period="6m"           onclick="setPeriod('6m',this)">6 mesi</button>
+      <button class="period-btn" data-period="month"        onclick="setPeriod('month',this)">Mese</button>
+      <button class="period-btn" data-period="week"         onclick="setPeriod('week',this)">Settimana</button>
+    </div>
+    <div class="type-selector">
+      <button class="filter-chip active-chip" data-type="all"       onclick="setProgressType('all',this)">Tutti</button>
+      <button class="filter-chip" data-type="z2"        onclick="setProgressType('z2',this)">Z2</button>
+      <button class="filter-chip" data-type="threshold" onclick="setProgressType('threshold',this)">Threshold</button>
+      <button class="filter-chip" data-type="interval"  onclick="setProgressType('interval',this)">Intervalli</button>
+      <button class="filter-chip" data-type="long"      onclick="setProgressType('long',this)">Long run</button>
+      <button class="filter-chip" data-type="vo2max"    onclick="setProgressType('vo2max',this)">VO2max</button>
+    </div>
     <div class="stats-row" id="stats-row"></div>
-    <div class="chart-section"><p class="chart-label">Passo medio — scende = meglio</p><div class="chart-wrap" style="height:200px;"><canvas id="chart-pace"></canvas></div></div>
-    <div class="chart-section"><p class="chart-label">FC media per sessione</p><div class="chart-wrap" style="height:180px;"><canvas id="chart-hr"></canvas></div></div>
-    <div class="chart-section"><p class="chart-label">SPM medi per sessione</p><div class="chart-wrap" style="height:180px;"><canvas id="chart-spm"></canvas></div></div>
-    <div class="chart-section"><p class="chart-label">Volume settimanale (km)</p><div class="chart-wrap" style="height:180px;"><canvas id="chart-vol"></canvas></div></div>
+    <div class="zone-dashboard">
+      <h3>Distribuzione zone FC</h3>
+      <div id="zone-bars"></div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-header"><p class="chart-label">Passo medio · scende = meglio</p></div>
+      <div class="chart-wrap" style="height:200px;"><canvas id="chart-pace"></canvas></div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-header"><p class="chart-label">FC media per sessione</p></div>
+      <div class="chart-wrap" style="height:180px;"><canvas id="chart-hr"></canvas></div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-header"><p class="chart-label">SPM medi per sessione</p></div>
+      <div class="chart-wrap" style="height:180px;"><canvas id="chart-spm"></canvas></div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-header"><p class="chart-label">Volume (km)</p></div>
+      <div class="chart-wrap" style="height:180px;"><canvas id="chart-vol"></canvas></div>
+    </div>
   </div>
 
+  <!-- TAB PROFILO -->
+  <div id="tab-profile" class="tab-panel">
+    <div class="profile-card">
+      <h3>Dati atleta</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>FC massima (bpm)</label>
+          <input type="number" id="p-hrmax" min="100" max="230" placeholder="185" inputmode="numeric"
+                 oninput="saveProfile();renderZonesTable()"/>
+        </div>
+        <div class="field">
+          <label>FC a riposo (bpm)</label>
+          <input type="number" id="p-hrrest" min="30" max="100" placeholder="52" inputmode="numeric"
+                 oninput="saveProfile();renderZonesTable()"/>
+        </div>
+        <div class="field">
+          <label>Peso (kg)</label>
+          <input type="number" id="p-weight" step="0.1" min="30" max="200" placeholder="72.5" inputmode="decimal"
+                 oninput="saveProfile()"/>
+        </div>
+        <div class="field">
+          <label>Eta</label>
+          <input type="number" id="p-age" min="10" max="100" placeholder="34" inputmode="numeric"
+                 oninput="saveProfile();renderZonesTable()"/>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:6px;">Dati salvati localmente. Usati per calcolare le zone FC.</p>
+    </div>
+    <div class="profile-card">
+      <h3>Zone di allenamento · Formula Karvonen</h3>
+      <div id="zones-table-wrap">
+        <p style="font-size:13px;color:var(--text-hint);">Inserisci FC max e FC a riposo per calcolare le zone.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB DATI -->
   <div id="tab-data" class="tab-panel">
     <div class="data-section">
       <h3>Esporta dati</h3>
       <p>Scarica tutte le sessioni come backup locale.</p>
       <div class="data-actions">
-        <button class="btn" onclick="exportJSON()">↓ JSON</button>
-        <button class="btn" onclick="exportCSV()">↓ CSV</button>
+        <button class="btn" onclick="exportJSON()">&#8595; JSON</button>
+        <button class="btn" onclick="exportCSV()">&#8595; CSV</button>
       </div>
     </div>
     <div class="data-section">
@@ -223,233 +222,496 @@
       <div id="import-msg" class="msg-box"></div>
     </div>
     <hr class="divider"/>
-    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-hint);line-height:1.8;">
-      Running Diary v2.0 · Trainer Tascabile<br>
-      Dati su Firebase Cloud Firestore · Accessibile da qualsiasi dispositivo
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-hint);line-height:2;">
+      Running Diary v3.0 · Trainer Tascabile<br>
+      Firebase Cloud Firestore · Profilo salvato localmente
     </p>
   </div>
-</div>
+
+</div><!-- /.app-shell -->
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyB9KDZEQf1yMW0IAf_LRox5khTz6gpafwA",
-    authDomain: "running-diary-56b8e.firebaseapp.com",
-    projectId: "running-diary-56b8e",
-    storageBucket: "running-diary-56b8e.firebasestorage.app",
-    messagingSenderId: "762004959844",
-    appId: "1:762004959844:web:dea97bdf6dddf403a42571"
+/* Firebase */
+const firebaseConfig = {
+  apiKey:"AIzaSyB9KDZEQf1yMW0IAf_LRox5khTz6gpafwA",
+  authDomain:"running-diary-56b8e.firebaseapp.com",
+  projectId:"running-diary-56b8e",
+  storageBucket:"running-diary-56b8e.firebasestorage.app",
+  messagingSenderId:"762004959844",
+  appId:"1:762004959844:web:dea97bdf6dddf403a42571"
+};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const COLL="sessions";
+
+/* Helpers */
+function pad(n){return String(n).padStart(2,'0');}
+function fmtDate(d){const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;}
+function paceSecFromDistDur(dist,dur){return(!dist||!dur||dist===0)?null:(dur/dist)*60;}
+function fmtPace(sec){if(!sec)return'--';const m=Math.floor(sec/60),s=Math.round(sec%60);return`${m}:${pad(s)}`;}
+function today(){const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+function getWeekMonday(dateStr){
+  const d=new Date(dateStr),day=d.getDay()||7;
+  d.setDate(d.getDate()-day+1);
+  return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+/* Costanti */
+const TYPE_LABELS={z2:'Zona 2',threshold:'Threshold',interval:'Intervalli',long:'Long run',vo2max:'VO2max'};
+const TYPE_CLASS={z2:'badge-z2',threshold:'badge-threshold',interval:'badge-interval',long:'badge-long',vo2max:'badge-interval'};
+const TYPE_COLORS={z2:'#22c97a',threshold:'#f5c518',interval:'#ff4d4d',long:'#4a9eff',vo2max:'#c084fc'};
+const ZONE_COLORS=['#4a9eff','#22c97a','#f5c518','#ff8c42','#ff4d4d'];
+const ZONE_NAMES=['Z1 Recupero','Z2 Aerobico','Z3 Soglia aerobica','Z4 Soglia anaerobica','Z5 VO2max'];
+const ZONE_PCT=[[0.50,0.60],[0.60,0.70],[0.70,0.80],[0.80,0.90],[0.90,1.00]];
+
+/* Zone Karvonen */
+function getProfile(){
+  return{
+    hrmax:parseInt(localStorage.getItem('rd_hrmax'))||0,
+    hrrest:parseInt(localStorage.getItem('rd_hrrest'))||0,
+    weight:parseFloat(localStorage.getItem('rd_weight'))||0,
+    age:parseInt(localStorage.getItem('rd_age'))||0
   };
+}
+function calcZones(hrmax,hrrest){
+  if(!hrmax||!hrrest)return null;
+  const hrr=hrmax-hrrest;
+  return ZONE_PCT.map(([lo,hi])=>({lo:Math.round(hrrest+hrr*lo),hi:Math.round(hrrest+hrr*hi)}));
+}
+function hrToZone(hr,zones){
+  if(!zones||!hr)return null;
+  for(let i=0;i<zones.length;i++){if(hr>=zones[i].lo&&hr<zones[i].hi)return i+1;}
+  if(hr>=zones[4].hi)return 5;
+  return 1;
+}
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-  const COLL = "sessions";
+/* State */
+let sessions=[],envValue='outdoor',historyFilter='all',progressType='all',progressPeriod='all';
+let chartPace,chartHR,chartSPM,chartVol;
 
-  function pad(n){return String(n).padStart(2,'0');}
-  function fmtDate(d){const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;}
-  function paceSecFromDistDur(dist,dur){return(!dist||!dur||dist===0)?null:(dur/dist)*60;}
-  function fmtPace(sec){if(!sec)return'—';const m=Math.floor(sec/60),s=Math.round(sec%60);return`${m}:${pad(s)}`;}
-  function getWeekMonday(dateStr){const d=new Date(dateStr),day=d.getDay()||7;d.setDate(d.getDate()-day+1);return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
-  function today(){const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+/* Sync */
+function setSyncStatus(state,label){
+  document.getElementById('sync-dot').className='sync-dot '+state;
+  document.getElementById('sync-label').textContent=label;
+}
 
-  const TYPE_LABELS={z2:'Zona 2',threshold:'Threshold',interval:'Intervalli',long:'Long run'};
-  const TYPE_CLASS={z2:'badge-z2',threshold:'badge-threshold',interval:'badge-interval',long:'badge-long'};
+/* Load */
+async function loadSessions(){
+  setSyncStatus('loading','Sincronizzazione...');
+  try{
+    const q=query(collection(db,COLL),orderBy('date','asc'));
+    const snap=await getDocs(q);
+    sessions=snap.docs.map(d=>({...d.data(),_docId:d.id}));
+    setSyncStatus('ok','Sincronizzato');
+  }catch(e){setSyncStatus('err','Errore connessione');console.error(e);}
+}
 
-  let sessions=[], envValue='outdoor';
-  let chartPace,chartHR,chartSPM,chartVol;
-
-  function setSyncStatus(state,label){
-    document.getElementById('sync-dot').className='sync-dot '+state;
-    document.getElementById('sync-label').textContent=label;
-  }
-
-  async function loadSessions(){
-    setSyncStatus('loading','Sincronizzazione...');
-    try{
-      const q=query(collection(db,COLL),orderBy('date','asc'));
-      const snap=await getDocs(q);
-      sessions=snap.docs.map(d=>({...d.data(),_docId:d.id}));
-      setSyncStatus('ok','Sincronizzato');
-    }catch(e){setSyncStatus('err','Errore connessione');console.error(e);}
-  }
-
-  window.saveSession=async function(){
-    const date=document.getElementById('f-date').value;
-    const dist=parseFloat(document.getElementById('f-dist').value);
-    const dur=parseFloat(document.getElementById('f-dur').value);
-    if(!date||isNaN(dist)||isNaN(dur)||dist<=0||dur<=0){alert('Inserisci almeno data, distanza e durata.');return;}
-    const btn=document.getElementById('save-btn');
-    btn.disabled=true; setSyncStatus('loading','Salvataggio...');
-    const session={
-      id:Date.now(),date,type:document.getElementById('f-type').value,env:envValue,
-      cond:document.getElementById('f-cond').value||null,dist,dur,
-      hr:parseInt(document.getElementById('f-hr').value)||null,
-      hrmax:parseInt(document.getElementById('f-hrmax').value)||null,
-      spm:parseInt(document.getElementById('f-spm').value)||null,
-      rpe:parseInt(document.getElementById('f-rpe').value)||null,
-      notes:document.getElementById('f-notes').value.trim()||null,
-      pace:paceSecFromDistDur(dist,dur)
-    };
-    try{
-      const docRef=await addDoc(collection(db,COLL),session);
-      session._docId=docRef.id;
-      sessions.push(session);
-      sessions.sort((a,b)=>a.date.localeCompare(b.date));
-      setSyncStatus('ok','Salvato ✓');
-      ['f-dist','f-dur','f-hr','f-hrmax','f-spm','f-rpe','f-notes'].forEach(id=>document.getElementById(id).value='');
-      document.getElementById('f-cond').value='';
-      document.getElementById('f-type').value='z2';
-      document.getElementById('f-date').value=today();
-      setEnvDirect('outdoor');
-      const msg=document.getElementById('save-msg');
-      msg.style.display='flex';
-      setTimeout(()=>msg.style.display='none',2500);
-    }catch(e){setSyncStatus('err','Errore salvataggio');alert('Errore. Controlla la connessione.');console.error(e);}
-    btn.disabled=false;
+/* Save */
+window.saveSession=async function(){
+  const date=document.getElementById('f-date').value;
+  const dist=parseFloat(document.getElementById('f-dist').value);
+  const dur=parseFloat(document.getElementById('f-dur').value);
+  if(!date||isNaN(dist)||isNaN(dur)||dist<=0||dur<=0){alert('Inserisci almeno data, distanza e durata.');return;}
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true;
+  setSyncStatus('loading','Salvataggio...');
+  const hrVal=parseInt(document.getElementById('f-hr').value)||null;
+  const p=getProfile();
+  const zones=calcZones(p.hrmax,p.hrrest);
+  const zone=hrVal?hrToZone(hrVal,zones):null;
+  const session={
+    id:Date.now(),date,
+    type:document.getElementById('f-type').value,
+    env:envValue,
+    cond:document.getElementById('f-cond').value||null,
+    dist,dur,
+    hr:hrVal,
+    hrmax:parseInt(document.getElementById('f-hrmax').value)||null,
+    spm:parseInt(document.getElementById('f-spm').value)||null,
+    rpe:parseInt(document.getElementById('f-rpe').value)||null,
+    notes:document.getElementById('f-notes').value.trim()||null,
+    pace:paceSecFromDistDur(dist,dur),
+    zone
   };
+  try{
+    const docRef=await addDoc(collection(db,COLL),session);
+    session._docId=docRef.id;
+    sessions.push(session);
+    sessions.sort((a,b)=>a.date.localeCompare(b.date));
+    setSyncStatus('ok','Salvato');
+    ['f-dist','f-dur','f-hr','f-hrmax','f-spm','f-rpe','f-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-cond').value='';
+    document.getElementById('f-type').value='z2';
+    document.getElementById('f-date').value=today();
+    setEnvDirect('outdoor');
+    document.getElementById('hr-zone-hint').textContent='--';
+    const msg=document.getElementById('save-msg');
+    msg.style.display='flex';
+    setTimeout(()=>msg.style.display='none',2500);
+  }catch(e){setSyncStatus('err','Errore salvataggio');alert('Errore. Controlla la connessione.');console.error(e);}
+  btn.disabled=false;
+};
 
-  window.deleteSession=async function(docId){
-    if(!confirm('Eliminare questa sessione?'))return;
-    setSyncStatus('loading','Eliminazione...');
-    try{
-      await deleteDoc(doc(db,COLL,docId));
-      sessions=sessions.filter(s=>s._docId!==docId);
-      setSyncStatus('ok','Sincronizzato');
-      renderHistory();
-    }catch(e){setSyncStatus('err','Errore');console.error(e);}
-  };
+/* Delete */
+window.deleteSession=async function(docId){
+  if(!confirm('Eliminare questa sessione?'))return;
+  setSyncStatus('loading','Eliminazione...');
+  try{
+    await deleteDoc(doc(db,COLL,docId));
+    sessions=sessions.filter(s=>s._docId!==docId);
+    setSyncStatus('ok','Sincronizzato');
+    renderHistory();
+  }catch(e){setSyncStatus('err','Errore');console.error(e);}
+};
 
-  window.setEnv=function(val,btn){
-    envValue=val;
-    document.querySelectorAll('#env-toggle button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  };
-  function setEnvDirect(val){
-    envValue=val;
-    document.querySelectorAll('#env-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
-  }
+/* Env */
+window.setEnv=function(val,btn){
+  envValue=val;
+  document.querySelectorAll('#env-toggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+};
+function setEnvDirect(val){
+  envValue=val;
+  document.querySelectorAll('#env-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+}
 
-  window.switchTab=function(name,btn){
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
-    document.getElementById('tab-'+name).classList.add('active');
-    if(btn)btn.classList.add('active');
-    if(name==='history')renderHistory();
-    if(name==='progress')renderProgress();
-  };
+/* Zone hint nel form */
+window.updateZoneHint=function(hrStr){
+  const hr=parseInt(hrStr);
+  const el=document.getElementById('hr-zone-hint');
+  const p=getProfile();
+  const zones=calcZones(p.hrmax,p.hrrest);
+  if(!zones||!hr){el.textContent='--';el.style.color='';return;}
+  const z=hrToZone(hr,zones);
+  el.textContent=ZONE_NAMES[z-1]||'--';
+  el.style.color=ZONE_COLORS[z-1]||'';
+};
 
-  function renderHistory(){
-    const el=document.getElementById('history-list');
-    if(!sessions.length){el.innerHTML='<div class="empty-state"><p>Nessuna sessione salvata.</p></div>';return;}
-    el.innerHTML=[...sessions].reverse().map(s=>{
-      const pace=s.pace?fmtPace(s.pace):null;
-      return`<div class="session-card">
-        <div class="card-header">
-          <div class="card-meta">
-            <span class="card-date">${fmtDate(s.date)}</span>
-            <span class="badge ${TYPE_CLASS[s.type]}">${TYPE_LABELS[s.type]}</span>
-            <span class="badge badge-env">${s.env==='indoor'?'indoor':'outdoor'}</span>
-            ${s.cond?`<span class="badge badge-env">${s.cond}</span>`:''}
-          </div>
-          <button class="btn btn-sm btn-danger" onclick="deleteSession('${s._docId}')">✕</button>
+/* Tab switch */
+window.switchTab=function(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='history')renderHistory();
+  if(name==='progress')renderProgress();
+  if(name==='profile')loadProfile();
+};
+
+/* Filtro storico */
+window.filterHistory=function(type,btn){
+  historyFilter=type;
+  document.querySelectorAll('#history-filter-bar .filter-chip').forEach(c=>c.classList.remove('active-chip'));
+  btn.classList.add('active-chip');
+  renderHistory();
+};
+
+/* Render history */
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  const p=getProfile();
+  const zones=calcZones(p.hrmax,p.hrrest);
+  let filtered=[...sessions].reverse();
+  if(historyFilter!=='all')filtered=filtered.filter(s=>s.type===historyFilter);
+  if(!filtered.length){el.innerHTML='<div class="empty-state"><p>Nessuna sessione.</p></div>';return;}
+  el.innerHTML=filtered.map(s=>{
+    const pace=s.pace?fmtPace(s.pace):null;
+    const z=s.hr?hrToZone(s.hr,zones):null;
+    const zColor=z?ZONE_COLORS[z-1]:null;
+    const zBadge=z?`<span class="badge badge-zone" style="background:${zColor}18;color:${zColor};">Z${z}</span>`:'';
+    return`<div class="session-card">
+      <div class="card-header">
+        <div class="card-meta">
+          <span class="card-date">${fmtDate(s.date)}</span>
+          <span class="badge ${TYPE_CLASS[s.type]||'badge-z2'}">${TYPE_LABELS[s.type]||s.type}</span>
+          ${zBadge}
+          <span class="badge badge-env">${s.env==='indoor'?'indoor':'outdoor'}</span>
+          ${s.cond?`<span class="badge badge-env">${s.cond}</span>`:''}
         </div>
-        <div class="card-metrics">
-          <div class="metric"><span class="metric-val">${s.dist.toFixed(1)} km</span><span class="metric-lbl">distanza</span></div>
-          <div class="metric"><span class="metric-val">${Math.round(s.dur)} min</span><span class="metric-lbl">durata</span></div>
-          ${pace?`<div class="metric"><span class="metric-val">${pace}</span><span class="metric-lbl">passo</span></div>`:''}
-          ${s.hr?`<div class="metric"><span class="metric-val">${s.hr} bpm</span><span class="metric-lbl">FC media</span></div>`:''}
-          ${s.hrmax?`<div class="metric"><span class="metric-val">${s.hrmax} bpm</span><span class="metric-lbl">FC max</span></div>`:''}
-          ${s.spm?`<div class="metric"><span class="metric-val">${s.spm} spm</span><span class="metric-lbl">cadenza</span></div>`:''}
-          ${s.rpe?`<div class="metric"><span class="metric-val">RPE ${s.rpe}</span><span class="metric-lbl">sforzo</span></div>`:''}
-        </div>
-        ${s.notes?`<div class="card-notes">${s.notes}</div>`:''}
-      </div>`;
-    }).join('');
+        <button class="btn btn-sm btn-danger" onclick="deleteSession('${s._docId}')">&#x2715;</button>
+      </div>
+      <div class="card-metrics">
+        <div class="metric"><span class="metric-val">${s.dist.toFixed(1)} km</span><span class="metric-lbl">distanza</span></div>
+        <div class="metric"><span class="metric-val">${Math.round(s.dur)} min</span><span class="metric-lbl">durata</span></div>
+        ${pace?`<div class="metric"><span class="metric-val">${pace}</span><span class="metric-lbl">passo</span></div>`:''}
+        ${s.hr?`<div class="metric"><span class="metric-val">${s.hr} bpm</span><span class="metric-lbl">FC media</span></div>`:''}
+        ${s.hrmax?`<div class="metric"><span class="metric-val">${s.hrmax} bpm</span><span class="metric-lbl">FC max</span></div>`:''}
+        ${s.spm?`<div class="metric"><span class="metric-val">${s.spm} spm</span><span class="metric-lbl">cadenza</span></div>`:''}
+        ${s.rpe?`<div class="metric"><span class="metric-val">RPE ${s.rpe}</span><span class="metric-lbl">sforzo</span></div>`:''}
+      </div>
+      ${s.notes?`<div class="card-notes">${s.notes}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* Selettori progress */
+window.setPeriod=function(period,btn){
+  progressPeriod=period;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProgress();
+};
+window.setProgressType=function(type,btn){
+  progressType=type;
+  document.querySelectorAll('.type-selector .filter-chip').forEach(b=>b.classList.remove('active-chip'));
+  btn.classList.add('active-chip');
+  renderProgress();
+};
+
+function filterByPeriod(arr){
+  if(progressPeriod==='all')return arr;
+  const now=new Date(),from=new Date(now);
+  if(progressPeriod==='week')from.setDate(now.getDate()-7);
+  if(progressPeriod==='month')from.setMonth(now.getMonth()-1);
+  if(progressPeriod==='6m')from.setMonth(now.getMonth()-6);
+  if(progressPeriod==='year')from.setFullYear(now.getFullYear()-1);
+  const fromStr=from.toISOString().slice(0,10);
+  return arr.filter(s=>s.date>=fromStr);
+}
+
+/* Render progress */
+function renderProgress(){
+  const statsRow=document.getElementById('stats-row');
+  let sorted=[...sessions].sort((a,b)=>a.date.localeCompare(b.date));
+  sorted=filterByPeriod(sorted);
+  if(progressType!=='all')sorted=sorted.filter(s=>s.type===progressType);
+  if(sorted.length<1){
+    statsRow.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-hint);font-size:12px;font-family:var(--font-mono);">Nessuna sessione nel periodo.</div>';
+    document.getElementById('zone-bars').innerHTML='';
+    destroyCharts();return;
   }
+  const totalKm=sorted.reduce((a,s)=>a+s.dist,0);
+  const totalMin=sorted.reduce((a,s)=>a+s.dur,0);
+  const withPace=sorted.filter(s=>s.pace);
+  const withHR=sorted.filter(s=>s.hr);
+  const withSPM=sorted.filter(s=>s.spm);
+  let statsHtml=`
+    <div class="stat-box"><div class="val">${totalKm.toFixed(1)}</div><div class="lbl">km totali</div></div>
+    <div class="stat-box"><div class="val">${sorted.length}</div><div class="lbl">sessioni</div></div>
+    <div class="stat-box"><div class="val">${Math.floor(totalMin/60)}h ${Math.round(totalMin%60)}m</div><div class="lbl">tempo totale</div></div>`;
+  if(withPace.length>=2){
+    const n=Math.min(3,Math.floor(withPace.length/2));
+    const firstAvg=withPace.slice(0,n).reduce((a,s)=>a+s.pace,0)/n;
+    const lastAvg=withPace.slice(-n).reduce((a,s)=>a+s.pace,0)/n;
+    const diff=firstAvg-lastAvg;
+    const absSec=Math.round(Math.abs(diff));
+    statsHtml+=`<div class="stat-box"><div class="val">${fmtPace(lastAvg)}</div><div class="lbl">passo recente</div><div class="trend ${diff>0?'trend-good':'trend-bad'}">${diff>0?'&#8595; -':'&#8593; +'}${Math.floor(absSec/60)}:${pad(absSec%60)} vs inizio</div></div>`;
+  }
+  statsRow.innerHTML=statsHtml;
+  renderZoneBars(sorted);
 
-  function renderProgress(){
-    const statsRow=document.getElementById('stats-row');
-    if(sessions.length<2){statsRow.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);font-size:14px;">Inserisci almeno 2 sessioni.</div>';return;}
-    const sorted=[...sessions].sort((a,b)=>a.date.localeCompare(b.date));
-    const withPace=sorted.filter(s=>s.pace);
-    const withHR=sorted.filter(s=>s.hr);
-    const withSPM=sorted.filter(s=>s.spm);
-    const totalKm=sorted.reduce((a,s)=>a+s.dist,0);
-    let statsHtml=`<div class="stat-box"><div class="val">${totalKm.toFixed(1)}</div><div class="lbl">km totali</div></div><div class="stat-box"><div class="val">${sorted.length}</div><div class="lbl">sessioni</div></div>`;
-    if(withPace.length>=2){
-      const n=Math.min(3,Math.floor(withPace.length/2));
-      const firstAvg=withPace.slice(0,n).reduce((a,s)=>a+s.pace,0)/n;
-      const lastAvg=withPace.slice(-n).reduce((a,s)=>a+s.pace,0)/n;
-      const diff=firstAvg-lastAvg;
-      const absSec=Math.round(Math.abs(diff));
-      statsHtml+=`<div class="stat-box"><div class="val">${fmtPace(lastAvg)}</div><div class="lbl">passo recente</div><div class="trend ${diff>0?'trend-good':'trend-bad'}">${diff>0?'↓ −':'↑ +'}${Math.floor(absSec/60)}:${pad(absSec%60)} vs inizio</div></div>`;
-    }else{statsHtml+=`<div class="stat-box"><div class="val">—</div><div class="lbl">trend passo</div></div>`;}
-    statsRow.innerHTML=statsHtml;
+  const gc='rgba(255,255,255,0.04)';
+  const tc='#52525f';
+  const typeColor=progressType!=='all'?TYPE_COLORS[progressType]:'#00d4ff';
+  const bOpts=(rev=false)=>({
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{
+      backgroundColor:'#18181c',borderColor:'#2a2a32',borderWidth:1,
+      titleColor:'#8a8a9a',bodyColor:'#f0eff5',
+      titleFont:{family:'SF Mono,Courier New',size:10},
+      bodyFont:{family:'SF Mono,Courier New',size:12},
+      padding:10,cornerRadius:8
+    }},
+    scales:{
+      x:{ticks:{color:tc,font:{family:'SF Mono,Courier New',size:10},maxRotation:35},grid:{color:gc}},
+      y:{reverse:rev,ticks:{color:tc,font:{family:'SF Mono,Courier New',size:10}},grid:{color:gc}}
+    }
+  });
+  destroyCharts();
 
-    const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const col={pace:'#4a8c5c',hr:'#c0522a',spm:'#2a6ea6',vol:'#7a5a2a'};
-    const gc=isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)';
-    const tc=isDark?'#6b6660':'#9e9890';
-    const bOpts=(rev=false)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{titleFont:{family:'Courier New'},bodyFont:{family:'Courier New'},padding:8,cornerRadius:6}},scales:{x:{ticks:{color:tc,font:{family:'Courier New',size:10},maxRotation:35},grid:{color:gc}},y:{reverse:rev,ticks:{color:tc,font:{family:'Courier New',size:10}},grid:{color:gc}}}});
-    if(chartPace)chartPace.destroy();if(chartHR)chartHR.destroy();if(chartSPM)chartSPM.destroy();if(chartVol)chartVol.destroy();
-    if(withPace.length>=2){chartPace=new Chart(document.getElementById('chart-pace'),{type:'line',data:{labels:withPace.map(s=>fmtDate(s.date)),datasets:[{data:withPace.map(s=>parseFloat((s.pace/60).toFixed(3))),borderColor:col.pace,backgroundColor:col.pace+'20',tension:0.35,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{...bOpts(true),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,callbacks:{label:ctx=>` ${fmtPace(ctx.raw*60)} /km`}}},scales:{...bOpts(true).scales,y:{...bOpts(true).scales.y,ticks:{...bOpts(true).scales.y.ticks,callback:v=>fmtPace(v*60)}}}}});}
-    if(withHR.length>=2){chartHR=new Chart(document.getElementById('chart-hr'),{type:'line',data:{labels:withHR.map(s=>fmtDate(s.date)),datasets:[{data:withHR.map(s=>s.hr),borderColor:col.hr,backgroundColor:col.hr+'20',tension:0.35,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{...bOpts(),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,callbacks:{label:ctx=>` ${ctx.raw} bpm`}}}}});}
-    if(withSPM.length>=2){chartSPM=new Chart(document.getElementById('chart-spm'),{type:'line',data:{labels:withSPM.map(s=>fmtDate(s.date)),datasets:[{data:withSPM.map(s=>s.spm),borderColor:col.spm,backgroundColor:col.spm+'20',tension:0.35,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{...bOpts(),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,callbacks:{label:ctx=>` ${ctx.raw} spm`}}}}});}
-    const weekMap={};sorted.forEach(s=>{const w=getWeekMonday(s.date);weekMap[w]=(weekMap[w]||0)+s.dist;});
+  if(withPace.length>=2){
+    chartPace=new Chart(document.getElementById('chart-pace'),{
+      type:'line',
+      data:{labels:withPace.map(s=>fmtDate(s.date)),datasets:[{
+        data:withPace.map(s=>parseFloat((s.pace/60).toFixed(3))),
+        borderColor:typeColor,backgroundColor:typeColor+'18',
+        tension:0.35,fill:true,pointRadius:3,pointHoverRadius:5
+      }]},
+      options:{...bOpts(true),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,
+        callbacks:{label:ctx=>` ${fmtPace(ctx.raw*60)} /km`}
+      }},scales:{...bOpts(true).scales,y:{...bOpts(true).scales.y,
+        ticks:{...bOpts(true).scales.y.ticks,callback:v=>fmtPace(v*60)}
+      }}}
+    });
+  }
+  if(withHR.length>=2){
+    chartHR=new Chart(document.getElementById('chart-hr'),{
+      type:'line',
+      data:{labels:withHR.map(s=>fmtDate(s.date)),datasets:[{
+        data:withHR.map(s=>s.hr),
+        borderColor:'#ff8c42',backgroundColor:'#ff8c4218',
+        tension:0.35,fill:true,pointRadius:3,pointHoverRadius:5
+      }]},
+      options:{...bOpts(),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,
+        callbacks:{label:ctx=>` ${ctx.raw} bpm`}
+      }}}
+    });
+  }
+  if(withSPM.length>=2){
+    chartSPM=new Chart(document.getElementById('chart-spm'),{
+      type:'line',
+      data:{labels:withSPM.map(s=>fmtDate(s.date)),datasets:[{
+        data:withSPM.map(s=>s.spm),
+        borderColor:'#4a9eff',backgroundColor:'#4a9eff18',
+        tension:0.35,fill:true,pointRadius:3,pointHoverRadius:5
+      }]},
+      options:{...bOpts(),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,
+        callbacks:{label:ctx=>` ${ctx.raw} spm`}
+      }}}
+    });
+  }
+  const useWeekly=progressPeriod==='all'||progressPeriod==='year'||progressPeriod==='6m';
+  if(useWeekly){
+    const weekMap={};
+    sorted.forEach(s=>{const w=getWeekMonday(s.date);weekMap[w]=(weekMap[w]||0)+s.dist;});
     const weeks=Object.keys(weekMap).sort();
-    if(weeks.length>=1){chartVol=new Chart(document.getElementById('chart-vol'),{type:'bar',data:{labels:weeks.map(w=>{const[,m,d]=w.split('-');return`${d}/${m}`;}),datasets:[{data:weeks.map(w=>parseFloat(weekMap[w].toFixed(1))),backgroundColor:col.vol+'BB',borderColor:col.vol,borderWidth:1,borderRadius:4}]},options:{...bOpts(),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,callbacks:{label:ctx=>` ${ctx.raw} km`}}}}});}
+    if(weeks.length>=1){
+      chartVol=new Chart(document.getElementById('chart-vol'),{
+        type:'bar',
+        data:{labels:weeks.map(w=>{const[,m,d]=w.split('-');return`${d}/${m}`;}),datasets:[{
+          data:weeks.map(w=>parseFloat(weekMap[w].toFixed(1))),
+          backgroundColor:typeColor+'88',borderColor:typeColor,borderWidth:1,borderRadius:4
+        }]},
+        options:{...bOpts(),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,
+          callbacks:{label:ctx=>` ${ctx.raw} km`}
+        }}}
+      });
+    }
+  } else if(sorted.length>=1){
+    chartVol=new Chart(document.getElementById('chart-vol'),{
+      type:'bar',
+      data:{labels:sorted.map(s=>fmtDate(s.date)),datasets:[{
+        data:sorted.map(s=>parseFloat(s.dist.toFixed(1))),
+        backgroundColor:typeColor+'88',borderColor:typeColor,borderWidth:1,borderRadius:4
+      }]},
+      options:{...bOpts(),plugins:{...bOpts().plugins,tooltip:{...bOpts().plugins.tooltip,
+        callbacks:{label:ctx=>` ${ctx.raw} km`}
+      }}}
+    });
   }
+}
 
-  window.exportJSON=function(){
-    if(!sessions.length){alert('Nessuna sessione.');return;}
-    const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),sessions:sessions.map(({_docId,...s})=>s)},null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`running-diary-${new Date().toISOString().slice(0,10)}.json`;a.click();
-  };
-  window.exportCSV=function(){
-    if(!sessions.length){alert('Nessuna sessione.');return;}
-    const h=['date','type','env','cond','dist','dur','hr','hrmax','spm','rpe','pace','notes'];
-    const blob=new Blob([[h.join(','),...sessions.map(s=>h.map(k=>`"${String(s[k]??'').replace(/"/g,'""')}"`).join(','))].join('\n')],{type:'text/csv'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`running-diary-${new Date().toISOString().slice(0,10)}.csv`;a.click();
-  };
-  window.importJSON=async function(event){
-    const file=event.target.files[0];if(!file)return;
-    const reader=new FileReader();
-    reader.onload=async e=>{
-      try{
-        const data=JSON.parse(e.target.result);
-        const imported=data.sessions||(Array.isArray(data)?data:null);
-        if(!imported)throw new Error('Formato non riconosciuto');
-        const existingIds=new Set(sessions.map(s=>s.id));
-        let added=0,skipped=0;
-        setSyncStatus('loading','Importazione...');
-        for(const s of imported){
-          if(!s.id||!s.date||!s.dist){skipped++;continue;}
-          if(existingIds.has(s.id)){skipped++;continue;}
-          if(!s.pace&&s.dist&&s.dur)s.pace=paceSecFromDistDur(s.dist,s.dur);
-          const{_docId,...clean}=s;
-          const docRef=await addDoc(collection(db,COLL),clean);
-          sessions.push({...clean,_docId:docRef.id});added++;
-        }
-        sessions.sort((a,b)=>a.date.localeCompare(b.date));
-        setSyncStatus('ok','Sincronizzato');
-        const el=document.getElementById('import-msg');
-        el.textContent=`✓ Importate ${added} sessioni.${skipped>0?` ${skipped} saltate.`:''}`;
-        el.className='msg-box msg-success';el.style.display='block';
-        setTimeout(()=>el.style.display='none',5000);
-      }catch(err){
-        setSyncStatus('err','Errore');
-        const el=document.getElementById('import-msg');
-        el.textContent=`✕ ${err.message}`;el.className='msg-box msg-error';el.style.display='block';
+function destroyCharts(){
+  if(chartPace){chartPace.destroy();chartPace=null;}
+  if(chartHR){chartHR.destroy();chartHR=null;}
+  if(chartSPM){chartSPM.destroy();chartSPM=null;}
+  if(chartVol){chartVol.destroy();chartVol=null;}
+}
+
+/* Zone bars */
+function renderZoneBars(sorted){
+  const p=getProfile();
+  const zones=calcZones(p.hrmax,p.hrrest);
+  const el=document.getElementById('zone-bars');
+  if(!zones){
+    el.innerHTML='<p style="font-size:13px;color:var(--text-hint);">Imposta FC max e riposo nel Profilo per vedere le zone.</p>';
+    return;
+  }
+  const withHR=sorted.filter(s=>s.hr);
+  if(!withHR.length){
+    el.innerHTML='<p style="font-size:13px;color:var(--text-hint);">Nessuna sessione con FC nel periodo.</p>';
+    return;
+  }
+  const zoneKm=[0,0,0,0,0];
+  withHR.forEach(s=>{const z=hrToZone(s.hr,zones);if(z>=1&&z<=5)zoneKm[z-1]+=s.dist;});
+  const totalKm=zoneKm.reduce((a,b)=>a+b,0)||1;
+  el.innerHTML=zoneKm.map((km,i)=>{
+    const pct=totalKm>0?Math.round(km/totalKm*100):0;
+    return`<div class="zone-bar-row">
+      <span class="zone-bar-label" style="color:${ZONE_COLORS[i]}">Z${i+1}</span>
+      <div class="zone-bar-track"><div class="zone-bar-fill" style="width:${pct}%;background:${ZONE_COLORS[i]};"></div></div>
+      <span class="zone-bar-pct">${pct}%</span>
+      <span class="zone-bar-km">${km.toFixed(1)} km</span>
+    </div>`;
+  }).join('');
+}
+
+/* Profilo */
+window.saveProfile=function(){
+  localStorage.setItem('rd_hrmax',document.getElementById('p-hrmax').value);
+  localStorage.setItem('rd_hrrest',document.getElementById('p-hrrest').value);
+  localStorage.setItem('rd_weight',document.getElementById('p-weight').value);
+  localStorage.setItem('rd_age',document.getElementById('p-age').value);
+};
+function loadProfile(){
+  const p=getProfile();
+  if(p.hrmax)document.getElementById('p-hrmax').value=p.hrmax;
+  if(p.hrrest)document.getElementById('p-hrrest').value=p.hrrest;
+  if(p.weight)document.getElementById('p-weight').value=p.weight;
+  if(p.age)document.getElementById('p-age').value=p.age;
+  renderZonesTable();
+}
+window.renderZonesTable=function(){
+  const hrmax=parseInt(document.getElementById('p-hrmax').value)||0;
+  const hrrest=parseInt(document.getElementById('p-hrrest').value)||0;
+  const wrap=document.getElementById('zones-table-wrap');
+  const zones=calcZones(hrmax,hrrest);
+  if(!zones){wrap.innerHTML='<p style="font-size:13px;color:var(--text-hint);">Inserisci FC max e FC a riposo per calcolare le zone.</p>';return;}
+  wrap.innerHTML=`<table class="zones-table">
+    <thead><tr><th>Zona</th><th>Nome</th><th>FC (bpm)</th><th>% FCmax</th></tr></thead>
+    <tbody>${zones.map((z,i)=>`<tr>
+      <td><span class="zone-dot" style="background:${ZONE_COLORS[i]}"></span>Z${i+1}</td>
+      <td>${ZONE_NAMES[i]}</td>
+      <td>${z.lo} - ${i<4?z.hi:hrmax}</td>
+      <td>${Math.round(z.lo/hrmax*100)} - ${Math.round((i<4?z.hi:hrmax)/hrmax*100)}%</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+};
+
+/* Export/Import */
+window.exportJSON=function(){
+  if(!sessions.length){alert('Nessuna sessione.');return;}
+  const blob=new Blob([JSON.stringify({version:2,exportedAt:new Date().toISOString(),sessions:sessions.map(({_docId,...s})=>s)},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`running-diary-${new Date().toISOString().slice(0,10)}.json`;a.click();
+};
+window.exportCSV=function(){
+  if(!sessions.length){alert('Nessuna sessione.');return;}
+  const h=['date','type','env','cond','dist','dur','hr','hrmax','spm','rpe','pace','zone','notes'];
+  const blob=new Blob([[h.join(','),...sessions.map(s=>h.map(k=>`"${String(s[k]??'').replace(/"/g,'""')}"`).join(','))].join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`running-diary-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+};
+window.importJSON=async function(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      const imported=data.sessions||(Array.isArray(data)?data:null);
+      if(!imported)throw new Error('Formato non riconosciuto');
+      const existingIds=new Set(sessions.map(s=>s.id));
+      let added=0,skipped=0;
+      setSyncStatus('loading','Importazione...');
+      for(const s of imported){
+        if(!s.id||!s.date||!s.dist){skipped++;continue;}
+        if(existingIds.has(s.id)){skipped++;continue;}
+        if(!s.pace&&s.dist&&s.dur)s.pace=paceSecFromDistDur(s.dist,s.dur);
+        const{_docId,...clean}=s;
+        const docRef=await addDoc(collection(db,COLL),clean);
+        sessions.push({...clean,_docId:docRef.id});added++;
       }
-      event.target.value='';
-    };
-    reader.readAsText(file);
+      sessions.sort((a,b)=>a.date.localeCompare(b.date));
+      setSyncStatus('ok','Sincronizzato');
+      const el=document.getElementById('import-msg');
+      el.textContent=`Importate ${added} sessioni.${skipped>0?` ${skipped} saltate.`:''}`;
+      el.className='msg-box msg-success';el.style.display='block';
+      setTimeout(()=>el.style.display='none',5000);
+    }catch(err){
+      setSyncStatus('err','Errore');
+      const el=document.getElementById('import-msg');
+      el.textContent=`Errore: ${err.message}`;el.className='msg-box msg-error';el.style.display='block';
+    }
+    event.target.value='';
   };
+  reader.readAsText(file);
+};
 
-  document.getElementById('f-date').value=today();
-  loadSessions().then(renderHistory);
+/* Init */
+document.getElementById('f-date').value=today();
+loadSessions().then(renderHistory);
 </script>
 </body>
 </html>
