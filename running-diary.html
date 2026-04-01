@@ -458,7 +458,7 @@ function filterByPeriod(arr){
   return arr.filter(s=>s.date>=from.toISOString().slice(0,10));
 }
 
-function renderProgress(){
+async function renderProgress(){
   const statsRow=document.getElementById('stats-row');
   let sorted=[...sessions].sort((a,b)=>a.date.localeCompare(b.date));sorted=filterByPeriod(sorted);
   if(progressType!=='all')sorted=sorted.filter(s=>s.type===progressType);
