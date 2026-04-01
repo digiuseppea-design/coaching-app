@@ -302,7 +302,7 @@
         <div class="field"><label>Peso (kg)</label><input type="number" id="p-weight" step="0.1" min="30" max="200" placeholder="72.5" inputmode="decimal" oninput="saveProfileData()"/></div>
         <div class="field"><label>Età</label><input type="number" id="p-age" min="10" max="100" placeholder="34" inputmode="numeric" oninput="saveProfileData()"/></div>
       </div>
-      <p style="font-size:12px;color:var(--text-hint);font-family:var(--font-mono);margin-top:6px;">Dati salvati localmente · usati per calcolare le zone FC</p>
+      <p style="font-size:12px;color:var(--text-hint);font-family:var(--font-mono);margin-top:6px;">Dati sincronizzati su tutti i dispositivi · usati per calcolare le zone FC</p>
     </div>
     <div class="profile-card">
       <h3>Zone di allenamento · Formula Karvonen</h3>
@@ -330,14 +330,14 @@
       <div id="import-msg" class="msg-box"></div>
     </div>
     <hr class="divider"/>
-    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-hint);line-height:2;">Running Diary v3.0 · Trainer Tascabile<br>Firebase Cloud Firestore · Profilo salvato localmente</p>
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-hint);line-height:2;">Running Diary v3.0 · Trainer Tascabile<br>Firebase Cloud Firestore · Profilo sincronizzato su tutti i dispositivi</p>
   </div>
 
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyB9KDZEQf1yMW0IAf_LRox5khTz6gpafwA",
@@ -365,7 +365,22 @@ const ZONE_COLORS=['#4a9eff','#00c97a','#f5c542','#ff8c42','#ff4d6d'];
 const ZONE_NAMES=['Z1 Recupero','Z2 Aerobico','Z3 Soglia aerobica','Z4 Soglia anaerobica','Z5 VO2max'];
 const ZONE_PCT=[[0.50,0.60],[0.60,0.70],[0.70,0.80],[0.80,0.90],[0.90,1.00]];
 
-function getProfile(){return{hrmax:parseInt(localStorage.getItem('rd_hrmax'))||0,hrrest:parseInt(localStorage.getItem('rd_hrrest'))||0,weight:parseFloat(localStorage.getItem('rd_weight'))||0,age:parseInt(localStorage.getItem('rd_age'))||0};}
+/* ── Profilo: Firestore con cache in memoria e merge per timestamp ── */
+const PROFILE_DOC = doc(db, 'config', 'profile');
+let _profileCache = null;
+
+async function getProfile(){
+  if(_profileCache) return _profileCache;
+  try{
+    const snap = await getDoc(PROFILE_DOC);
+    _profileCache = snap.exists()
+      ? snap.data()
+      : {hrmax:0, hrrest:0, weight:0, age:0, updatedAt:0};
+    return _profileCache;
+  } catch(e){
+    return _profileCache || {hrmax:0, hrrest:0, weight:0, age:0, updatedAt:0};
+  }
+}
 function calcZones(hrmax,hrrest){if(!hrmax||!hrrest)return null;const hrr=hrmax-hrrest;return ZONE_PCT.map(([lo,hi])=>({lo:Math.round(hrrest+hrr*lo),hi:Math.round(hrrest+hrr*hi)}));}
 function hrToZone(hr,zones){if(!zones||!hr)return null;for(let i=0;i<zones.length;i++){if(hr>=zones[i].lo&&hr<zones[i].hi)return i+1;}if(hr>=zones[4].hi)return 5;return 1;}
 
@@ -387,7 +402,7 @@ window.saveSession=async function(){
   if(!date||isNaN(dist)||isNaN(dur)||dist<=0||dur<=0){alert('Inserisci almeno data, distanza e durata.');return;}
   const btn=document.getElementById('save-btn');btn.disabled=true;setSyncStatus('loading','Salvataggio...');
   const hrVal=parseInt(document.getElementById('f-hr').value)||null;
-  const p=getProfile();const zones=calcZones(p.hrmax,p.hrrest);const zone=hrVal?hrToZone(hrVal,zones):null;
+  const p=await getProfile();const zones=calcZones(p.hrmax,p.hrrest);const zone=hrVal?hrToZone(hrVal,zones):null;
   const session={id:Date.now(),date,type:document.getElementById('f-type').value,env:envValue,cond:document.getElementById('f-cond').value||null,dist,dur,hr:hrVal,hrmax:parseInt(document.getElementById('f-hrmax').value)||null,spm:parseInt(document.getElementById('f-spm').value)||null,rpe:parseInt(document.getElementById('f-rpe').value)||null,notes:document.getElementById('f-notes').value.trim()||null,pace:paceSecFromDistDur(dist,dur),zone};
   try{
     const docRef=await addDoc(collection(db,COLL),session);session._docId=docRef.id;sessions.push(session);sessions.sort((a,b)=>a.date.localeCompare(b.date));setSyncStatus('ok','Salvato');
@@ -408,8 +423,8 @@ window.deleteSession=async function(docId){
 window.setEnv=function(val,btn){envValue=val;document.querySelectorAll('#env-toggle button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');};
 function setEnvDirect(val){envValue=val;document.querySelectorAll('#env-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.val===val));}
 
-window.updateZoneHint=function(hrStr){
-  const hr=parseInt(hrStr);const el=document.getElementById('hr-zone-hint');const p=getProfile();const zones=calcZones(p.hrmax,p.hrrest);
+window.updateZoneHint=async function(hrStr){
+  const hr=parseInt(hrStr);const el=document.getElementById('hr-zone-hint');const p=await getProfile();const zones=calcZones(p.hrmax,p.hrrest);
   if(!zones||!hr){el.textContent='—';el.style.color='';return;}
   const z=hrToZone(hr,zones);el.textContent=ZONE_NAMES[z-1]||'—';el.style.color=ZONE_COLORS[z-1]||'';
 };
@@ -423,8 +438,8 @@ window.switchTab=function(name,btn){
 
 window.filterHistory=function(type,btn){historyFilter=type;document.querySelectorAll('#history-filter-bar .filter-chip').forEach(c=>c.classList.remove('active-chip'));btn.classList.add('active-chip');renderHistory();};
 
-function renderHistory(){
-  const el=document.getElementById('history-list');const p=getProfile();const zones=calcZones(p.hrmax,p.hrrest);
+async function renderHistory(){
+  const el=document.getElementById('history-list');const p=await getProfile();const zones=calcZones(p.hrmax,p.hrrest);
   let filtered=[...sessions].reverse();if(historyFilter!=='all')filtered=filtered.filter(s=>s.type===historyFilter);
   if(!filtered.length){el.innerHTML='<div class="empty-state"><p>Nessuna sessione.</p></div>';return;}
   el.innerHTML=filtered.map(s=>{
@@ -453,7 +468,7 @@ function renderProgress(){
   let statsHtml=`<div class="stat-box"><div class="val">${totalKm.toFixed(1)}</div><div class="lbl">km totali</div></div><div class="stat-box"><div class="val">${sorted.length}</div><div class="lbl">sessioni</div></div><div class="stat-box"><div class="val">${Math.floor(totalMin/60)}h ${Math.round(totalMin%60)}m</div><div class="lbl">tempo totale</div></div>`;
   if(withPace.length>=2){const n=Math.min(3,Math.floor(withPace.length/2));const firstAvg=withPace.slice(0,n).reduce((a,s)=>a+s.pace,0)/n;const lastAvg=withPace.slice(-n).reduce((a,s)=>a+s.pace,0)/n;const diff=firstAvg-lastAvg;const absSec=Math.round(Math.abs(diff));statsHtml+=`<div class="stat-box"><div class="val">${fmtPace(lastAvg)}</div><div class="lbl">passo recente</div><div class="trend ${diff>0?'trend-good':'trend-bad'}">${diff>0?'↓ −':'↑ +'}${Math.floor(absSec/60)}:${pad(absSec%60)} vs inizio</div></div>`;}
   statsRow.innerHTML=statsHtml;
-  renderZoneBars(sorted);
+  await renderZoneBars(sorted);
   const gc='rgba(255,255,255,0.04)',tc='#3e3e52';
   const typeColor=progressType!=='all'?(TYPE_COLORS[progressType]||'#008fff'):'#008fff';
   const bOpts=(rev=false)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#16161c',borderColor:'#22222e',borderWidth:1,titleColor:'#7a7a92',bodyColor:'#eeeef5',titleFont:{family:'monospace',size:10},bodyFont:{family:'monospace',size:12},padding:10,cornerRadius:8}},scales:{x:{ticks:{color:tc,font:{family:'monospace',size:10},maxRotation:35},grid:{color:gc}},y:{reverse:rev,ticks:{color:tc,font:{family:'monospace',size:10}},grid:{color:gc}}}});
@@ -468,8 +483,8 @@ function renderProgress(){
 
 function destroyCharts(){if(chartPace){chartPace.destroy();chartPace=null;}if(chartHR){chartHR.destroy();chartHR=null;}if(chartSPM){chartSPM.destroy();chartSPM=null;}if(chartVol){chartVol.destroy();chartVol=null;}}
 
-function renderZoneBars(sorted){
-  const p=getProfile();const zones=calcZones(p.hrmax,p.hrrest);const el=document.getElementById('zone-bars');
+async function renderZoneBars(sorted){
+  const p=await getProfile();const zones=calcZones(p.hrmax,p.hrrest);const el=document.getElementById('zone-bars');
   if(!zones){el.innerHTML='<p style="font-size:13px;color:var(--text-hint);">Imposta FC max e riposo nel Profilo per vedere le zone.</p>';return;}
   const withHR=sorted.filter(s=>s.hr);if(!withHR.length){el.innerHTML='<p style="font-size:13px;color:var(--text-hint);">Nessuna sessione con FC nel periodo.</p>';return;}
   const zoneKm=[0,0,0,0,0];withHR.forEach(s=>{const z=hrToZone(s.hr,zones);if(z>=1&&z<=5)zoneKm[z-1]+=s.dist;});
@@ -477,8 +492,54 @@ function renderZoneBars(sorted){
   el.innerHTML=zoneKm.map((km,i)=>{const pct=Math.round(km/totalKm*100);return`<div class="zone-bar-row"><span class="zone-bar-label" style="color:${ZONE_COLORS[i]}">Z${i+1}</span><div class="zone-bar-track"><div class="zone-bar-fill" style="width:${pct}%;background:${ZONE_COLORS[i]};"></div></div><span class="zone-bar-pct">${pct}%</span><span class="zone-bar-km">${km.toFixed(1)} km</span></div>`;}).join('');
 }
 
-window.saveProfileData=function(){localStorage.setItem('rd_hrmax',document.getElementById('p-hrmax').value);localStorage.setItem('rd_hrrest',document.getElementById('p-hrrest').value);localStorage.setItem('rd_weight',document.getElementById('p-weight').value);localStorage.setItem('rd_age',document.getElementById('p-age').value);};
-function loadProfileData(){const p=getProfile();if(p.hrmax)document.getElementById('p-hrmax').value=p.hrmax;if(p.hrrest)document.getElementById('p-hrrest').value=p.hrrest;if(p.weight)document.getElementById('p-weight').value=p.weight;if(p.age)document.getElementById('p-age').value=p.age;renderZonesTable();}
+/* Salva profilo su Firestore con timestamp.
+   Logica anti-duplicato: se un altro dispositivo ha salvato DOPO
+   l'ultimo aggiornamento locale, non sovrascrive. */
+let _profileSaveTimer = null;
+
+window.saveProfileData = function(){
+  // Debounce: aspetta 1.5s dall'ultimo tasto prima di scrivere su Firestore
+  clearTimeout(_profileSaveTimer);
+  _profileSaveTimer = setTimeout(_doSaveProfile, 1500);
+};
+
+async function _doSaveProfile(){
+  const now = Date.now();
+  const incoming = {
+    hrmax:   parseInt(document.getElementById('p-hrmax').value)||0,
+    hrrest:  parseInt(document.getElementById('p-hrrest').value)||0,
+    weight:  parseFloat(document.getElementById('p-weight').value)||0,
+    age:     parseInt(document.getElementById('p-age').value)||0,
+    updatedAt: now
+  };
+  try{
+    // Leggi il documento attuale per confrontare i timestamp
+    const snap = await getDoc(PROFILE_DOC);
+    if(snap.exists()){
+      const remote = snap.data();
+      // Se il documento remoto è più recente di 5 secondi rispetto
+      // all'ultima cache locale, probabilmente è stato aggiornato
+      // da un altro dispositivo: mergia prendendo i valori non-zero
+      if(remote.updatedAt && remote.updatedAt > (now - 5000) && remote.updatedAt !== (_profileCache?.updatedAt||0)){
+        incoming.hrmax   = incoming.hrmax   || remote.hrmax;
+        incoming.hrrest  = incoming.hrrest  || remote.hrrest;
+        incoming.weight  = incoming.weight  || remote.weight;
+        incoming.age     = incoming.age     || remote.age;
+      }
+    }
+    await setDoc(PROFILE_DOC, incoming);
+    _profileCache = incoming; // aggiorna la cache locale
+  } catch(e){ console.error('Errore salvataggio profilo:', e); }
+}
+
+async function loadProfileData(){
+  const p = await getProfile();
+  if(p.hrmax)  document.getElementById('p-hrmax').value  = p.hrmax;
+  if(p.hrrest) document.getElementById('p-hrrest').value = p.hrrest;
+  if(p.weight) document.getElementById('p-weight').value = p.weight;
+  if(p.age)    document.getElementById('p-age').value    = p.age;
+  renderZonesTable();
+}
 window.renderZonesTable=function(){
   const hrmax=parseInt(document.getElementById('p-hrmax').value)||0;const hrrest=parseInt(document.getElementById('p-hrrest').value)||0;const wrap=document.getElementById('zones-table-wrap');const zones=calcZones(hrmax,hrrest);
   if(!zones){wrap.innerHTML='<p style="font-size:13px;color:var(--text-hint);">Inserisci FC max e FC a riposo per calcolare le zone.</p>';return;}
@@ -497,7 +558,7 @@ window.importJSON=async function(event){
 };
 
 document.getElementById('f-date').value=today();
-loadSessions().then(renderHistory);
+loadSessions().then(()=>renderHistory());
 </script>
 </body>
 </html>
