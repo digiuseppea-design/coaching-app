@@ -226,15 +226,15 @@
   </header>
 
   <nav class="tabs">
-    <button class="active" onclick="switchTab('log',this)">Log</button>
+    <button class="active" onclick="switchTab('progress',this)">Progressi</button>
+    <button onclick="switchTab('log',this)">Log</button>
     <button onclick="switchTab('history',this)">Storico</button>
-    <button onclick="switchTab('progress',this)">Progressi</button>
     <button onclick="switchTab('profile',this)">Profilo</button>
     <button onclick="switchTab('data',this)">Dati</button>
   </nav>
 
   <!-- TAB LOG -->
-  <div id="tab-log" class="tab-panel active">
+  <div id="tab-log" class="tab-panel">
     <div class="onboarding-banner" id="onboarding-banner">
       <strong>👋 Benvenuto in Running Diary</strong>
       <p>Prima di iniziare, imposta la tua FC massima e FC a riposo nel Profilo — servono per calcolare le zone di allenamento.</p>
@@ -307,7 +307,7 @@
   </div>
 
   <!-- TAB PROGRESS -->
-  <div id="tab-progress" class="tab-panel">
+  <div id="tab-progress" class="tab-panel active">
     <div class="period-selector">
       <button class="period-btn active" onclick="setPeriod('all',this)">Tutto</button>
       <button class="period-btn" onclick="setPeriod('year',this)">Anno</button>
@@ -625,10 +625,19 @@ window.setPeriod=function(period,btn){progressPeriod=period;document.querySelect
 window.setProgressType=function(type,btn){progressType=type;document.querySelectorAll('.type-selector .filter-chip').forEach(b=>b.classList.remove('active-chip'));btn.classList.add('active-chip');renderProgress();};
 
 function filterByPeriod(arr){
-  if(progressPeriod==='all')return arr;const now=new Date(),from=new Date(now);
-  if(progressPeriod==='week')from.setDate(now.getDate()-7);if(progressPeriod==='month')from.setMonth(now.getMonth()-1);
-  if(progressPeriod==='6m')from.setMonth(now.getMonth()-6);if(progressPeriod==='year')from.setFullYear(now.getFullYear()-1);
-  return arr.filter(s=>s.date>=from.toISOString().slice(0,10));
+  if(progressPeriod==='all')return arr;
+  let fromStr;
+  if(progressPeriod==='week'){
+    // Lunedì della settimana corrente (settimana calendario, non ultimi 7 giorni)
+    fromStr=getWeekMonday(today());
+  } else {
+    const now=new Date(),from=new Date(now);
+    if(progressPeriod==='month')from.setMonth(now.getMonth()-1);
+    if(progressPeriod==='6m')from.setMonth(now.getMonth()-6);
+    if(progressPeriod==='year')from.setFullYear(now.getFullYear()-1);
+    fromStr=from.toISOString().slice(0,10);
+  }
+  return arr.filter(s=>s.date>=fromStr);
 }
 
 function calcStreak(){
@@ -742,7 +751,7 @@ window.importJSON=async function(event){
 };
 
 document.getElementById('f-date').value=today();
-loadSessions().then(()=>{renderHistory();checkOnboarding();});
+loadSessions().then(()=>{renderProgress();checkOnboarding();});
 </script>
 </body>
 </html>
