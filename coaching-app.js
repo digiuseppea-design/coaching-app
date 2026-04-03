@@ -627,7 +627,7 @@ function buildCSV(){
   const dataProg=document.getElementById('data_programma').value;
   const sw=parseInt(document.getElementById('settimane').value);
   if(!nome||!nomeProg){showError('Compila Nome cliente e Nome programma.');return false;}
-  const dataF=dataProg?dataProg:'';
+  const dataF=dataProg?dataProg.split('-').reverse().join('/'):'';
   csvData=[];
   for(let w=1;w<=sw;w++){
     let slot=1;
